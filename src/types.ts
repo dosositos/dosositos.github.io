@@ -32,6 +32,10 @@ export interface Mensaje {
   hora?: string
   /** Para audios, fotos y stickers dentro de la conversación. */
   tipo?: 'texto' | 'audio' | 'foto' | 'sticker'
+  /** Si el mensaje responde a otro, el texto citado arriba (como en Instagram). */
+  responde?: string
+  /** Reacción pegada a la burbuja: '❤️' */
+  reaccion?: string
 }
 
 export interface Nota {

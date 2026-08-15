@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Contador } from '@/componentes/Contador'
 import { OrigenDelApodo } from '@/componentes/OrigenDelApodo'
 import { QuienAmaMas } from '@/componentes/QuienAmaMas'
+import { RankingDelDrama } from '@/componentes/RankingDelDrama'
 import { FECHAS, OSITA, OSITO } from '@/content/config'
 import { celebracionDeHoy } from '@/lib/celebraciones'
 import { diasQueFaltan, proximoAniversario, proximoMesiversario } from '@/lib/tiempo'
@@ -101,6 +102,11 @@ export function Portada() {
 
       {/* ── Quién ama más hoy ────────────────────────────────── */}
       <QuienAmaMas />
+
+      {/* ── El ranking del drama ─────────────────────────────── */}
+      <div className="w-full max-w-lg">
+        <RankingDelDrama />
+      </div>
 
       {/* ── Accesos a las secciones ──────────────────────────── */}
       <nav className="grid w-full gap-4 sm:grid-cols-2">

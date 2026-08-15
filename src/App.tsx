@@ -2,6 +2,7 @@ import { Link, Route, Routes, useLocation } from 'react-router-dom'
 import { CieloEstrellado } from '@/componentes/CieloEstrellado'
 import { Petalos } from '@/componentes/Petalos'
 import { InterruptorTema, ProveedorTema } from '@/componentes/ProveedorTema'
+import { Momento } from '@/paginas/Momento'
 import { Playlist } from '@/paginas/Playlist'
 import { Portada } from '@/paginas/Portada'
 
@@ -53,10 +54,7 @@ function Marco() {
             path="/linea-del-tiempo"
             element={<EnConstruccion titulo="nuestra historia" nota="aquí va la línea del tiempo — día 3 del plan" />}
           />
-          <Route
-            path="/momento/:id"
-            element={<EnConstruccion titulo="cápsula del tiempo" nota="cada momento con sus fotos y sus chats — día 4" />}
-          />
+          <Route path="/momento/:id" element={<Momento />} />
           <Route
             path="/juego"
             element={<EnConstruccion titulo="¿quién dijo esto?" nota="el juego de las frases — día 6" />}

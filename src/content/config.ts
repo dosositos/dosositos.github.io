@@ -37,7 +37,7 @@ export const FECHAS = {
     fecha: '2024-08-24T00:00:00-06:00',
     horaExacta: false,
     titulo: 'desde que nos conocimos',
-    subtitulo: 'el día que el mundo se puso en su sitio',
+    subtitulo: 'la noche que solo nos miramos',
   },
   novios: {
     fecha: '2024-11-24T00:00:00-06:00',
