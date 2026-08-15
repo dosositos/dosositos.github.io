@@ -53,6 +53,10 @@
 - [x] **Burbujas de chat** con citas de respuesta y reacciones *(era del día 4)*
 - [x] **Cápsula del momento** a pantalla completa con URL propia *(era del día 3)*
 - [x] Primer momento completo y real: la conversación del 25 de agosto
+- [x] **La puerta con la frase-contraseña** *(era del día 4)* — valida descifrando
+      de verdad, así que la respuesta no está en ninguna parte del sitio
+- [x] Página de estadísticas con los números del chat, con su fecha de corte
+- [x] Volver arriba al cambiar de página (las animaciones empezaban a media altura)
 
 ### Herramientas
 - [x] `chat:parsear` — 154.726 mensajes procesados
@@ -103,10 +107,10 @@ Ordenado por lo que más nos atrasa si no llega:
 - [ ] Yo: carga diferida para que no pese al abrir
 
 ### Día 4 · El candado
+- [x] Yo: la puerta con la frase-contraseña y su pista
+- [x] Yo: que la clave se recuerde durante la visita y no la pida a cada rato
 - [ ] Vos: decidir qué queda detrás de la contraseña
-- [ ] Yo: la puerta con la frase-contraseña y su pista
-- [ ] Yo: mover el contenido sensible a `private/publicable/` y cifrarlo
-- [ ] Yo: que la clave se recuerde durante la visita y no la pida a cada rato
+- [ ] Yo: mover ese contenido a `private/publicable/` y cifrarlo de verdad
 
 ### Día 5 · El juego
 - [ ] Vos: aprobar frases
@@ -144,10 +148,20 @@ Ordenado por lo que más nos atrasa si no llega:
 
 ## Consideraciones y riesgos
 
+**La puerta no protege lo que hay detrás, todavía.** Frena a quien abra el
+enlace, y eso ya es bastante — pero el contenido de `src/content/` viaja dentro
+del código de la página, así que alguien que sepa mirar el código fuente puede
+leer los momentos y los relatos sin escribir la contraseña. La protección de
+verdad es el cifrado, y solo cubre lo que metamos en `private/publicable/`.
+Hoy ahí solo está el saludo de bienvenida.
+
+**Entonces, la regla:** lo que te importaría que leyera un desconocido **no puede
+vivir en `src/content/`**. Va cifrado. Decime qué momentos, chats y frases entran
+en esa categoría y los muevo — es lo que falta del día 4.
+
 **El repositorio ya es público.** Todo lo que entre en `src/content/` se puede
-leer desde hoy: los relatos, los momentos, las notas. No es un problema mientras
-sea contenido tierno, pero **lo que no quieras que lea un desconocido tiene que
-ir cifrado**, no en `src/content/`. Esa decisión es del día 4 y es tuya.
+leer desde hoy: los relatos, los momentos, las notas. No pasa nada mientras sea
+contenido tierno.
 
 **Las fotos en un repositorio público son públicas.** Aunque nadie tenga el
 enlace, técnicamente están ahí. Si hay fotos que solo deberían verse tras la
@@ -157,9 +171,11 @@ contraseña, decímelo y las trato aparte.
 extraño; no de alguien del círculo de ustedes que se ponga a adivinar. Si querés
 blindarla, cambiá la pista por algo que solo ella pueda descifrar.
 
-**Los números del chat se congelaron hoy.** `src/content/estadisticas.ts` tiene
-las cifras del 14 de agosto. Conviene volver a correr `npm run chat:parsear` el
-día 22 o 23 y actualizarlas, para que la racha esté al día el 24.
+**Los números del chat son una foto fija, y así se presentan.** La página de
+estadísticas dice "hasta el 14 de agosto de 2026" en vez de fingir que está al
+día. Exportar el chat es un rollo y no hay que hacerlo seguido: cuando quieras
+refrescarlos, corré `npm run chat:parsear` y actualizá `src/content/estadisticas.ts`,
+incluida la constante `CORTE`. Ningún texto de la web depende de que estén al día.
 
 **El límite de GitHub Pages es 1 GB.** Con las fotos en AVIF vamos sobrados,
 pero si entran videos hay que vigilarlo. Los largos, a YouTube no listado.

@@ -84,9 +84,9 @@ export const momentos: Momento[] = [
     fecha: '2024-08-30',
     titulo: 'El primer "holaa"',
     resumen:
-      'A las 4:19 de la tarde empezó un chat que hoy tiene 154.726 mensajes y no ha fallado un solo día.',
+      'A las 4:19 de la tarde empezó un chat que no ha parado desde entonces.',
     relato:
-      'El primer mensaje de WhatsApp fue un "holaa" mío, a las 4:19 de la tarde del 30 de agosto de 2024. Nada memorable, nada preparado. Desde ese día hasta hoy no hemos dejado pasar ni uno solo sin escribirnos: 715 días seguidos.',
+      'El primer mensaje de WhatsApp fue un "holaa" mío, a las 4:19 de la tarde del 30 de agosto de 2024. Nada memorable, nada preparado. Y desde ese día no hemos dejado pasar ninguno sin escribirnos.',
     flor: 'nube',
     icono: '💌',
     chat: [

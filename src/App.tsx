@@ -1,7 +1,10 @@
 import { Link, Route, Routes, useLocation } from 'react-router-dom'
+import { Candado } from '@/componentes/Candado'
 import { CieloEstrellado } from '@/componentes/CieloEstrellado'
 import { Petalos } from '@/componentes/Petalos'
 import { InterruptorTema, ProveedorTema } from '@/componentes/ProveedorTema'
+import { ScrollAlInicio } from '@/componentes/ScrollAlInicio'
+import { Estadisticas } from '@/paginas/Estadisticas'
 import { Momento } from '@/paginas/Momento'
 import { Playlist } from '@/paginas/Playlist'
 import { Portada } from '@/paginas/Portada'
@@ -31,7 +34,7 @@ function Marco() {
 
   return (
     <>
-      <CieloEstrellado cantidad={90} />
+      <ScrollAlInicio />
       <Petalos cantidad={14} />
 
       <div className="fixed right-4 top-4 z-50 flex items-center gap-2 sm:right-6 sm:top-6">
@@ -64,6 +67,7 @@ function Marco() {
             element={<EnConstruccion titulo="diccionario oso-español" nota="las palabras que solo existen aquí — día 7" />}
           />
           <Route path="/playlist" element={<Playlist />} />
+          <Route path="/estadisticas" element={<Estadisticas />} />
           <Route
             path="/frasco"
             element={<EnConstruccion titulo="frasco de mensajitos" nota="las estrellitas de papel — día 7" />}
@@ -85,7 +89,11 @@ function Marco() {
 export default function App() {
   return (
     <ProveedorTema>
-      <Marco />
+      {/* El cielo va fuera del candado: la puerta también merece estrellas */}
+      <CieloEstrellado cantidad={70} />
+      <Candado>
+        <Marco />
+      </Candado>
     </ProveedorTema>
   )
 }

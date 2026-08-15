@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { Contador } from '@/componentes/Contador'
 import { OrigenDelApodo } from '@/componentes/OrigenDelApodo'
 import { QuienAmaMas } from '@/componentes/QuienAmaMas'
-import { RankingDelDrama } from '@/componentes/RankingDelDrama'
 import { FECHAS, OSITA, OSITO } from '@/content/config'
 import { celebracionDeHoy } from '@/lib/celebraciones'
 import { diasQueFaltan, proximoAniversario, proximoMesiversario } from '@/lib/tiempo'
@@ -14,6 +13,7 @@ const SECCIONES = [
   { a: '/diccionario', icono: '📓', titulo: 'diccionario oso', texto: 'las palabras que solo existen aquí' },
   { a: '/frasco', icono: '🫙', titulo: 'frasco de mensajitos', texto: 'sacá una estrellita cuando la necesités' },
   { a: '/playlist', icono: '🎵', titulo: 'nuestras canciones', texto: 'y por qué cada una es nuestra' },
+  { a: '/estadisticas', icono: '📊', titulo: 'nuestro chat en números', texto: 'cuánto hablamos y quién gana en qué' },
 ]
 
 export function Portada() {
@@ -102,11 +102,6 @@ export function Portada() {
 
       {/* ── Quién ama más hoy ────────────────────────────────── */}
       <QuienAmaMas />
-
-      {/* ── El ranking del drama ─────────────────────────────── */}
-      <div className="w-full max-w-lg">
-        <RankingDelDrama />
-      </div>
 
       {/* ── Accesos a las secciones ──────────────────────────── */}
       <nav className="grid w-full gap-4 sm:grid-cols-2">

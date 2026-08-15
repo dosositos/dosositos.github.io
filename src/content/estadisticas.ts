@@ -2,11 +2,20 @@
  * ╔══════════════════════════════════════════════════════════════╗
  * ║  NÚMEROS DEL CHAT                                            ║
  * ║                                                              ║
- * ║  Salen de correr `npm run chat:parsear`. Son solo cuentas —   ║
- * ║  ni una frase, ni un nombre — así que pueden ir a la vista    ║
- * ║  sin cifrar. Actualizalos cuando vuelvas a correr el script.  ║
+ * ║  Son una foto fija, no un dato en vivo: exportar el chat es   ║
+ * ║  un rollo y no vale la pena hacerlo seguido. Por eso la web   ║
+ * ║  dice siempre "hasta el [fecha]" en vez de fingir que está    ║
+ * ║  al día.                                                      ║
+ * ║                                                               ║
+ * ║  Para actualizarlos: exportá el chat otra vez, corré          ║
+ * ║  `npm run chat:parsear` y copiá aquí lo que imprime,          ║
+ * ║  incluida la fecha de corte de abajo.                         ║
  * ╚══════════════════════════════════════════════════════════════╝
  */
+
+/** El día hasta el que están contados estos números. */
+export const CORTE = '2026-08-14'
+
 export const numeros = {
   mensajes: 154_726,
   multimedia: 41_537,
@@ -14,8 +23,8 @@ export const numeros = {
   mensajesPor: { osito: 76_502, osita: 78_224 },
   teAmo: { osito: 2_058, osita: 2_641 },
   diasConversando: 715,
-  rachaMasLarga: 715,
   horaPico: 22,
+  desde: '2024-08-30',
 }
 
 /** Los seis emojis que más usamos, en orden. El chiste se cuenta solo. */
@@ -29,10 +38,9 @@ export const emojisDelDrama = [
 ]
 
 export const chisteDelDrama = {
-  titulo: 'nuestros emojis más usados',
+  titulo: 'los emojis que más usamos',
   remate: 'Tres pucheros, dos enojos y, colado en medio, el infinito.',
   explicacion:
     '955 caritas tristes en 154.726 mensajes. Nos amamos muchísimo y lo demostramos poniendo cara de puchero.',
-  /** El dato que le da la vuelta al chiste y lo vuelve otra cosa. */
-  cierre: 'Y con todo y pucheros, no hemos fallado un solo día en 715.',
+  cierre: 'El primero de todos se lo mandé el día que le escribí. Ya se veía venir.',
 }
