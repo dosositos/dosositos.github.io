@@ -1,0 +1,228 @@
+@import 'tailwindcss';
+
+/* Fuentes servidas desde el propio sitio (no desde Google): así la web
+   funciona sin internet cuando ella la instale en el teléfono.
+   Cada @font-face trae su unicode-range, o sea que el navegador descarga
+   únicamente el alfabeto latino: unos 150 KB en total. */
+@import '@fontsource-variable/fraunces';
+@import '@fontsource-variable/nunito';
+@import '@fontsource-variable/caveat';
+
+/* ═══════════════════════════════════════════════════════════════
+   PALETA FIJA — los colores que significan algo para nosotros.
+   Se usan como acentos sobre el fondo nocturno; no cambian con el
+   modo osito/osita porque son "los objetos", no "la habitación".
+   ═══════════════════════════════════════════════════════════════ */
+@theme {
+  /* Las flores de lego que armamos juntos */
+  --color-tulipan-amarillo: #f5c451;
+  --color-tulipan-violeta: #b7a5e0;
+  --color-rosa-roja: #c33b52;
+  --color-hibisco: #ea6f9b;
+
+  /* Los ramos */
+  --color-girasol: #f0a52e;
+  --color-rosa-amarilla: #f3d377;
+  --color-gerbera: #f4c02c;
+  --color-margarita: #f8f4e8;
+  --color-nube: #f6f1e7;
+  --color-cipres: #4e7f5e;
+  --color-rosa-pastel: #f3b9c8;
+
+  /* Nuestros hijos peluches */
+  --color-ovi: #f4b6c9;
+  --color-boo-claro: #f0ebe2;
+  --color-boo-oscuro: #2a2a33;
+  --color-nico: #fbe1e6;
+
+  /* Osito de peluche café clásico */
+  --color-oso: #a97142;
+  --color-oso-claro: #c99a67;
+  --color-oso-hocico: #e5cba8;
+
+  --font-display: 'Fraunces Variable', 'Georgia', serif;
+  --font-cuerpo: 'Nunito Variable', system-ui, sans-serif;
+  --font-mano: 'Caveat Variable', cursive;
+
+  --ease-suave: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-rebote: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MODO OSITO / MODO OSITA — la "habitación" cambia de luz.
+   Los dos son nocturnos y sobrios para que las flores y las fotos
+   se lleven todo el protagonismo.
+   ═══════════════════════════════════════════════════════════════ */
+:root,
+[data-tema='osito'] {
+  --t-fondo: #070b1b;
+  --t-fondo-2: #0c1430;
+  --t-superficie: #141d3f;
+  --t-superficie-2: #1c2750;
+  --t-borde: #2b3767;
+  --t-texto: #ece7dd;
+  --t-texto-suave: #a3abc7;
+  --t-acento: #e9b96e;
+  --t-acento-2: #f5dfb4;
+  --t-brillo: 233 185 110;
+}
+
+[data-tema='osita'] {
+  --t-fondo: #100a1e;
+  --t-fondo-2: #1a0f2e;
+  --t-superficie: #24153c;
+  --t-superficie-2: #301c4d;
+  --t-borde: #47316a;
+  --t-texto: #f2e8ee;
+  --t-texto-suave: #c2aecb;
+  --t-acento: #f0a8bf;
+  --t-acento-2: #f9d5e1;
+  --t-brillo: 240 168 191;
+}
+
+/* `inline` hace que las utilidades apunten a la variable viva,
+   así el cambio de tema es instantáneo y sin recompilar nada. */
+@theme inline {
+  --color-fondo: var(--t-fondo);
+  --color-fondo-2: var(--t-fondo-2);
+  --color-superficie: var(--t-superficie);
+  --color-superficie-2: var(--t-superficie-2);
+  --color-borde: var(--t-borde);
+  --color-texto: var(--t-texto);
+  --color-texto-suave: var(--t-texto-suave);
+  --color-acento: var(--t-acento);
+  --color-acento-2: var(--t-acento-2);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════════════════════════ */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--t-fondo);
+    color: var(--t-texto);
+    font-family: var(--font-cuerpo);
+    font-optical-sizing: auto;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    transition: background-color 0.6s var(--ease-suave), color 0.6s var(--ease-suave);
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 40, 'WONK' 1;
+    letter-spacing: -0.015em;
+  }
+
+  ::selection {
+    background: rgb(var(--t-brillo) / 0.35);
+    color: var(--t-texto);
+  }
+
+  /* Scrollbar discreta, del color del acento */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--t-fondo-2); }
+  ::-webkit-scrollbar-thumb {
+    background: var(--t-borde);
+    border-radius: 999px;
+    border: 2px solid var(--t-fondo-2);
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--t-acento); }
+
+  :focus-visible {
+    outline: 2px solid var(--t-acento);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UTILIDADES DE NUESTRA ESTÉTICA
+   ═══════════════════════════════════════════════════════════════ */
+@utility fuente-mano {
+  font-family: var(--font-mano);
+  font-weight: 600;
+}
+
+/* Papel de scrapbook: grano sutil + tono cálido */
+@utility papel {
+  background-color: var(--t-superficie);
+  background-image:
+    radial-gradient(circle at 20% 15%, rgb(var(--t-brillo) / 0.06), transparent 45%),
+    radial-gradient(circle at 85% 80%, rgb(var(--t-brillo) / 0.04), transparent 40%);
+  border: 1px solid var(--t-borde);
+  box-shadow: 0 12px 40px -18px rgb(0 0 0 / 0.9), inset 0 1px 0 rgb(255 255 255 / 0.04);
+}
+
+/* Brillo dorado difuso — para títulos y estrellas */
+@utility resplandor {
+  text-shadow: 0 0 24px rgb(var(--t-brillo) / 0.45), 0 0 60px rgb(var(--t-brillo) / 0.18);
+}
+
+@utility resplandor-caja {
+  box-shadow: 0 0 30px -6px rgb(var(--t-brillo) / 0.35), 0 0 80px -20px rgb(var(--t-brillo) / 0.25);
+}
+
+/* Cinta adhesiva del scrapbook (se coloca con ::before en el componente) */
+@utility cinta {
+  position: relative;
+}
+
+@utility texto-degradado {
+  background: linear-gradient(120deg, var(--t-acento-2), var(--t-acento) 55%, var(--color-rosa-pastel));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ANIMACIONES BASE
+   ═══════════════════════════════════════════════════════════════ */
+@keyframes parpadeo-estrella {
+  0%, 100% { opacity: 0.25; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.25); }
+}
+
+@keyframes flotar {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes caer-petalo {
+  0% { transform: translate3d(0, -10vh, 0) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.9; }
+  90% { opacity: 0.9; }
+  100% { transform: translate3d(var(--deriva, 40px), 110vh, 0) rotate(540deg); opacity: 0; }
+}
+
+@keyframes latido {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.12); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.08); }
+}
+
+@utility anima-flotar {
+  animation: flotar 6s ease-in-out infinite;
+}
+
+@utility anima-latido {
+  animation: latido 2.4s ease-in-out infinite;
+}
+
+/* Accesibilidad: si el sistema pide menos movimiento, se lo damos */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

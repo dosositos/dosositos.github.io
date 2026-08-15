@@ -1,0 +1,35 @@
+# ─────────────────────────────────────────────────────────────
+#  PRIVADO — nunca debe subirse a GitHub
+# ─────────────────────────────────────────────────────────────
+# Aquí va el export crudo de WhatsApp y cualquier material sin
+# curar. Todo lo que esté dentro de /private se queda en tu PC.
+/private/**
+!/private/.gitkeep
+!/private/LEEME.md
+
+# Fotos originales sin optimizar (pesadas). Solo se sube /public/media
+/fotos-originales/
+
+# Claves y variables de entorno
+.env
+.env.local
+.env.*.local
+*.key
+
+# ─────────────────────────────────────────────────────────────
+#  Estándar
+# ─────────────────────────────────────────────────────────────
+node_modules/
+dist/
+*.tsbuildinfo
+dist-ssr/
+.vite/
+*.local
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/

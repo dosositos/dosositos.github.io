@@ -1,0 +1,51 @@
+name: Publicar en GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # botón para publicar a mano desde la pestaña Actions
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Si empujás dos veces seguidas, cancela la publicación anterior
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  construir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Compilar
+        run: npm run build
+        env:
+          # Si el repositorio se llama  <usuario>.github.io  dejá esto en '/'
+          # Si se llama  dosositos  (y la URL es usuario.github.io/dosositos)
+          # cambialo a '/dosositos/'
+          BASE_URL_PAGES: '/'
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  publicar:
+    needs: construir
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,38 @@
+{
+  "name": "dosositos",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Osito y Osita — nuestra madriguera en internet",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc -b",
+    "preview": "vite preview",
+    "chat:parsear": "node scripts/parse-whatsapp.mjs",
+    "chat:frases": "node scripts/generar-frases.mjs",
+    "chat:dia": "node scripts/ver-dia.mjs",
+    "fotos:optimizar": "node scripts/optimizar-fotos.mjs",
+    "secretos:cifrar": "node scripts/cifrar-contenido.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/caveat": "^5.2.9",
+    "@fontsource-variable/fraunces": "^5.2.9",
+    "@fontsource-variable/nunito": "^5.2.9",
+    "motion": "^13.1.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.0.5",
+    "sharp": "^0.35.3",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.1",
+    "vite-plugin-pwa": "^1.3.0"
+  }
+}
