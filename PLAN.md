@@ -83,6 +83,11 @@ Ordenado por lo que más nos atrasa si no llega:
    cada vez que cambie `private/publicable/chats.json`. Si te equivocás al
    escribir la frase, el script se planta y no toca nada.
 
+   Ya no hace falta que te acuerdes: `npm run build` se cae si falta el
+   archivo cifrado o si se quedó atrás del contenido, y con eso GitHub
+   Actions no publica. Antes compilaba igual y la web salía sin un solo
+   chat, en silencio — que es exactamente lo que pasó el 15 de agosto.
+
 1. **La lista de momentos** → `private/plantilla-momentos.md`. Van 5 (hasta el
    2 de septiembre de 2024); faltan del 24 de noviembre en adelante. Es lo que
    bloquea los días 2 y 3. Con la fecha y dos líneas por momento me alcanza.

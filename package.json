@@ -6,7 +6,9 @@
   "description": "Osito y Osita — nuestra madriguera en internet",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/revisar-publicacion.mjs",
     "build": "vite build",
+    "revisar": "node scripts/revisar-publicacion.mjs",
     "typecheck": "tsc -b",
     "preview": "vite preview",
     "chat:parsear": "node scripts/parse-whatsapp.mjs",

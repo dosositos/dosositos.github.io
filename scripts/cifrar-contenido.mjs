@@ -195,6 +195,23 @@ for (const archivo of archivos) {
   const nombre = archivo.replace(/\.json$/, '.enc')
   writeFileSync(path.join(DESTINO, nombre), JSON.stringify(salida), 'utf8')
   console.log(`    ✓ ${archivo}  →  public/cifrado/${nombre}`)
+
+  // El recibo de los chats: qué momentos quedaron dentro y con cuántos
+  // mensajes. No dice nada que no esté ya en momentos.ts, y sirve para
+  // que `npm run build` avise si el cifrado se quedó atrás.
+  if (archivo === 'chats.json') {
+    const chats = JSON.parse(contenido)
+    const momentos = {}
+    for (const [id, mensajes] of Object.entries(chats)) {
+      if (!id.startsWith('_')) momentos[id] = mensajes.length
+    }
+    writeFileSync(
+      path.join(DESTINO, 'chats.manifiesto.json'),
+      JSON.stringify({ generado: new Date().toISOString(), momentos }, null, 2),
+      'utf8',
+    )
+    console.log(`    ✓ recibo    →  public/cifrado/chats.manifiesto.json`)
+  }
 }
 
 console.log(`
