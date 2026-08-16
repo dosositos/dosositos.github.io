@@ -1,8 +1,12 @@
 import { motion } from 'motion/react'
 import { Link, useParams } from 'react-router-dom'
-import { Chat } from '@/componentes/Chat'
+import { ChatCifrado } from '@/componentes/ChatCifrado'
 import { momentos } from '@/content/momentos'
+import { FLORES } from '@/lib/flores'
 import { fechaLarga } from '@/lib/tiempo'
+
+/** Los momentos en el mismo orden que la línea del tiempo, para poder pasar al de al lado. */
+const enOrden = [...momentos].sort((a, b) => (a.fecha < b.fecha ? -1 : 1))
 
 /**
  * La cápsula del tiempo: un momento a pantalla completa.
@@ -11,7 +15,8 @@ import { fechaLarga } from '@/lib/tiempo'
  */
 export function Momento() {
   const { id } = useParams()
-  const momento = momentos.find((m) => m.id === id)
+  const indice = enOrden.findIndex((m) => m.id === id)
+  const momento = indice === -1 ? undefined : enOrden[indice]
 
   if (!momento) {
     return (
@@ -29,6 +34,9 @@ export function Momento() {
   }
 
   const fecha = new Date(`${momento.fecha}T12:00:00-06:00`)
+  const flor = FLORES[momento.flor]
+  const anterior = enOrden[indice - 1]
+  const siguiente = enOrden[indice + 1]
 
   return (
     <article className="mx-auto w-full max-w-2xl px-5 pb-24 pt-20">
@@ -38,7 +46,17 @@ export function Momento() {
         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
         className="mb-12 text-center"
       >
-        {momento.icono && <div className="mb-5 text-5xl">{momento.icono}</div>}
+        {momento.icono && (
+          <div
+            className="mx-auto mb-5 grid h-20 w-20 place-items-center rounded-full text-4xl"
+            style={{
+              border: `2px solid ${flor.color}`,
+              boxShadow: `0 0 40px -10px ${flor.color}`,
+            }}
+          >
+            {momento.icono}
+          </div>
+        )}
 
         <p className="text-[0.68rem] uppercase tracking-[0.26em] text-texto-suave/60">
           {momento.fechaTexto ?? fechaLarga(fecha)}
@@ -66,9 +84,15 @@ export function Momento() {
         </motion.p>
       )}
 
+      {momento.borrador && (
+        <p className="fuente-mano mx-auto mb-12 max-w-md rounded-xl border border-dashed border-borde px-6 py-5 text-center text-lg text-texto-suave">
+          Este todavía me lo debo. Está apuntado con su fecha para no perderlo.
+        </p>
+      )}
+
       {momento.chat && (
         <div className="mb-12">
-          <Chat mensajes={momento.chat} titulo="lo que nos dijimos" />
+          <ChatCifrado id={momento.id} ficha={momento.chat} />
         </div>
       )}
 
@@ -87,7 +111,38 @@ export function Momento() {
         </motion.aside>
       )}
 
-      <div className="mt-16 text-center">
+      {/* Pasar al momento de al lado sin volver a la lista */}
+      <nav className="mt-16 flex items-stretch gap-3 text-sm">
+        {anterior ? (
+          <Link
+            to={`/momento/${anterior.id}`}
+            className="papel min-w-0 flex-1 rounded-xl px-4 py-3 transition-colors hover:border-acento"
+          >
+            <span className="block text-[0.62rem] uppercase tracking-[0.2em] text-texto-suave/50">
+              ← antes
+            </span>
+            <span className="mt-1 block truncate text-texto-suave">{anterior.titulo}</span>
+          </Link>
+        ) : (
+          <span className="flex-1" />
+        )}
+
+        {siguiente ? (
+          <Link
+            to={`/momento/${siguiente.id}`}
+            className="papel min-w-0 flex-1 rounded-xl px-4 py-3 text-right transition-colors hover:border-acento"
+          >
+            <span className="block text-[0.62rem] uppercase tracking-[0.2em] text-texto-suave/50">
+              después →
+            </span>
+            <span className="mt-1 block truncate text-texto-suave">{siguiente.titulo}</span>
+          </Link>
+        ) : (
+          <span className="flex-1" />
+        )}
+      </nav>
+
+      <div className="mt-8 text-center">
         <Link
           to="/linea-del-tiempo"
           className="rounded-full border border-borde px-5 py-2 text-sm text-texto-suave transition-colors hover:border-acento hover:text-acento"

@@ -10,6 +10,7 @@
     "typecheck": "tsc -b",
     "preview": "vite preview",
     "chat:parsear": "node scripts/parse-whatsapp.mjs",
+    "chat:instagram": "node scripts/parse-instagram.mjs",
     "chat:frases": "node scripts/generar-frases.mjs",
     "chat:dia": "node scripts/ver-dia.mjs",
     "fotos:optimizar": "node scripts/optimizar-fotos.mjs",

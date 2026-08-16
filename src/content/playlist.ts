@@ -17,17 +17,19 @@ export interface Cancion {
   spotify?: string
   /** Por qué es nuestra. Esto es lo que más importa. */
   porQue: string
-  dedicadaPor?: 'osito' | 'osita' | 'ambos'
+  dedicadaPor?: 'osito 🐻' | 'osita 🎀' | 'ambos'
 }
 
 export const playlist: Cancion[] = [
-  { titulo: 'Te amo', artista: 'Franco de Vita', porQue: 'FALTA: contame por qué esta.', dedicadaPor: 'osito' },
-  { titulo: 'Por ti me casaré', artista: 'Eros Ramazzotti', porQue: 'FALTA', dedicadaPor: 'osito' },
-  { titulo: 'Motivos', artista: 'Luis Miguel', porQue: 'FALTA' },
-  { titulo: 'Somos novios', artista: 'Luis Miguel', porQue: 'FALTA' },
-  { titulo: 'Soy yo', artista: 'Luis Miguel', porQue: 'FALTA' },
-  { titulo: 'Ojos color sol', artista: 'Calle 13 ft. Silvio Rodríguez', porQue: 'FALTA' },
-  { titulo: 'Buscarte lejos', artista: 'Duki', porQue: 'FALTA' },
-  { titulo: 'Especial', artista: 'Eladio Carrión', porQue: 'FALTA' },
-  { titulo: 'Alma dinamita', artista: 'WOS', porQue: 'FALTA' },
+  { titulo: 'Te amo', artista: 'Franco de Vita', porQue: 'Añadir nota aquí - Añadir nota aquí - Añadir nota aquí', dedicadaPor: 'osita 🎀' },
+  { titulo: 'Buscarte lejos', artista: 'Duki', porQue: 'Añadir nota aquí - Añadir nota aquí - Añadir nota aquí', dedicadaPor: 'osito 🐻' },
+  { titulo: 'Por ti me casaré', artista: 'Eros Ramazzotti', porQue: 'Añadir nota aquí - Añadir nota aquí - Añadir nota aquí', dedicadaPor: 'osita 🎀' },
+  { titulo: 'Especial', artista: 'Eladio Carrión', porQue: 'Añadir nota aquí - Añadir nota aquí - Añadir nota aquí', dedicadaPor: 'osito 🐻' },
+  { titulo: 'Motivos', artista: 'Luis Miguel', porQue: 'Añadir nota aquí - Añadir nota aquí - Añadir nota aquí', dedicadaPor: 'osita 🎀' },
+  { titulo: 'Alma dinamita', artista: 'WOS', porQue: 'Añadir nota aquí - Añadir nota aquí - Añadir nota aquí', dedicadaPor: 'osito 🐻' },
+  { titulo: 'Somos novios', artista: 'Luis Miguel', porQue: 'Añadir nota aquí - Añadir nota aquí - Añadir nota aquí', dedicadaPor: 'osita 🎀' },
+  { titulo: 'Soy yo', artista: 'Luis Miguel', porQue: 'Añadir nota aquí - Añadir nota aquí - Añadir nota aquí', dedicadaPor: 'osita 🎀' },
+  { titulo: 'Mi favorita', artista: 'Rios y Chanell', porQue: 'Añadir nota aquí - Añadir nota aquí - Añadir nota aquí', dedicadaPor: 'osito 🐻' },
+  { titulo: 'Ojos color sol', artista: 'Calle 13 y Silvio Rodríguez', porQue: 'Añadir nota aquí - Añadir nota aquí - Añadir nota aquí', dedicadaPor: 'osita 🎀' },
+  
 ]

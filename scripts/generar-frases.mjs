@@ -6,6 +6,10 @@
  * ║  puntuadas por "rareza". NO filtra nada por decencia ni por      ║
  * ║  intimidad: la revisión la hacés vos a mano después.             ║
  * ║                                                                  ║
+ * ║  Mira las dos fuentes: WhatsApp e Instagram. Cada candidata      ║
+ * ║  se queda con la suya anotada, porque en el juego conviene       ║
+ * ║  poder decir de dónde salió la frase.                            ║
+ * ║                                                                  ║
  * ║  Uso:  npm run chat:frases                                       ║
  * ║  Sale: private/frases-candidatas.json  (revisalo y quedate con   ║
  * ║        las buenas; luego las pasamos a la web)                   ║
@@ -16,14 +20,26 @@ import path from 'node:path'
 
 const RAIZ = path.resolve(import.meta.dirname, '..')
 const PRIVADO = path.join(RAIZ, 'private')
-const ENTRADA = path.join(PRIVADO, 'chat.json')
 
-if (!existsSync(ENTRADA)) {
-  console.error('  ✗ Falta private/chat.json. Corré primero:  npm run chat:parsear')
-  process.exit(1)
+const cargar = (archivo, fuente) => {
+  const ruta = path.join(PRIVADO, archivo)
+  if (!existsSync(ruta)) return []
+  return JSON.parse(readFileSync(ruta, 'utf8'))
+    .filter((m) => m.tipo === 'texto')
+    .map((m) => ({ ...m, fuente }))
 }
 
-const mensajes = JSON.parse(readFileSync(ENTRADA, 'utf8')).filter((m) => m.tipo === 'texto')
+const mensajes = [...cargar('chat.json', 'whatsapp'), ...cargar('instagram.json', 'instagram')]
+
+if (mensajes.length === 0) {
+  console.error(`
+  ✗ No hay ningún chat leído todavía. Corré:
+
+      npm run chat:parsear     (WhatsApp)
+      npm run chat:instagram   (Instagram)
+  `)
+  process.exit(1)
+}
 
 const MIN = 14
 const MAX = 160
@@ -95,6 +111,7 @@ for (const m of mensajes) {
     respuesta: m.de,
     fecha: m.fecha,
     hora: `${m.hora}:${String(m.minuto).padStart(2, '0')}`,
+    fuente: m.fuente,
     puntos: Math.round(puntos * 10) / 10,
     aprobada: false, // ← ponelo en true en las que te gusten
     pista: '',
@@ -109,8 +126,9 @@ for (const m of mensajes) {
   const t = m.texto.trim()
   if (t.length < MIN || t.length > 90) continue
   const llave = normalizar(t).replace(/\s+/g, ' ').trim()
-  const registro = porFrase.get(llave) ?? { texto: t, osito: 0, osita: 0 }
+  const registro = porFrase.get(llave) ?? { texto: t, osito: 0, osita: 0, fuentes: new Set() }
   registro[m.de]++
+  registro.fuentes.add(m.fuente)
   porFrase.set(llave, registro)
 }
 
@@ -121,6 +139,7 @@ const ambos = [...porFrase.values()]
     respuesta: 'ambos',
     vecesOsito: r.osito,
     vecesOsita: r.osita,
+    fuente: [...r.fuentes].sort().join(' + '),
     puntos: Math.round(puntuar(r.texto) * 10) / 10,
     aprobada: false,
     pista: '',
@@ -131,7 +150,7 @@ const ambos = [...porFrase.values()]
 const salida = {
   generado: new Date().toISOString(),
   instrucciones:
-    'Poné "aprobada": true en las que quieras que salgan en el juego. Podés editar el texto y agregar una "pista" que se muestra tras responder. Luego decime y las paso a la web.',
+    'Poné "aprobada": true en las que quieras que salgan en el juego. Podés editar el texto y agregar una "pista" que se muestra tras responder. El campo "fuente" dice de qué app salió (whatsapp o instagram). Luego decime y las paso a la web.',
   individuales: candidatas.slice(0, 500),
   ambos,
 }
@@ -142,6 +161,8 @@ console.log(`
   ✓ private/frases-candidatas.json
 
     Candidatas individuales ... ${candidatas.length.toLocaleString('es-NI')} (guardé las 500 mejores)
+    · de WhatsApp .............. ${candidatas.filter((c) => c.fuente === 'whatsapp').length.toLocaleString('es-NI')}
+    · de Instagram ............. ${candidatas.filter((c) => c.fuente === 'instagram').length.toLocaleString('es-NI')}
     Frases que dijeron los dos . ${ambos.length}
 
     Abrilo, poné "aprobada": true en las que te gusten y avisame.
@@ -149,5 +170,6 @@ console.log(`
 `)
 
 for (const c of candidatas.slice(0, 10)) {
-  console.log(`    [${c.respuesta}] ${c.texto.replace(/\n/g, ' ').slice(0, 90)}`)
+  const marca = c.fuente === 'instagram' ? '📷' : '💬'
+  console.log(`    ${marca} [${c.respuesta}] ${c.texto.replace(/\n/g, ' ').slice(0, 88)}`)
 }

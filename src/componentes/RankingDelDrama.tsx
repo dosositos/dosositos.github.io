@@ -21,7 +21,7 @@ export function RankingDelDrama() {
     >
       <header className="text-center">
         <p className="text-[0.68rem] uppercase tracking-[0.24em] text-texto-suave/70">
-          dato incómodo
+          ahora somos más de stickers
         </p>
         <h2 className="mt-3 font-display text-2xl text-texto">{chisteDelDrama.titulo}</h2>
       </header>
@@ -49,10 +49,8 @@ export function RankingDelDrama() {
       </ul>
 
       <div className="mt-8 space-y-3 text-center">
-        <p className="fuente-mano text-xl text-acento">{chisteDelDrama.remate}</p>
         <p className="text-sm leading-relaxed text-texto-suave">{chisteDelDrama.explicacion}</p>
         <p className="pt-3 font-display text-lg leading-snug text-texto">
-          {chisteDelDrama.cierre}
         </p>
       </div>
     </motion.section>

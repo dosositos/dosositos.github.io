@@ -160,7 +160,7 @@ export function diasQueFaltan(objetivo: Date, desde: Date = new Date()): number 
 
 export const MESES_ES = [
   'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+  'julio', 'agosto', 'septiembre', 'octubre', 'nov.', 'diciembre',
 ]
 
 /** "24 de agosto de 2024" */

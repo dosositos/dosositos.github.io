@@ -1,5 +1,11 @@
 import { motion } from 'motion/react'
-import type { Mensaje } from '@/types'
+import type { FuenteChat, Mensaje } from '@/types'
+
+/** Cómo se llama cada app en pantalla, con su marquita. */
+const FUENTES: Record<FuenteChat, string> = {
+  instagram: '📷 por Instagram',
+  whatsapp: '💬 por WhatsApp',
+}
 
 /**
  * Conversaciones reconstruidas.
@@ -9,12 +15,22 @@ import type { Mensaje } from '@/types'
  * seleccionar el texto, y los mensajes aparecen uno a uno, como si se
  * estuvieran escribiendo otra vez.
  */
-export function Chat({ mensajes, titulo }: { mensajes: Mensaje[]; titulo?: string }) {
+export function Chat({
+  mensajes,
+  titulo,
+  fuente,
+}: {
+  mensajes: Mensaje[]
+  titulo?: string
+  fuente?: FuenteChat
+}) {
   return (
     <section className="papel w-full rounded-2xl px-4 py-6 sm:px-6" aria-label={titulo ?? 'Conversación'}>
-      {titulo && (
+      {(titulo || fuente) && (
         <p className="mb-5 text-center text-[0.68rem] uppercase tracking-[0.24em] text-texto-suave/60">
           {titulo}
+          {titulo && fuente && <span className="mx-2 opacity-40">·</span>}
+          {fuente && <span className="whitespace-nowrap">{FUENTES[fuente]}</span>}
         </p>
       )}
 
@@ -51,7 +67,7 @@ export function Chat({ mensajes, titulo }: { mensajes: Mensaje[]; titulo?: strin
 
               <div className="relative">
                 <div
-                  className={`max-w-[80vw] rounded-2xl px-4 py-2.5 text-[0.95rem] leading-snug sm:max-w-md ${
+                  className={`max-w-[80vw] whitespace-pre-line rounded-2xl px-4 py-2.5 text-[0.95rem] leading-snug sm:max-w-md ${
                     mio
                       ? 'rounded-br-md bg-acento/85 text-fondo'
                       : 'rounded-bl-md bg-superficie-2 text-texto'

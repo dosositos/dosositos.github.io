@@ -20,6 +20,12 @@ cifrado con AES-GCM vía `scripts/cifrar-contenido.mjs` y se abre en el navegado
 con `src/lib/cripto.ts`. Antes de cualquier commit, verificar que no se coló
 contenido del chat en claro dentro de `src/`.
 
+**Ninguna frase real de la conversación vive en `src/`.** Las conversaciones de
+los momentos están en `private/publicable/chats.json`, con el id del momento como
+llave; en `src/content/momentos.ts` solo queda la ficha (`chat: { mensajes, fuente }`)
+y `ChatCifrado` las descifra en el teléfono. Lo que sí va en claro son los
+relatos y las notas: son la voz de Armando contando, no citas de ella.
+
 **Separación contenido / código.** Armando toca `src/content/*` y nada más.
 Esos archivos son datos con comentarios explicativos, sin lógica. Si algo
 necesita que él edite código de verdad, está mal diseñado.
@@ -53,6 +59,8 @@ npm run build            # compilar
 npm run typecheck        # revisar tipos
 
 npm run chat:parsear     # private/chat.txt → datos utilizables
+npm run chat:instagram   # private/instagram_export.json → datos utilizables
+npm run chat:dia -- 2024-08-25   # la conversación de un día (las dos fuentes)
 npm run chat:frases      # genera candidatas para el juego
 npm run fotos:optimizar  # fotos-originales/ → public/media/ en AVIF
 npm run secretos:cifrar  # private/publicable/ → public/cifrado/

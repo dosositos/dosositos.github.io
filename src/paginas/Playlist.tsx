@@ -59,7 +59,7 @@ export function Playlist() {
             <p className="fuente-mano mt-3 text-lg leading-snug text-texto-suave">{c.porQue}</p>
             {c.dedicadaPor && (
               <p className="mt-3 text-[0.68rem] uppercase tracking-[0.18em] text-acento/70">
-                la puso {c.dedicadaPor}
+                la dedicó {c.dedicadaPor}
               </p>
             )}
           </motion.li>

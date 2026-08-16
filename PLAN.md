@@ -9,7 +9,7 @@
 ## Estado general
 
 - [x] **Día 0 (14 ago)** · Entorno, estética, contadores, portada — **y bastante más**
-- [ ] Día 1 (15 ago) · Línea del tiempo en móvil
+- [x] **Día 1 (15 ago)** · Línea del tiempo en móvil · **+ el chat de Instagram**
 - [ ] Día 2 (16 ago) · Línea del tiempo horizontal en computadora
 - [ ] Día 3 (17 ago) · Fotos: polaroids, galería, ampliar al tocar
 - [ ] Día 4 (18 ago) · El candado: cifrado y contenido privado
@@ -71,8 +71,21 @@
 
 Ordenado por lo que más nos atrasa si no llega:
 
-1. **La lista de momentos** → `private/plantilla-momentos.md`. Es lo único que
-   bloquea los días 1, 2 y 3. Con la fecha y dos líneas por momento me alcanza.
+0. **Cifrar los chats — un comando, y hasta que no corra las conversaciones no
+   se ven en la web.** La frase no está en ningún archivo del proyecto ni la
+   tengo yo, así que este paso es tuyo y solo tuyo:
+
+   ```bash
+   npm run secretos:cifrar -- --clave "la frase de siempre"
+   ```
+
+   Sale `public/cifrado/chats.enc`, que sí se sube. Hay que volver a correrlo
+   cada vez que cambie `private/publicable/chats.json`. Si te equivocás al
+   escribir la frase, el script se planta y no toca nada.
+
+1. **La lista de momentos** → `private/plantilla-momentos.md`. Van 5 (hasta el
+   2 de septiembre de 2024); faltan del 24 de noviembre en adelante. Es lo que
+   bloquea los días 2 y 3. Con la fecha y dos líneas por momento me alcanza.
 2. **Las fotos** → a `fotos-originales/` y `npm run fotos:optimizar`.
    Mejor que sobren.
 3. **Revisar las frases del juego** → `private/frases-candidatas.json`,
@@ -90,10 +103,20 @@ Ordenado por lo que más nos atrasa si no llega:
 ## Detalle por día
 
 ### Día 1 · Línea del tiempo (móvil)
-- [ ] Vos: la lista de momentos
-- [ ] Yo: línea vertical con tarjetas alternando lados
-- [ ] Yo: cada momento con su flor, su marcador y su animación de entrada
-- [ ] Yo: enlace de cada tarjeta a su cápsula
+- [x] Vos: los primeros 5 momentos + el export de Instagram
+- [x] Yo: línea vertical con tarjetas alternando lados
+- [x] Yo: cada momento con su flor, su marcador y su animación de entrada
+- [x] Yo: enlace de cada tarjeta a su cápsula
+- [x] Yo: pasar al momento anterior/siguiente sin volver a la lista
+- [ ] Vos: faltan los momentos del 24 de noviembre en adelante
+
+### Día 1 bis · Instagram como segunda fuente
+- [x] `chat:instagram` — 6.077 mensajes, con la codificación de Meta arreglada
+- [x] `chat:dia` lee las dos fuentes juntas y marca cuál es cuál (📷 / 💬)
+- [x] Los momentos de agosto llevan sus burbujas reales de Instagram
+- [x] `chat:frases` mira las dos apps y anota la fuente de cada candidata
+- [x] Estadísticas: bloque de Instagram + el total de las dos apps
+- [ ] Los reels: 1.171 compartidos, todavía sin usar — sección aparte, otro día
 
 ### Día 2 · Línea del tiempo (computadora)
 - [ ] Yo: versión horizontal que avanza con el scroll
@@ -109,8 +132,12 @@ Ordenado por lo que más nos atrasa si no llega:
 ### Día 4 · El candado
 - [x] Yo: la puerta con la frase-contraseña y su pista
 - [x] Yo: que la clave se recuerde durante la visita y no la pida a cada rato
-- [ ] Vos: decidir qué queda detrás de la contraseña
-- [ ] Yo: mover ese contenido a `private/publicable/` y cifrarlo de verdad
+- [x] Vos: decidido — **todas** las conversaciones reales van cifradas
+- [x] Yo: los chats movidos a `private/publicable/chats.json` y cifrados
+- [x] Yo: seguro en `secretos:cifrar` — si la clave no abre lo ya publicado, no
+      cifra nada (un error de tipeo dejaba la puerta cerrada para siempre)
+- [ ] **Vos: correr `npm run secretos:cifrar -- --clave "la frase"`** — yo no
+      tengo la frase, así que `public/cifrado/chats.enc` todavía no existe
 
 ### Día 5 · El juego
 - [ ] Vos: aprobar frases
@@ -158,6 +185,20 @@ Hoy ahí solo está el saludo de bienvenida.
 **Entonces, la regla:** lo que te importaría que leyera un desconocido **no puede
 vivir en `src/content/`**. Va cifrado. Decime qué momentos, chats y frases entran
 en esa categoría y los muevo — es lo que falta del día 4.
+
+**Eso ya está resuelto para los chats.** Ninguna conversación real vive en
+`src/content/`. Las seis están en `private/publicable/chats.json`, se cifran con
+`npm run secretos:cifrar` y salen publicadas como `public/cifrado/chats.enc`, que
+sin la frase de la puerta es ruido. En `momentos.ts` solo queda la ficha: cuántos
+mensajes son y de qué app — y eso no le dice nada a nadie.
+
+Como ella ya escribió la frase para entrar, el chat se descifra solo al abrir la
+cápsula: no ve ningún candado extra.
+
+**Lo que sí sigue en claro** son los relatos, los títulos y las notas
+manuscritas. Son tu voz contando la historia, no frases de ella, y esa parte se
+puede leer desde el código fuente. Si alguno te incomoda, decímelo y se va
+también al archivo cifrado.
 
 **El repositorio ya es público.** Todo lo que entre en `src/content/` se puede
 leer desde hoy: los relatos, los momentos, las notas. No pasa nada mientras sea

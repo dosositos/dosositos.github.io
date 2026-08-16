@@ -60,7 +60,56 @@ if (archivos.length === 0) {
 
 mkdirSync(DESTINO, { recursive: true })
 
-async function derivarLlave(clave, sal) {
+/**
+ * Los momentos declaran cuántos mensajes trae su chat, porque la línea
+ * del tiempo lo enseña sin descifrar nada. Ese número está escrito en
+ * dos lados, así que aquí se comprueba que no se hayan separado.
+ */
+function revisarConteosDeChats() {
+  const archivoChats = path.join(ORIGEN, 'chats.json')
+  const archivoMomentos = path.join(RAIZ, 'src', 'content', 'momentos.ts')
+  if (!existsSync(archivoChats) || !existsSync(archivoMomentos)) return
+
+  const chats = JSON.parse(readFileSync(archivoChats, 'utf8'))
+  const fuente = readFileSync(archivoMomentos, 'utf8')
+
+  const declarados = new Map()
+  for (const bloque of fuente.matchAll(/id: '([a-z0-9-]+)'[\s\S]*?(?=id: '|$)/g)) {
+    const conteo = bloque[0].match(/chat: \{ mensajes: (\d+)/)
+    if (conteo) declarados.set(bloque[1], Number(conteo[1]))
+  }
+
+  const quejas = []
+  for (const [id, mensajes] of Object.entries(chats)) {
+    if (id.startsWith('_')) continue
+    if (!declarados.has(id)) {
+      quejas.push(`· "${id}" está en chats.json pero ningún momento lo pide`)
+    } else if (declarados.get(id) !== mensajes.length) {
+      quejas.push(
+        `· "${id}": momentos.ts dice ${declarados.get(id)} mensajes, chats.json trae ${mensajes.length}`,
+      )
+    }
+  }
+  for (const id of declarados.keys()) {
+    if (!(id in chats)) quejas.push(`· "${id}" declara chat pero no está en chats.json`)
+  }
+
+  if (quejas.length > 0) {
+    console.error(`
+  ✗ Los chats y los momentos no cuadran:
+
+${quejas.map((q) => `    ${q}`).join('\n')}
+
+    Arreglá el número en src/content/momentos.ts (campo "mensajes")
+    y volvé a correr. No cifré nada.
+    `)
+    process.exit(1)
+  }
+}
+
+revisarConteosDeChats()
+
+async function derivarLlave(clave, sal, usos = ['encrypt']) {
   const material = await crypto.subtle.importKey(
     'raw',
     new TextEncoder().encode(clave),
@@ -73,11 +122,52 @@ async function derivarLlave(clave, sal) {
     material,
     { name: 'AES-GCM', length: 256 },
     false,
-    ['encrypt'],
+    usos,
   )
 }
 
 const b64 = (buf) => Buffer.from(buf).toString('base64')
+const deB64 = (s) => new Uint8Array(Buffer.from(s, 'base64'))
+
+/**
+ * El seguro contra el error de tipeo.
+ *
+ * Si ya hay contenido cifrado publicado, la clave nueva tiene que abrirlo.
+ * Si no abre es que te equivocaste al escribirla — y si dejáramos que
+ * siguiera, volvería a cifrar todo con la clave equivocada y la puerta
+ * dejaría de abrirse con la frase de siempre, sin que nadie se entere
+ * hasta que ella lo intente.
+ *
+ * Para cambiar la frase a propósito:  npm run secretos:cifrar -- --clave "..." --nueva-clave
+ */
+async function comprobarLaClaveDeSiempre() {
+  const testigo = path.join(DESTINO, 'saludo.enc')
+  if (args.includes('--nueva-clave') || !existsSync(testigo)) return
+
+  const sobre = JSON.parse(readFileSync(testigo, 'utf8'))
+  const llave = await derivarLlave(clave, deB64(sobre.sal), ['decrypt'])
+
+  try {
+    await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: deB64(sobre.iv) },
+      llave,
+      deB64(sobre.datos),
+    )
+  } catch {
+    console.error(`
+  ✗ Esa clave no abre lo que ya está publicado.
+
+    Casi siempre es un error de tipeo. No cifré nada: si hubiera seguido,
+    la puerta habría dejado de abrirse con la frase de siempre.
+
+    Si de verdad querés cambiar la frase, agregá  --nueva-clave
+    (y acordate de que hay que volver a cifrar TODO con la nueva).
+    `)
+    process.exit(1)
+  }
+}
+
+await comprobarLaClaveDeSiempre()
 
 for (const archivo of archivos) {
   const contenido = readFileSync(path.join(ORIGEN, archivo), 'utf8')

@@ -5,6 +5,7 @@ import { Petalos } from '@/componentes/Petalos'
 import { InterruptorTema, ProveedorTema } from '@/componentes/ProveedorTema'
 import { ScrollAlInicio } from '@/componentes/ScrollAlInicio'
 import { Estadisticas } from '@/paginas/Estadisticas'
+import { LineaDelTiempo } from '@/paginas/LineaDelTiempo'
 import { Momento } from '@/paginas/Momento'
 import { Playlist } from '@/paginas/Playlist'
 import { Portada } from '@/paginas/Portada'
@@ -53,10 +54,7 @@ function Marco() {
       <main className="relative">
         <Routes>
           <Route path="/" element={<Portada />} />
-          <Route
-            path="/linea-del-tiempo"
-            element={<EnConstruccion titulo="nuestra historia" nota="aquí va la línea del tiempo — día 3 del plan" />}
-          />
+          <Route path="/linea-del-tiempo" element={<LineaDelTiempo />} />
           <Route path="/momento/:id" element={<Momento />} />
           <Route
             path="/juego"
