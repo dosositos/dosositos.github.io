@@ -26,6 +26,15 @@ llave; en `src/content/momentos.ts` solo queda la ficha (`chat: { mensajes, fuen
 y `ChatCifrado` las descifra en el teléfono. Lo que sí va en claro son los
 relatos y las notas: son la voz de Armando contando, no citas de ella.
 
+**El cifrado corre solo.** Un hook de `PostToolUse` (ver `.claude/settings.json`)
+ejecuta `scripts/hook-cifrar.mjs` después de cada edición dentro de
+`private/publicable/`, y eso vuelve a cifrar. Al tocar ese contenido, incluí
+`public/cifrado/` en el mismo commit. Si nada cambió no se cifra de nuevo: cada
+pasada usaría sal e IV nuevos y el `.enc` saldría distinto sin motivo.
+
+La frase sale de `.env` (`CLAVE_DOSOSITOS`), que git ignora. **Nunca la escribas
+en un archivo que se suba, ni la repitas en la conversación.**
+
 **Separación contenido / código.** Armando toca `src/content/*` y nada más.
 Esos archivos son datos con comentarios explicativos, sin lógica. Si algo
 necesita que él edite código de verdad, está mal diseñado.
@@ -63,7 +72,8 @@ npm run chat:instagram   # private/instagram_export.json → datos utilizables
 npm run chat:dia -- 2024-08-25   # la conversación de un día (las dos fuentes)
 npm run chat:frases      # genera candidatas para el juego
 npm run fotos:optimizar  # fotos-originales/ → public/media/ en AVIF
-npm run secretos:cifrar  # private/publicable/ → public/cifrado/
+npm run secretos:cifrar  # private/publicable/ → public/cifrado/ (corre solo por hook)
+npm run revisar          # ¿está todo cifrado y al día? (también antes de build)
 ```
 
 ## Estructura

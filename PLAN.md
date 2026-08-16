@@ -71,22 +71,34 @@
 
 Ordenado por lo que más nos atrasa si no llega:
 
-0. **Cifrar los chats — un comando, y hasta que no corra las conversaciones no
-   se ven en la web.** La frase no está en ningún archivo del proyecto ni la
-   tengo yo, así que este paso es tuyo y solo tuyo:
+0. **Poner la frase en `.env`. Una vez, y no volvés a tocar el tema.**
 
-   ```bash
-   npm run secretos:cifrar -- --clave "la frase de siempre"
+   Creá `C:\Carpeta vacia\.env` con una sola línea:
+
+   ```
+   CLAVE_DOSOSITOS=la frase de siempre
    ```
 
-   Sale `public/cifrado/chats.enc`, que sí se sube. Hay que volver a correrlo
-   cada vez que cambie `private/publicable/chats.json`. Si te equivocás al
-   escribir la frase, el script se planta y no toca nada.
+   `.gitignore` ya excluye `.env`, así que no llega a GitHub. A partir de ahí
+   el cifrado corre solo: cada vez que yo toque `private/publicable/`, un hook
+   vuelve a cifrar sin que ninguno de los dos se acuerde de hacerlo.
 
-   Ya no hace falta que te acuerdes: `npm run build` se cae si falta el
-   archivo cifrado o si se quedó atrás del contenido, y con eso GitHub
-   Actions no publica. Antes compilaba igual y la web salía sin un solo
-   chat, en silencio — que es exactamente lo que pasó el 15 de agosto.
+   La primera vez hay que arrancarlo a mano, porque el hook solo reacciona a
+   cambios:
+
+   ```bash
+   npm run secretos:cifrar
+   ```
+
+   Y `npm run build` se cae si falta el archivo cifrado o si se quedó atrás
+   del contenido, con lo que GitHub Actions no publica. Antes compilaba igual
+   y la web salía sin un solo chat, en silencio — que es exactamente lo que
+   pasó el 15 de agosto.
+
+   **La contrapartida, para que la tengas presente:** la frase deja de vivir
+   solo en la cabeza de ustedes dos y pasa a estar escrita en tu computadora.
+   Contra un desconocido con el enlace protege igual. Contra alguien que tenga
+   acceso a tu máquina, o contra un respaldo de la carpeta del proyecto, ya no.
 
 1. **La lista de momentos** → `private/plantilla-momentos.md`. Van 5 (hasta el
    2 de septiembre de 2024); faltan del 24 de noviembre en adelante. Es lo que
@@ -141,8 +153,11 @@ Ordenado por lo que más nos atrasa si no llega:
 - [x] Yo: los chats movidos a `private/publicable/chats.json` y cifrados
 - [x] Yo: seguro en `secretos:cifrar` — si la clave no abre lo ya publicado, no
       cifra nada (un error de tipeo dejaba la puerta cerrada para siempre)
-- [ ] **Vos: correr `npm run secretos:cifrar -- --clave "la frase"`** — yo no
-      tengo la frase, así que `public/cifrado/chats.enc` todavía no existe
+- [x] Yo: el cifrado corre solo con un hook al tocar `private/publicable/`,
+      y no rehace nada si el contenido no cambió
+- [ ] **Vos: poner `CLAVE_DOSOSITOS` en `.env` y correr `npm run secretos:cifrar`
+      una vez.** Sin eso `public/cifrado/chats.enc` no existe y la web se
+      publica sin conversaciones
 
 ### Día 5 · El juego
 - [ ] Vos: aprobar frases

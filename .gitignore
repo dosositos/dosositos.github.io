@@ -11,10 +11,15 @@
 /fotos-originales/
 
 # Claves y variables de entorno
+# En .env vive CLAVE_DOSOSITOS, la frase que abre la puerta. Que esta
+# línea nunca se toque: si .env llega a GitHub, el cifrado no sirve de nada.
 .env
 .env.local
 .env.*.local
 *.key
+
+# Ajustes personales de Claude Code (el settings.json compartido sí se sube)
+.claude/settings.local.json
 
 # ─────────────────────────────────────────────────────────────
 #  Estándar
