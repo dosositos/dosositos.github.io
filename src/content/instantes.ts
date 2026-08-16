@@ -33,6 +33,7 @@ export const instantes: Instante[] = [
       'Llegó el hoodie de los Bucks, una semana tarde por culpa de un huracán. Me cumpliste un sueño que ni sabías que tenía.',
     flor: 'girasol',
     fotos: [
+      { src: 'fotox22', alt: 'Yo con el hoodie de los Bucks recién puesto' },
       { src: 'fotox2', alt: 'Ese jueves, en el parqueo de la universidad' },
       { src: 'fotox3', alt: 'Ese jueves, en el parqueo de la universidad' },
     ],

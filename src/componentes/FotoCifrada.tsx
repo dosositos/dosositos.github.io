@@ -18,10 +18,19 @@ export function FotoCifrada({
   foto,
   cual = 'grande',
   className = '',
+  proporcion: proporcionPedida,
+  ajuste = 'cover',
 }: {
   foto: Foto
   cual?: 'grande' | 'mini'
   className?: string
+  /**
+   * Forma del hueco: '1 / 1' para la ventana de una polaroid. Sin esto
+   * se usa la de la foto, que es lo que quiere el visor a pantalla
+   * completa pero no el álbum, donde todas tienen que medir igual.
+   */
+  proporcion?: string
+  ajuste?: 'cover' | 'contain'
 }) {
   const [url, setUrl] = useState<string | null>(null)
   const [ficha, setFicha] = useState<FichaMedio | null>(null)
@@ -55,7 +64,8 @@ export function FotoCifrada({
     }
   }, [foto.src, cual])
 
-  const proporcion = ficha?.ancho && ficha?.alto ? `${ficha.ancho} / ${ficha.alto}` : '3 / 4'
+  const proporcion =
+    proporcionPedida ?? (ficha?.ancho && ficha?.alto ? `${ficha.ancho} / ${ficha.alto}` : '3 / 4')
 
   if (fallo) {
     if (!import.meta.env.DEV) return null
@@ -92,7 +102,8 @@ export function FotoCifrada({
       style={{
         aspectRatio: proporcion,
         backgroundColor: ficha?.color ?? 'var(--t-borde)',
-        objectFit: 'cover',
+        objectFit: ajuste,
+        objectPosition: ajuste === 'cover' ? (foto.encuadre ?? 'center') : undefined,
       }}
     />
   )

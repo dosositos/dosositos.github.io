@@ -46,6 +46,8 @@
 - [x] Celebraciones automáticas con texto propio (aniversarios, mesiversarios, cumpleaños)
 - [x] "Quién ama más hoy", que alterna solo y sin guardar nada
 - [x] La historia del oso blanco, con el scroll marcando el ritmo
+      *(el 16 de agosto salió de la portada: no terminaba de quedar ahí.
+      El componente y su texto siguen enteros, falta decidir dónde va)*
 - [x] El ranking del drama (los emojis) con su remate
 - [x] Playlist de Spotify incrustada, con espacio para el porqué de cada canción
 
@@ -204,6 +206,8 @@ reproduciendo mientras baja, hay que bajarlo entero y armarlo en memoria. Con
 - [ ] Yo: easter eggs (escribir "osito", código Konami, clics secretos)
 - [ ] Yo: Ovi, Boo y Nico escondidos por las esquinas
 - [ ] Yo: el oso blanco como guiño recurrente
+- [ ] **Los dos: decidir dónde y cómo va la historia del oso blanco.**
+      Está fuera de la portada desde el 16 de agosto, esperando lugar
 
 ### Día 8 · Redondear
 - [ ] Yo: instalable en el teléfono (PWA) con ícono propio

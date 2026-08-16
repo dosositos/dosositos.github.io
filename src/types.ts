@@ -29,6 +29,12 @@ export interface Foto {
   pie?: string
   /** Inclinación en grados para el efecto polaroid. Por defecto, aleatoria estable. */
   giro?: number
+  /**
+   * Qué parte de la foto se ve dentro del cuadro de la polaroid.
+   * Por defecto el centro; si una foto vertical queda cortada de la
+   * cara, poné 'top' (o '50% 20%', que es CSS object-position).
+   */
+  encuadre?: string
 }
 
 export interface Mensaje {

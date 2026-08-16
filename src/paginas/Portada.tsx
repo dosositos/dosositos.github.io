@@ -1,7 +1,8 @@
 import { motion } from 'motion/react'
 import { Link } from 'react-router-dom'
 import { Contador } from '@/componentes/Contador'
-import { OrigenDelApodo } from '@/componentes/OrigenDelApodo'
+// El oso blanco está guardado por ahora, ver más abajo.
+// import { OrigenDelApodo } from '@/componentes/OrigenDelApodo'
 import { QuienAmaMas } from '@/componentes/QuienAmaMas'
 import { FECHAS, OSITA, OSITO } from '@/content/config'
 import { celebracionDeHoy } from '@/lib/celebraciones'
@@ -67,8 +68,12 @@ export function Portada() {
         </motion.p>
       </header>
 
-      {/* ── El oso blanco: de dónde viene el apodo ───────────── */}
-      <OrigenDelApodo />
+      {/* ── El oso blanco: de dónde viene el apodo ─────────────
+          Guardado, no borrado. En la portada no terminaba de quedar;
+          queda pendiente decidir cómo se cuenta y dónde va. El
+          componente y su texto (src/content/origen.ts) siguen enteros:
+          para volver a verlo, descomentá la línea de abajo. */}
+      {/* <OrigenDelApodo /> */}
 
       {/* ── Los dos contadores ───────────────────────────────── */}
       <section className="flex w-full flex-col items-center gap-8 md:flex-row md:items-stretch md:justify-center">

@@ -7,13 +7,23 @@ import type { Foto } from '@/types'
  * ╔══════════════════════════════════════════════════════════════╗
  * ║  LAS POLAROIDS                                               ║
  * ║                                                              ║
- * ║  Fotos pegadas al álbum: papel blanco, un poco torcidas, con ║
- * ║  su tira de cinta adhesiva encima. Al tocarlas se abren a    ║
- * ║  pantalla completa y ahí se pasan deslizando.                ║
+ * ║  Dos formas de pegar fotos en el álbum:                      ║
+ * ║                                                              ║
+ * ║  · «columna» — dentro de un momento. Una debajo de otra,     ║
+ * ║    todas del mismo tamaño, porque una polaroid de verdad     ║
+ * ║    mide siempre igual: la foto se encuadra dentro del marco  ║
+ * ║    en vez de que el marco se estire para caberla.            ║
+ * ║                                                              ║
+ * ║  · «pila» — las fotos sin momento exacto. Se ve la de        ║
+ * ║    encima y las otras asomando debajo; ocupa el lugar de     ║
+ * ║    una sola. Se tocan para abrirlas y se pasan deslizando.   ║
  * ║                                                              ║
  * ║  Ninguna viaja en claro: todas salen de FotoCifrada.         ║
  * ╚══════════════════════════════════════════════════════════════╝
  */
+
+/** La ventana de una polaroid es casi cuadrada, con el pie más ancho. */
+const VENTANA = '1 / 1'
 
 /**
  * El giro de cada polaroid. Sale de la posición y del nombre del
@@ -26,15 +36,36 @@ function giroDe(foto: Foto, i: number) {
   return ((semilla % 9) - 4) * 0.7 // entre -2.8° y +2.8°
 }
 
-function Polaroid({
+/** El marco: papel crema, ventana cuadrada y el pie ancho de abajo. */
+function Marco({
   foto,
-  giro,
-  alTocar,
+  children,
+  className = '',
 }: {
   foto: Foto
-  giro: number
-  alTocar: () => void
+  children?: React.ReactNode
+  className?: string
 }) {
+  return (
+    <div
+      className={`cinta rounded-sm bg-[#f4efe6] p-2.5 pb-9 shadow-[0_14px_40px_-16px_rgb(0_0_0/0.85)] ${className}`}
+    >
+      {/* La ventana es siempre cuadrada y la foto se encuadra dentro:
+          una polaroid mide lo que mide, no lo que mida la foto. */}
+      {foto && (
+        <FotoCifrada
+          foto={foto}
+          cual="mini"
+          proporcion={VENTANA}
+          className="block w-full rounded-[1px]"
+        />
+      )}
+      {children}
+    </div>
+  )
+}
+
+function Polaroid({ foto, giro, alTocar }: { foto: Foto; giro: number; alTocar: () => void }) {
   const sinMovimiento = useReducedMotion()
 
   return (
@@ -46,23 +77,68 @@ function Polaroid({
       whileHover={sinMovimiento ? undefined : { rotate: 0, y: -6, scale: 1.02 }}
       viewport={{ once: true, margin: '-40px' }}
       transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-      className="cinta group block w-full cursor-zoom-in rounded-sm bg-[#f4efe6] p-2.5 pb-9 shadow-[0_14px_40px_-16px_rgb(0_0_0/0.85)]"
+      className="group block w-full cursor-zoom-in"
       aria-label={`Ampliar: ${foto.alt}`}
     >
-      {/* La tira de cinta adhesiva */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute -top-2.5 left-1/2 h-5 w-16 -translate-x-1/2 -rotate-2 rounded-[1px] bg-white/25 backdrop-blur-[1px]"
-        style={{ boxShadow: '0 1px 3px rgb(0 0 0 / 0.25)' }}
-      />
+      <Marco foto={foto} className="relative">
+        {/* La tira de cinta adhesiva */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -top-2.5 left-1/2 h-5 w-16 -translate-x-1/2 -rotate-2 rounded-[1px] bg-white/25 backdrop-blur-[1px]"
+          style={{ boxShadow: '0 1px 3px rgb(0 0 0 / 0.25)' }}
+        />
 
-      <FotoCifrada foto={foto} cual="mini" className="block w-full rounded-[1px]" />
+        {foto.pie && (
+          <span className="fuente-mano mt-2 block px-1 text-center text-[0.95rem] leading-tight text-[#4a4038]">
+            {foto.pie}
+          </span>
+        )}
+      </Marco>
+    </motion.button>
+  )
+}
 
-      {foto.pie && (
+/** La pila: la de encima y las otras asomando debajo. */
+function Pila({ fotos, alTocar }: { fotos: Foto[]; alTocar: () => void }) {
+  const sinMovimiento = useReducedMotion()
+  const atras = Math.min(fotos.length - 1, 2) // más de dos asomando no se nota
+
+  return (
+    <motion.button
+      type="button"
+      onClick={alTocar}
+      initial={sinMovimiento ? false : { opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      whileHover={sinMovimiento ? undefined : { y: -4 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+      className="group relative block w-full cursor-zoom-in"
+      aria-label={
+        fotos.length > 1 ? `Ver las ${fotos.length} fotos` : `Ampliar: ${fotos[0].alt}`
+      }
+    >
+      {/* Las de abajo: papel asomando, girado a lados distintos. No
+          llevan foto — se ve solo el borde y no cuestan una descarga. */}
+      {Array.from({ length: atras }, (_, i) => (
+        <div
+          key={i}
+          aria-hidden
+          className="absolute inset-0 rounded-sm bg-[#e8e1d5] shadow-[0_10px_30px_-18px_rgb(0_0_0/0.9)]"
+          style={{
+            transform: `rotate(${(i % 2 === 0 ? 1 : -1) * (3 + i * 2)}deg)`,
+            opacity: 0.9 - i * 0.25,
+          }}
+        />
+      ))}
+
+      <Marco
+        foto={fotos[0]}
+        className="relative z-10 -rotate-1 transition-transform group-hover:rotate-0"
+      >
         <span className="fuente-mano mt-2 block px-1 text-center text-[0.95rem] leading-tight text-[#4a4038]">
-          {foto.pie}
+          {fotos.length > 1 ? `${fotos.length} fotos` : (fotos[0].pie ?? 'tocá para verla')}
         </span>
-      )}
+      </Marco>
     </motion.button>
   )
 }
@@ -123,9 +199,11 @@ function Visor({
         onClick={(e) => e.stopPropagation()}
         className="max-h-full w-full max-w-2xl"
       >
+        {/* Acá sí la foto entera, sin recortar: es el momento de verla. */}
         <FotoCifrada
           foto={foto}
-          className="mx-auto max-h-[78dvh] w-auto max-w-full rounded-sm object-contain"
+          ajuste="contain"
+          className="mx-auto max-h-[78dvh] w-auto max-w-full rounded-sm"
         />
 
         <p className="fuente-mano mt-4 text-center text-lg text-white/80">
@@ -151,7 +229,13 @@ function Visor({
   )
 }
 
-export function Galeria({ fotos }: { fotos: Foto[] }) {
+export function Galeria({
+  fotos,
+  formato = 'columna',
+}: {
+  fotos: Foto[]
+  formato?: 'columna' | 'pila'
+}) {
   const [abierta, setAbierta] = useState<number | null>(null)
 
   const mover = useCallback(
@@ -167,15 +251,22 @@ export function Galeria({ fotos }: { fotos: Foto[] }) {
 
   return (
     <>
-      <div
-        className={`mx-auto grid gap-5 ${
-          fotos.length === 1 ? 'max-w-xs grid-cols-1' : 'grid-cols-2 sm:gap-7'
-        }`}
-      >
-        {fotos.map((foto, i) => (
-          <Polaroid key={foto.src} foto={foto} giro={giroDe(foto, i)} alTocar={() => setAbierta(i)} />
-        ))}
-      </div>
+      {formato === 'pila' ? (
+        <Pila fotos={fotos} alTocar={() => setAbierta(0)} />
+      ) : (
+        // Una sola columna, centrada y con ancho de polaroid: en el
+        // teléfono dos por fila quedaban diminutas.
+        <div className="mx-auto grid max-w-[19rem] grid-cols-1 gap-8">
+          {fotos.map((foto, i) => (
+            <Polaroid
+              key={foto.src}
+              foto={foto}
+              giro={giroDe(foto, i)}
+              alTocar={() => setAbierta(i)}
+            />
+          ))}
+        </div>
+      )}
 
       <AnimatePresence>
         {abierta !== null && (

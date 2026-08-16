@@ -199,10 +199,10 @@ function Suelta({ instante, aLaIzquierda }: { instante: Instante; aLaIzquierda: 
             </p>
 
             {instante.fotos && instante.fotos.length > 0 && (
-              <div
-                className={`mt-3 max-w-[15rem] ${aLaIzquierda ? 'sm:ms-auto' : ''}`}
-              >
-                <Galeria fotos={instante.fotos} />
+              // Apiladas: una foto sin momento no debería ocupar más
+              // espacio en la línea que el momento que tiene al lado.
+              <div className={`mt-4 max-w-[13rem] ${aLaIzquierda ? 'sm:ms-auto' : ''}`}>
+                <Galeria fotos={instante.fotos} formato="pila" />
               </div>
             )}
           </motion.div>
