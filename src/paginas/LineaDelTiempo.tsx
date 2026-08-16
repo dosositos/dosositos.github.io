@@ -1,10 +1,12 @@
 import { Fragment } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { Link } from 'react-router-dom'
+import { Galeria } from '@/componentes/Galeria'
 import { momentos } from '@/content/momentos'
+import { instantes } from '@/content/instantes'
 import { FLORES } from '@/lib/flores'
 import { fechaLarga, MESES_ES } from '@/lib/tiempo'
-import type { Momento } from '@/types'
+import type { Instante, Momento } from '@/types'
 
 /**
  * ╔══════════════════════════════════════════════════════════════╗
@@ -20,10 +22,19 @@ import type { Momento } from '@/types'
  * ╚══════════════════════════════════════════════════════════════╝
  */
 
-/** Ordenados por fecha, sin tocar el array original. */
-const enOrden = [...momentos].sort((a, b) => (a.fecha < b.fecha ? -1 : 1))
+/**
+ * Momentos y fotos sueltas viven en archivos distintos porque se
+ * escriben distinto, pero en la línea van mezclados por fecha: es una
+ * sola historia.
+ */
+type Entrada = { tipo: 'momento'; dato: Momento } | { tipo: 'instante'; dato: Instante }
 
-const anioDe = (m: Momento) => m.fecha.slice(0, 4)
+const enOrden: Entrada[] = [
+  ...momentos.map((dato): Entrada => ({ tipo: 'momento', dato })),
+  ...instantes.map((dato): Entrada => ({ tipo: 'instante', dato })),
+].sort((a, b) => (a.dato.fecha < b.dato.fecha ? -1 : 1))
+
+const anioDe = (e: Entrada) => e.dato.fecha.slice(0, 4)
 
 /** '2024-08-29' → '29 de agosto' (el año ya lo dice el separador). */
 function diaYMes(fecha: string) {
@@ -149,6 +160,78 @@ function Tarjeta({ momento, aLaIzquierda }: { momento: Momento; aLaIzquierda: bo
   )
 }
 
+/**
+ * Una foto sin momento exacto. Deliberadamente más callada que una
+ * tarjeta: sin papel, sin borde, sin "abrir →". Solo la fecha, una
+ * línea a mano y un punto chiquito sobre el tallo.
+ */
+function Suelta({ instante, aLaIzquierda }: { instante: Instante; aLaIzquierda: boolean }) {
+  const sinMovimiento = useReducedMotion()
+  const color = instante.flor ? FLORES[instante.flor].color : 'var(--t-borde)'
+
+  return (
+    <li className="relative list-none">
+      <div
+        className={`flex items-start gap-4 sm:gap-0 ${
+          aLaIzquierda ? 'sm:flex-row' : 'sm:flex-row-reverse'
+        }`}
+      >
+        <div className={`min-w-0 flex-1 ${aLaIzquierda ? 'sm:pr-10 sm:text-right' : 'sm:pl-10'}`}>
+          <motion.div
+            initial={sinMovimiento ? false : { opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="py-1"
+          >
+            <p className="text-[0.62rem] uppercase tracking-[0.22em] text-texto-suave/45">
+              {instante.fechaTexto ?? diaYMes(instante.fecha)}
+              {instante.lugar && (
+                <>
+                  <span className="mx-1.5 opacity-40">·</span>
+                  {instante.lugar}
+                </>
+              )}
+            </p>
+
+            <p className="fuente-mano mt-1 text-lg leading-snug text-texto-suave">
+              {instante.texto}
+            </p>
+
+            {instante.fotos && instante.fotos.length > 0 && (
+              <div
+                className={`mt-3 max-w-[15rem] ${aLaIzquierda ? 'sm:ms-auto' : ''}`}
+              >
+                <Galeria fotos={instante.fotos} />
+              </div>
+            )}
+          </motion.div>
+        </div>
+
+        {/* El punto: la versión callada de la flor */}
+        <div className="order-first flex w-10 shrink-0 justify-center pt-4 sm:order-none sm:w-0 sm:pt-0">
+          <motion.span
+            initial={sinMovimiento ? false : { scale: 0, opacity: 0 }}
+            whileInView={{ scale: 1, opacity: 1 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="block rounded-full sm:absolute sm:left-1/2 sm:top-4 sm:-translate-x-1/2"
+            style={{
+              width: 11,
+              height: 11,
+              backgroundColor: 'var(--t-fondo)',
+              border: `1.5px solid ${color}`,
+            }}
+            aria-hidden
+          />
+        </div>
+
+        <div className="hidden flex-1 sm:block" />
+      </div>
+    </li>
+  )
+}
+
 function SeparadorDeAnio({ anio }: { anio: string }) {
   return (
     // Pegado al tallo: a la izquierda en el teléfono, centrado en pantalla ancha.
@@ -167,9 +250,9 @@ function SeparadorDeAnio({ anio }: { anio: string }) {
 }
 
 export function LineaDelTiempo() {
-  const primero = enOrden[0]
-  const ultimo = enOrden[enOrden.length - 1]
-  const escritos = enOrden.filter((m) => !m.borrador).length
+  const primero = enOrden[0].dato
+  const ultimo = enOrden[enOrden.length - 1].dato
+  const escritos = momentos.filter((m) => !m.borrador).length
 
   return (
     <div className="mx-auto w-full max-w-3xl px-5 pb-24 pt-20">
@@ -209,14 +292,19 @@ export function LineaDelTiempo() {
         />
 
         <ol className="relative space-y-10">
-          {enOrden.map((momento, i) => {
-            const anio = anioDe(momento)
+          {enOrden.map((entrada, i) => {
+            const anio = anioDe(entrada)
             const anioAnterior = i > 0 ? anioDe(enOrden[i - 1]) : null
+            const aLaIzquierda = i % 2 === 1
 
             return (
-              <Fragment key={momento.id}>
+              <Fragment key={entrada.dato.id}>
                 {anio !== anioAnterior && <SeparadorDeAnio anio={anio} />}
-                <Tarjeta momento={momento} aLaIzquierda={i % 2 === 1} />
+                {entrada.tipo === 'momento' ? (
+                  <Tarjeta momento={entrada.dato} aLaIzquierda={aLaIzquierda} />
+                ) : (
+                  <Suelta instante={entrada.dato} aLaIzquierda={aLaIzquierda} />
+                )}
               </Fragment>
             )
           })}
@@ -235,7 +323,7 @@ export function LineaDelTiempo() {
       </motion.p>
 
       <p className="mt-3 text-center text-[0.7rem] uppercase tracking-[0.2em] text-texto-suave/40">
-        el último: {diaYMes(ultimo.fecha)} de {anioDe(ultimo)}
+        el último: {diaYMes(ultimo.fecha)} de {ultimo.fecha.slice(0, 4)}
       </p>
     </div>
   )

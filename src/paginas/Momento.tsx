@@ -1,6 +1,7 @@
 import { motion } from 'motion/react'
 import { Link, useParams } from 'react-router-dom'
 import { ChatCifrado } from '@/componentes/ChatCifrado'
+import { Galeria } from '@/componentes/Galeria'
 import { momentos } from '@/content/momentos'
 import { FLORES } from '@/lib/flores'
 import { fechaLarga } from '@/lib/tiempo'
@@ -88,6 +89,12 @@ export function Momento() {
         <p className="fuente-mano mx-auto mb-12 max-w-md rounded-xl border border-dashed border-borde px-6 py-5 text-center text-lg text-texto-suave">
           Este todavía me lo debo. Está apuntado con su fecha para no perderlo.
         </p>
+      )}
+
+      {momento.fotos && momento.fotos.length > 0 && (
+        <div className="mb-12">
+          <Galeria fotos={momento.fotos} />
+        </div>
       )}
 
       {momento.chat && (

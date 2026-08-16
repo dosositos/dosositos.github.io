@@ -26,6 +26,20 @@ llave; en `src/content/momentos.ts` solo queda la ficha (`chat: { mensajes, fuen
 y `ChatCifrado` las descifra en el teléfono. Lo que sí va en claro son los
 relatos y las notas: son la voz de Armando contando, no citas de ella.
 
+**En claro no se nombra a nadie más que a ellos dos.** Los relatos, notas, pies
+de foto y `alt` van sin cifrar, así que ahí los terceros se mencionan por
+parentesco: «mi hermanita», «su amiga», «un amigo», «mi primo». Nunca el nombre
+de las hermanas ni de los amigos. Dentro de los chats cifrados sí aparecen tal
+cual salieron del export, y ahí se quedan.
+
+**Las fotos también van cifradas, todas.** `fotos-originales/` (crudo, ignorado)
+→ `npm run fotos:optimizar` → `private/media/` (AVIF, ignorado) → cifrado →
+`public/cifrado/media/`, que es lo único que se sube. Nunca escribas fotos en
+`public/media/`: eso las publica en claro y `npm run revisar` se cae si aparece
+algo ahí. Los nombres publicados son opacos, el índice va cifrado, y en
+`src/content/` las fotos se referencian por su nombre lógico sin extensión
+(`{ src: 'momento9-1', alt: '…' }`). En el navegador las abre `<FotoCifrada>`.
+
 **El cifrado corre solo.** Un hook de `PostToolUse` (ver `.claude/settings.json`)
 ejecuta `scripts/hook-cifrar.mjs` después de cada edición dentro de
 `private/publicable/`, y eso vuelve a cifrar. Al tocar ese contenido, incluí
@@ -71,7 +85,8 @@ npm run chat:parsear     # private/chat.txt → datos utilizables
 npm run chat:instagram   # private/instagram_export.json → datos utilizables
 npm run chat:dia -- 2024-08-25   # la conversación de un día (las dos fuentes)
 npm run chat:frases      # genera candidatas para el juego
-npm run fotos:optimizar  # fotos-originales/ → public/media/ en AVIF
+npm run fotos:optimizar  # fotos-originales/ → private/media/ en AVIF, y las cifra
+npm run fotos:cifrar     # solo el cifrado (private/media/ → public/cifrado/media/)
 npm run secretos:cifrar  # private/publicable/ → public/cifrado/ (corre solo por hook)
 npm run revisar          # ¿está todo cifrado y al día? (también antes de build)
 ```
@@ -85,6 +100,5 @@ src/paginas/
 src/lib/        ← tiempo, celebraciones, cripto
 scripts/        ← herramientas de línea de comandos
 private/        ← IGNORADO POR GIT: material crudo
-public/media/   ← fotos ya optimizadas
-public/cifrado/ ← contenido privado cifrado
+public/cifrado/ ← lo único que se publica: chats y fotos, cifrados
 ```

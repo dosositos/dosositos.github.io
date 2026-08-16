@@ -1,0 +1,5 @@
+# Las fotos cifradas son binarias. Si git les tocara los saltos de línea
+# (que en Windows es lo normal para archivos de texto), el descifrado
+# fallaría y no nos enteraríamos hasta abrirlas en el teléfono.
+*.bin binary
+*.enc binary

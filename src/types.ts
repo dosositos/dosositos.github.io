@@ -97,6 +97,28 @@ export interface Momento {
   icono?: string
 }
 
+/**
+ * Fotos sin momento exacto.
+ *
+ * Un día del que quedaron fotos pero no una historia que contar: no
+ * merece una cápsula entera, y tampoco se puede perder. Sale en la
+ * línea del tiempo como un punto pequeño con una sola línea escrita,
+ * entre momento y momento, sin enlace a ninguna parte.
+ */
+export interface Instante {
+  id: string
+  /** ISO 'YYYY-MM-DD'. Se intercala con los momentos por esta fecha. */
+  fecha: string
+  /** Sustituye a la fecha en pantalla, igual que en los momentos. */
+  fechaTexto?: string
+  lugar?: string
+  /** Una línea, manuscrita. Si necesita dos párrafos, es un momento. */
+  texto: string
+  fotos?: Foto[]
+  /** Le da color al punto. Sin flor, el punto queda del gris del tallo. */
+  flor?: Flor
+}
+
 export interface EntradaDiccionario {
   palabra: string
   /** Cómo se pronuncia, en broma: 'o·si·ti·ta' */

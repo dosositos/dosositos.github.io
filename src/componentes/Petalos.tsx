@@ -28,7 +28,9 @@ export function Petalos({ cantidad = 14 }: { cantidad?: number }) {
       tamanio: 7 + aleatorio() * 9,
       deriva: (aleatorio() - 0.5) * 220,
       color: FLORES[Math.floor(aleatorio() * FLORES.length)],
-      opacidad: 0.25 + aleatorio() * 0.4,
+      // Bajos a propósito: los pétalos son el fondo, no el contenido. Con
+      // más opacidad se llevaban la atención de las fotos y los relatos.
+      opacidad: 0.12 + aleatorio() * 0.16,
     }))
   }, [cantidad])
 

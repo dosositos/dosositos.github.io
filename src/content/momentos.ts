@@ -21,6 +21,10 @@ import type { Momento } from '@/types'
  * ║  frase de la puerta. Abajo solo queda la ficha: cuántos       ║
  * ║  mensajes son y de qué app.                                   ║
  * ║                                                               ║
+ * ║  Por lo mismo, acá no va el nombre de nadie más que el de     ║
+ * ║  ustedes dos: las hermanas y los amigos se mencionan por       ║
+ * ║  parentesco («mi hermanita», «su amiga»).                      ║
+ * ║                                                               ║
  * ║  Para acordarte de qué se dijeron cualquier día:              ║
  * ║      npm run chat:dia -- 2024-08-30                           ║
  * ╚══════════════════════════════════════════════════════════════╝
@@ -125,6 +129,133 @@ export const momentos: Momento[] = [
     nota: {
       autor: 'osito',
       texto: 'Vos dijiste que era una anécdota más. Mirá dónde quedó guardada.',
+    },
+  },
+
+  {
+    id: 'primera-foto',
+    fecha: '2024-09-14',
+    titulo: 'Tu primer enojo y nuestra primera foto',
+    lugar: 'Casual, The Reef',
+    resumen:
+      'Me quedé sin cómo llegar a la cena y me respondiste "Aaa xd". Esa misma noche nos tomamos la primera foto.',
+    relato:
+      'Para entonces ya llevábamos varios jueves seguidos viendo películas en la camioneta, parqueados en la UAM, con hamburguesas del drive thru y lo que se nos antojara. Ese sábado era el cumpleaños de un amigo suyo: compramos un vape entre los dos para regalárselo, la cena primero y después la disco. A la cena no llegué. Yo dependía de mi amigo, que en ese momento salía con la amiga de ella, y a última hora no pudo ir; mi mamá se había llevado la camioneta porque yo ya no la necesitaba. Le avisé y me respondió con dos letras que me tuvieron sobrepensando toda la tarde. Después nos vimos, y la pasé tan bien que se me olvidó por completo que había existido el problema. De esa noche salió nuestra primera foto juntos.',
+    flor: 'gerbera',
+    destacado: true,
+    icono: '📸',
+    fotos: [
+      {
+        src: 'momento6-1',
+        alt: 'Vos, en una de nuestras noches de jueves',
+        pie: 'un jueves cualquiera',
+      },
+      { src: 'momento6-2', alt: 'Los dos, la primera foto juntos', pie: 'la primera' },
+      { src: 'momento6-3', alt: 'Los dos, esa misma noche' },
+    ],
+    chat: { mensajes: 20, fuente: 'whatsapp', titulo: 'las dos letras' },
+    nota: {
+      autor: 'osito',
+      texto:
+        'Los dos introvertidos, en una disco, dejándonos tomar una foto delante de todo el mundo. Eso fue lo grande.',
+    },
+  },
+  {
+    id: 'pizza-de-chimichurri',
+    fecha: '2024-09-28',
+    titulo: 'La pizza de chorizos y chimichurri',
+    lugar: 'Rock Munchies',
+    resumen:
+      'Lugar elegido por vos, con reseñas de TikTok y calificación de 10/10. Y una camioneta con la puerta trabada.',
+    relato:
+      'El lugar lo escogiste vos: te acordabas de haber ido hacía años y traías las reseñas revisadas. Yo llegué con un problema encima — mi mamá había chocado la camioneta la noche anterior y la puerta del copiloto se trababa —, así que te avisé que ibas a tener que subirte por atrás y pasarte adelante. Al final no hizo falta: entraste por tu puerta como siempre, solo que me tocaba abrírtela yo, con maña y con cuidado, cada vez. La pizza llevaba chorizos y chimichurri por encima y estaba deliciosa; el lugar tenía juegos de mesa y nos quedamos jugando UNO. Visto de afuera no parece gran cosa: comer pizza y jugar cartas. Y sin embargo es de las salidas que mejor recuerdo.',
+    flor: 'cipres',
+    icono: '🍕',
+    fotos: [
+      {
+        src: 'momento7',
+        alt: 'La pizza de chorizos con chimichurri por encima',
+        pie: 'la famosa 10/10',
+      },
+    ],
+    chat: { mensajes: 18, fuente: 'whatsapp' },
+    nota: {
+      autor: 'osito',
+      texto:
+        'Ese mes te abrí la puerta todas las veces. Culpa del golpe, pero me gustó la costumbre — y quizás por eso todavía te la abro.',
+    },
+  },
+  {
+    id: 'cumple-veinte',
+    fecha: '2024-10-08',
+    titulo: 'Mi primer cumpleaños con vos',
+    lugar: 'Chiless',
+    resumen:
+      'Lo planeaste durante semanas. Fui al baño, volví, y la mesa tenía cosas que antes no estaban.',
+    relato:
+      'Yo no celebro mucho mis cumpleaños, así que no esperaba nada. Vos llevabas semanas armándolo. Querías darme ese mismo día un hoodie de los Bucks, pero tu tarjeta no hacía compras internacionales; pasaste días intentándolo hasta que le pediste el favor a un amigo, y cuando por fin salió el pedido había un huracán en Miami y se atrasó una semana. Aun así, ese día pediste un pastelito de Eladio y unos minicupcakes, y en el restaurante te ofrecieron esconderlo todo hasta que termináramos de comer. Fui al baño; cuando volví, la mesa estaba llena y yo tardé varios segundos en entender qué había pasado. Así sos: detallista de una manera que a mí todavía me desarma. Desde ese cumpleaños los quiero todos con vos.',
+    flor: 'girasol',
+    destacado: true,
+    icono: '🎂',
+    fotos: [
+      { src: 'momento8-1', alt: 'El pastelito de Eladio', pie: 'el pastel de Eladio' },
+      { src: 'momento8-2', alt: 'Los minicupcakes que pediste', pie: 'y los minicupcakes' },
+    ],
+    chat: { mensajes: 19, fuente: 'whatsapp', titulo: 'desde la medianoche' },
+    nota: {
+      autor: 'osito',
+      texto: 'El hoodie llegó tarde por un huracán. El detalle llegó puntual, a las 12:00 en punto.',
+    },
+  },
+  {
+    id: 'nace-nico',
+    fecha: '2024-10-13',
+    titulo: 'El nacimiento de Nico',
+    lugar: 'Metrocentro',
+    resumen:
+      'Te dije que tenía que pasar comprando el regalo de mi hermana. Era mentira: iba por un peluche rosado.',
+    relato:
+      'Salí de la casa un rato antes con la excusa de comprar el regalo de cumpleaños de mi hermanita. En realidad iba a comprarte un peluche. Lo elegí rosa pastel a propósito: en esa época todo lo tuyo era de ese color — el bolso, el termo, hasta la vibra que me transmitías — y yo te molestaba porque decías que tu color favorito era el rojo vino y no tenías nada de rojo vino. Se llamó Nico, y quedó de nuestro primogénito. Lo compré para que te acompañara mientras dormías, como si yo estuviera ahí.',
+    flor: 'rosa-pastel',
+    destacado: true,
+    icono: '🧸',
+    fotos: [
+      { src: 'momento9-1', alt: 'Nico, recién llegado', pie: 'Nico' },
+      {
+        src: 'momento9-2',
+        alt: 'Nico con el collar de flores de mi hermanita',
+        pie: 'con el collar de mi hermanita',
+      },
+      { src: 'momento9-3', alt: 'Vos con mi hoodie café, abrazando a Nico' },
+    ],
+    chat: { mensajes: 16, fuente: 'whatsapp', titulo: 'la excusa y la sorpresa' },
+    nota: {
+      autor: 'osito',
+      texto: 'Te dije que te iba a volver el cuarto entero rosa. Todavía voy en eso.',
+    },
+  },
+  {
+    id: 'los-videos',
+    fecha: '2024-10-19',
+    titulo: 'El día que te empecé a grabar',
+    lugar: "Carl's Jr",
+    resumen:
+      'Unas hamburguesitas en una mesa de afuera, sin gente cerca. Y una cámara encendida que no te expliqué del todo.',
+    relato:
+      'Hamburguesas ya habíamos comido varias veces, pero siempre en el carro; esa fue la primera vez que nos sentamos en el local, en una mesa de afuera, sin nadie alrededor. Ese día empecé a grabarte. Te dije que era para tener el recuerdo, y era cierto, pero no era todo: en secreto estaba juntando material para armarte una compilación y dártela en tu cumpleaños. Terminaron siendo muchísimos videos. En cada uno hay un pedazo de mí mirándote.',
+    flor: 'margarita',
+    icono: '🎥',
+    fotos: [
+      {
+        src: 'momento10',
+        alt: 'Un pedacito del primer video que te grabé',
+        pie: 'el primero de todos',
+      },
+    ],
+    chat: { mensajes: 18, fuente: 'whatsapp' },
+    nota: {
+      autor: 'osito',
+      texto: 'Me hago payaso solo para verte reír. Eso no ha cambiado ni un día.',
     },
   },
 

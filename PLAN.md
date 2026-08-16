@@ -11,7 +11,7 @@
 - [x] **Día 0 (14 ago)** · Entorno, estética, contadores, portada — **y bastante más**
 - [x] **Día 1 (15 ago)** · Línea del tiempo en móvil · **+ el chat de Instagram**
 - [ ] Día 2 (16 ago) · Línea del tiempo horizontal en computadora
-- [ ] Día 3 (17 ago) · Fotos: polaroids, galería, ampliar al tocar
+- [x] **Día 3 (16 ago)** · Fotos cifradas: polaroids, galería, ampliar al tocar
 - [ ] Día 4 (18 ago) · El candado: cifrado y contenido privado
 - [ ] Día 5 (19 ago) · Juego "¿quién dijo esto?"
 - [ ] Día 6 (20 ago) · Diccionario oso + frasco de mensajitos + "un día como hoy"
@@ -100,11 +100,13 @@ Ordenado por lo que más nos atrasa si no llega:
    Contra un desconocido con el enlace protege igual. Contra alguien que tenga
    acceso a tu máquina, o contra un respaldo de la carpeta del proyecto, ya no.
 
-1. **La lista de momentos** → `private/plantilla-momentos.md`. Van 5 (hasta el
-   2 de septiembre de 2024); faltan del 24 de noviembre en adelante. Es lo que
-   bloquea los días 2 y 3. Con la fecha y dos líneas por momento me alcanza.
-2. **Las fotos** → a `fotos-originales/` y `npm run fotos:optimizar`.
-   Mejor que sobren.
+1. **La lista de momentos** → `private/plantilla-momentos.md`. Van 11 escritos
+   (hasta el 19 de octubre de 2024) más 2 días de fotos sueltas. Seguís vos:
+   noviembre en adelante, empezando por el 24. Con la fecha y dos líneas por
+   momento me alcanza.
+2. **Las fotos** → a `fotos-originales/` (ya hay 13 + un video). No corras
+   `npm run fotos:optimizar` todavía: hasta que el día 3 esté hecho, eso deja
+   las fotos en claro en `public/media/`.
 3. **Revisar las frases del juego** → `private/frases-candidatas.json`,
    poner `"aprobada": true` en las buenas. Bloquea el día 5.
 4. **Decidir qué momentos son privados** → los que lleven `privado: true`
@@ -125,6 +127,10 @@ Ordenado por lo que más nos atrasa si no llega:
 - [x] Yo: cada momento con su flor, su marcador y su animación de entrada
 - [x] Yo: enlace de cada tarjeta a su cápsula
 - [x] Yo: pasar al momento anterior/siguiente sin volver a la lista
+- [x] Vos: 5 momentos más, hasta el 19 de octubre de 2024 (16 ago)
+- [x] Yo: escritos y con su conversación cifrada — la primera foto, la pizza de
+      chimichurri, el cumpleaños 20, el nacimiento de Nico y los videos
+- [x] Yo: los "instantes" — fotos sin momento exacto, intercaladas en la línea
 - [ ] Vos: faltan los momentos del 24 de noviembre en adelante
 
 ### Día 1 bis · Instagram como segunda fuente
@@ -140,11 +146,33 @@ Ordenado por lo que más nos atrasa si no llega:
 - [ ] Yo: el cambio entre las dos versiones según el ancho de pantalla
 - [ ] Yo: que el teclado también sirva para recorrerla
 
-### Día 3 · Fotos
-- [ ] Vos: fotos optimizadas y repartidas por momento
-- [ ] Yo: polaroids con cinta adhesiva y giro leve
-- [ ] Yo: ampliar al tocar, con gesto de deslizar en el teléfono
-- [ ] Yo: carga diferida para que no pese al abrir
+### Día 3 · Fotos — adelantado al 16 de agosto
+- [x] Vos: decidido — **todas** las fotos y videos van cifrados
+- [x] Yo: `fotos:optimizar` deja las AVIF en `private/media/`, no en `public/`
+      (antes las publicaba en claro), y encadena solo el cifrado
+- [x] Yo: `cifrar-medios.mjs` → `public/cifrado/media/` — binario `[IV][cifrado]`,
+      no base64 (ahorra el 33 % del peso)
+- [x] Yo: una sal para todo el lote, así la llave se deriva **una sola vez** por
+      visita — 55 ms en la computadora, en vez de una vez por foto
+- [x] Yo: las miniaturas también cifradas — un thumbnail en claro ya enseña la foto
+- [x] Yo: nombres opacos (`0677bb9b….bin`, hash de la frase con el nombre real)
+      y la tabla de nombres dentro del índice cifrado: los archivos no delatan
+      ni cuántos momentos hay
+- [x] Yo: medidas y color promedio de cada foto en el índice, para reservar el
+      hueco exacto mientras descifra (y las medidas del mp4, leídas del `tkhd`)
+- [x] Yo: `<FotoCifrada>` — descifra y arma un `blob:` en el navegador, con caché
+- [x] Yo: polaroids con cinta adhesiva y giro leve, estable entre visitas
+- [x] Yo: ampliar al tocar, con deslizar en el teléfono y teclado en la compu
+- [x] Yo: carga diferida (`loading="lazy"`) y aparición suave
+- [x] Yo: `revisar` se cae si aparece algo en claro en `public/media/` o si un
+      momento pide una foto que no existe
+- [x] Yo: cerrar la puerta (`olvidarClave`) borra de memoria fotos y chats
+- [ ] Vos: aprobar cómo se ven y decidir los pies de foto
+- [ ] Yo: las fotos de los momentos que faltan, según vayan llegando
+
+**El video (`momento10.mp4`) va igual, con una salvedad:** cifrado no se puede ir
+reproduciendo mientras baja, hay que bajarlo entero y armarlo en memoria. Con
+900 KB no se nota. Si algún día entra uno de 40 MB, ese hay que pensarlo aparte.
 
 ### Día 4 · El candado
 - [x] Yo: la puerta con la frase-contraseña y su pista
@@ -224,9 +252,29 @@ también al archivo cifrado.
 leer desde hoy: los relatos, los momentos, las notas. No pasa nada mientras sea
 contenido tierno.
 
-**Las fotos en un repositorio público son públicas.** Aunque nadie tenga el
-enlace, técnicamente están ahí. Si hay fotos que solo deberían verse tras la
-contraseña, decímelo y las trato aparte.
+**Las fotos van todas cifradas — decidido el 16 de agosto.** En un repositorio
+público, una foto subida en claro la puede ver cualquiera aunque no tenga el
+enlace del sitio. Así que las AVIF ya optimizadas no van a vivir nunca en
+`public/`: la cadena es `fotos-originales/` → `private/media/` → cifrado →
+`public/cifrado/media/`. Quien clone el repositorio entero se lleva bytes
+ilegibles. La línea del tiempo se ve completa recién después de escribir la
+frase; quien entre sin ella lee los relatos y ve los huecos.
+
+**Ojo mientras tanto:** `public/media/` no está en `.gitignore`. Hasta que el
+día 3 esté hecho, no hay que correr `fotos:optimizar` y hacer commit, porque
+eso sube las fotos en claro. Hoy no hay ninguna en el repositorio.
+
+**Lo que sostiene todo eso es la frase.** AES-256-GCM no se rompe, pero la
+frase tiene que ser adivinable por ella y por nadie más. Si termina siendo algo
+corto y obvio, las 250.000 vueltas de PBKDF2 encarecen un ataque por diccionario
+sin volverlo imposible. Contra un curioso que se topa con el repositorio sobra;
+contra alguien decidido a entrar ahí en concreto, manda la frase. Varias
+palabras que solo tengan sentido entre ustedes dos resuelven las dos cosas.
+
+**Repositorio privado no reemplaza el cifrado.** Esconde el código, pero lo que
+Pages sirve es público por definición: cualquiera con la URL del sitio se baja
+`/media/foto.avif` sin pasar por la web. El cifrado, en cambio, funciona sin
+necesidad de repositorio privado.
 
 **La pista de la contraseña dice de quiénes son los nombres.** Protege de un
 extraño; no de alguien del círculo de ustedes que se ponga a adivinar. Si querés
@@ -273,7 +321,14 @@ y chats, y el sobre de apertura. Eso es el regalo.
   y no publicamos fotos de perfil.
 - **Música por Spotify incrustado**, no MP3: subirlos sería ilegal y pesadísimo.
 - **Cifrado del lado del navegador** en vez de repositorio privado: con cuenta
-  gratuita, Pages exige que el repositorio sea público.
+  gratuita, Pages exige que el repositorio sea público — y aunque no lo exigiera,
+  lo que Pages publica se puede bajar por URL igual.
+- **Todas las fotos cifradas**, no unas sí y otras no: decidir foto por foto se
+  vuelve un trabajo interminable y una portada en claro ya enseña de más.
+- **Fotos sin momento exacto = "instantes"** (`src/content/instantes.ts`): salen
+  en la misma línea del tiempo como un punto pequeño con una línea manuscrita,
+  sin cápsula, sin chat y sin "abrir →". Si a uno le empiezan a salir párrafos,
+  deja de ser instante y pasa a `momentos.ts`.
 - **Todo el código en español**, incluidos nombres de variables y archivos.
 
 ---
