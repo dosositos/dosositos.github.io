@@ -115,7 +115,7 @@ export function Portada() {
             key={s.a}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-40px' }}
+            viewport={{ once: true, margin: '-40px 0px' }}
             transition={{ duration: 0.6, delay: i * 0.08 }}
           >
             <Link

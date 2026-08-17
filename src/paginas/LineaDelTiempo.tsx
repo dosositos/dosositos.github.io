@@ -19,6 +19,14 @@ import type { Instante, Momento } from '@/types'
  * ║  y las tarjetas empiezan a alternar.                          ║
  * ║                                                              ║
  * ║  La versión horizontal de computadora es el día 2 del plan.  ║
+ * ║                                                              ║
+ * ║  OJO con el `margin` de los `viewport`: va con los dos ejes   ║
+ * ║  ('-60px 0px') y nunca suelto. Un margen suelto también       ║
+ * ║  recorta 60 px por los lados, y en el teléfono la flor vive   ║
+ * ║  a 36 px del borde izquierdo: quedaba dentro de la franja     ║
+ * ║  recortada, no entraba nunca "en vista" y se quedaba          ║
+ * ║  invisible. En computadora no pasaba porque ahí la flor va    ║
+ * ║  centrada sobre el tallo.                                     ║
  * ╚══════════════════════════════════════════════════════════════╝
  */
 
@@ -58,7 +66,7 @@ function Tarjeta({ momento, aLaIzquierda }: { momento: Momento; aLaIzquierda: bo
           <motion.div
             initial={sinMovimiento ? false : { opacity: 0, y: 28, x: aLaIzquierda ? -12 : 12 }}
             whileInView={{ opacity: 1, y: 0, x: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
+            viewport={{ once: true, margin: '-60px 0px' }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
             <Link
@@ -134,15 +142,14 @@ function Tarjeta({ momento, aLaIzquierda }: { momento: Momento; aLaIzquierda: bo
           <motion.span
             initial={sinMovimiento ? false : { scale: 0, opacity: 0 }}
             whileInView={{ scale: 1, opacity: 1 }}
-            viewport={{ once: true, margin: '-60px' }}
+            viewport={{ once: true, margin: '-60px 0px' }}
             transition={{ duration: 0.6, delay: 0.15, ease: [0.34, 1.56, 0.64, 1] }}
             className="inline-flex shrink-0 items-center justify-center rounded-full sm:absolute sm:left-1/2 sm:top-6 sm:-translate-x-1/2"
             // 40 px es justo el ancho de la columna del tallo: así el centro
             // de la flor cae exactamente sobre la línea, sin desbordarse.
             //
-            // El emoji va en píxeles y con line-height 1: en el teléfono, con
-            // el tamaño en rem y la altura de línea heredada, el glifo se
-            // salía del círculo de 32 px y no se veía.
+            // El emoji va en píxeles y con line-height 1: heredando el tamaño
+            // en rem y la altura de línea, el glifo se salía del círculo.
             style={{
               width: momento.destacado ? 40 : 32,
               height: momento.destacado ? 40 : 32,
@@ -185,7 +192,7 @@ function Suelta({ instante, aLaIzquierda }: { instante: Instante; aLaIzquierda: 
           <motion.div
             initial={sinMovimiento ? false : { opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
+            viewport={{ once: true, margin: '-60px 0px' }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="py-1"
           >
@@ -218,7 +225,7 @@ function Suelta({ instante, aLaIzquierda }: { instante: Instante; aLaIzquierda: 
           <motion.span
             initial={sinMovimiento ? false : { scale: 0, opacity: 0 }}
             whileInView={{ scale: 1, opacity: 1 }}
-            viewport={{ once: true, margin: '-60px' }}
+            viewport={{ once: true, margin: '-60px 0px' }}
             transition={{ duration: 0.5, delay: 0.1 }}
             className="block rounded-full sm:absolute sm:left-1/2 sm:top-4 sm:-translate-x-1/2"
             style={{

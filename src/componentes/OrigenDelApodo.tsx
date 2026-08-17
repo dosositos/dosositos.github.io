@@ -52,7 +52,7 @@ export function OrigenDelApodo() {
               key={i}
               initial={{ opacity: 0, y: 22, filter: 'blur(6px)' }}
               whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              viewport={{ once: true, margin: '-120px' }}
+              viewport={{ once: true, margin: '-120px 0px' }}
               transition={{ duration: 1, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
               className="font-display text-2xl leading-relaxed text-texto sm:text-[2rem]"
             >
@@ -64,7 +64,7 @@ export function OrigenDelApodo() {
         <motion.p
           initial={{ opacity: 0, scale: 0.94 }}
           whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, margin: '-120px' }}
+          viewport={{ once: true, margin: '-120px 0px' }}
           transition={{ duration: 1.2, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
           className="resplandor mt-14 font-display text-3xl text-acento sm:text-4xl"
         >

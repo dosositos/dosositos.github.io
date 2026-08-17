@@ -75,7 +75,7 @@ function Polaroid({ foto, giro, alTocar }: { foto: Foto; giro: number; alTocar: 
       initial={sinMovimiento ? false : { opacity: 0, y: 24, rotate: giro * 2.5 }}
       whileInView={{ opacity: 1, y: 0, rotate: giro }}
       whileHover={sinMovimiento ? undefined : { rotate: 0, y: -6, scale: 1.02 }}
-      viewport={{ once: true, margin: '-40px' }}
+      viewport={{ once: true, margin: '-40px 0px' }}
       transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       className="group block w-full cursor-zoom-in"
       aria-label={`Ampliar: ${foto.alt}`}
@@ -110,7 +110,7 @@ function Pila({ fotos, alTocar }: { fotos: Foto[]; alTocar: () => void }) {
       initial={sinMovimiento ? false : { opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       whileHover={sinMovimiento ? undefined : { y: -4 }}
-      viewport={{ once: true, margin: '-40px' }}
+      viewport={{ once: true, margin: '-40px 0px' }}
       transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       className="group relative block w-full cursor-zoom-in"
       aria-label={

@@ -26,7 +26,7 @@ function Cifra({
     <motion.div
       initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-40px' }}
+      viewport={{ once: true, margin: '-40px 0px' }}
       transition={{ duration: 0.7, delay: retraso, ease: [0.22, 1, 0.36, 1] }}
       className="papel rounded-2xl px-5 py-7 text-center"
     >
@@ -56,7 +56,7 @@ function Duelo({
     <motion.div
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
-      viewport={{ once: true, margin: '-40px' }}
+      viewport={{ once: true, margin: '-40px 0px' }}
       transition={{ duration: 0.7 }}
       className="papel rounded-2xl px-6 py-6"
     >
@@ -216,7 +216,7 @@ export function Estadisticas() {
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-40px' }}
+        viewport={{ once: true, margin: '-40px 0px' }}
         transition={{ duration: 0.8 }}
         className="papel resplandor-caja mt-12 rounded-2xl px-6 py-8 text-center"
       >

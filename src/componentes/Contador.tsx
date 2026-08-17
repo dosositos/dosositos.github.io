@@ -42,7 +42,7 @@ export function Contador({ desde, titulo, subtitulo, flor = 'var(--t-acento)', r
     <motion.article
       initial={{ opacity: 0, y: 28, rotate: -0.6 }}
       whileInView={{ opacity: 1, y: 0, rotate: 0 }}
-      viewport={{ once: true, margin: '-60px' }}
+      viewport={{ once: true, margin: '-60px 0px' }}
       transition={{ duration: 0.9, delay: retraso, ease: [0.22, 1, 0.36, 1] }}
       className="papel relative w-full max-w-md rounded-2xl px-6 py-8 sm:px-8"
       style={{ ['--flor' as string]: flor }}

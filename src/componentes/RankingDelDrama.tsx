@@ -15,7 +15,7 @@ export function RankingDelDrama() {
     <motion.section
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-60px' }}
+      viewport={{ once: true, margin: '-60px 0px' }}
       transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
       className="papel w-full rounded-2xl px-6 py-8 sm:px-8"
     >
