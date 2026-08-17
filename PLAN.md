@@ -10,15 +10,18 @@
 
 - [x] **Día 0 (14 ago)** · Entorno, estética, contadores, portada — **y bastante más**
 - [x] **Día 1 (15 ago)** · Línea del tiempo en móvil · **+ el chat de Instagram**
-- [ ] Día 2 (16 ago) · Línea del tiempo horizontal en computadora
 - [x] **Día 3 (16 ago)** · Fotos cifradas: polaroids, galería, ampliar al tocar
-- [ ] Día 4 (18 ago) · El candado: cifrado y contenido privado
+- [x] **Día 4 (17 ago)** · El candado: cifrado y contenido privado
 - [x] **Día 5 (17 ago)** · Juego "¿quién dijo esto?"
-- [ ] Día 6 (20 ago) · Diccionario oso + frasco de mensajitos + "un día como hoy"
-- [ ] Día 7 (21 ago) · El sobre de apertura, easter eggs, peluches escondidos
+- [ ] Día 2 (18 ago) · Línea del tiempo horizontal en computadora
+- [ ] Día 6 (19 ago) · Diccionario oso + frasco de mensajitos + "un día como hoy"
+- [ ] Día 7 (20-21 ago) · El sobre de apertura, easter eggs, peluches escondidos
 - [ ] Día 8 (22 ago) · PWA, música, celebraciones del calendario, pulido
-- [ ] Día 9 (23 ago) · Pruebas en móvil de verdad, publicación, ensayo general
+- [ ] Día 9 (23 ago) · Pruebas en móvil de verdad, ensayo general
 - [ ] **Día 10 (24 ago) · Entregar** 🌻
+
+*(el día 2 quedó atrás porque el 16 se adelantaron las fotos y el 17 el juego;
+la web ya está publicada y se ve en el teléfono desde el 17 de agosto)*
 
 ---
 
@@ -73,52 +76,38 @@
 
 Ordenado por lo que más nos atrasa si no llega:
 
-0. **Poner la frase en `.env`. Una vez, y no volvés a tocar el tema.**
+1. **La lista de momentos** → `private/plantilla-momentos.md`. Es lo único que
+   de verdad nos atrasa. Van **11 momentos escritos** (del 24 de agosto al 19
+   de octubre de 2024) más 2 apuntados sin escribir: el 24 de noviembre («el
+   día que dijiste que sí») y el 1 de enero (las flores de lego). Siguen 2025
+   entero y lo que va de 2026. Con la fecha y dos líneas por momento me alcanza.
+2. **Las fotos** → a `fotos-originales/`. Hay 14 ya optimizadas y cifradas; las
+   que falten van de las mismas: las tirás ahí y corré `npm run fotos:optimizar`
+   (desde el 16 de agosto eso ya no las publica en claro, las cifra).
+   Los **pies de foto**: 8 de 10 escritos en los momentos, ninguno en los
+   "instantes". No es obligatorio, pero se leen lindo.
+3. **Decidir qué momentos son privados** → los que lleven `privado: true`
+   pedirán la contraseña otra vez. Hoy no hay ninguno, y puede quedar así: el
+   candado de la entrada ya cubre todo.
+4. **El diccionario oso** → las palabras que solo existen entre ustedes. Bloquea
+   el día 6.
+5. **Los mensajitos del frasco** → 20-30 frases cortas tuyas. Bloquea el día 6.
+6. **La dedicatoria del sobre** → lo primero que va a leer. Tomate tu tiempo.
+   Bloquea el día 7.
 
-   Creá `C:\Carpeta vacia\.env` con una sola línea:
+### Ya hecho, para no volver sobre eso
 
-   ```
-   CLAVE_DOSOSITOS=la frase de siempre
-   ```
+- ~~**La frase en `.env`**~~ — hecha. El cifrado corre solo con el hook y
+  `npm run build` se cae si algo quedó sin cifrar.
+- ~~**Revisar las frases del juego**~~ — 341 aprobadas el 16 de agosto, más 20
+  inventadas revisadas por vos el 17. Si querés más, corré `npm run chat:frases`
+  y aprobá: el juego se rehace y se cifra solo.
+- ~~**Activar Pages**~~ — la web está publicada y se abre en el teléfono.
 
-   `.gitignore` ya excluye `.env`, así que no llega a GitHub. A partir de ahí
-   el cifrado corre solo: cada vez que yo toque `private/publicable/`, un hook
-   vuelve a cifrar sin que ninguno de los dos se acuerde de hacerlo.
-
-   La primera vez hay que arrancarlo a mano, porque el hook solo reacciona a
-   cambios:
-
-   ```bash
-   npm run secretos:cifrar
-   ```
-
-   Y `npm run build` se cae si falta el archivo cifrado o si se quedó atrás
-   del contenido, con lo que GitHub Actions no publica. Antes compilaba igual
-   y la web salía sin un solo chat, en silencio — que es exactamente lo que
-   pasó el 15 de agosto.
-
-   **La contrapartida, para que la tengas presente:** la frase deja de vivir
-   solo en la cabeza de ustedes dos y pasa a estar escrita en tu computadora.
-   Contra un desconocido con el enlace protege igual. Contra alguien que tenga
-   acceso a tu máquina, o contra un respaldo de la carpeta del proyecto, ya no.
-
-1. **La lista de momentos** → `private/plantilla-momentos.md`. Van 11 escritos
-   (hasta el 19 de octubre de 2024) más 2 días de fotos sueltas. Seguís vos:
-   noviembre en adelante, empezando por el 24. Con la fecha y dos líneas por
-   momento me alcanza.
-2. **Las fotos** → a `fotos-originales/` (ya hay 13 + un video). No corras
-   `npm run fotos:optimizar` todavía: hasta que el día 3 esté hecho, eso deja
-   las fotos en claro en `public/media/`.
-3. ~~**Revisar las frases del juego**~~ — hecho el 16 de agosto: 341 aprobadas.
-   Si querés más, volvé a correr `npm run chat:frases` y aprobá; el juego se
-   rehace y se cifra solo.
-4. **Decidir qué momentos son privados** → los que lleven `privado: true`
-   pedirán la contraseña. Bloquea el día 4.
-5. **El diccionario oso** → las palabras que solo existen entre ustedes.
-6. **Los mensajitos del frasco** → 20-30 frases cortas tuyas.
-7. **La dedicatoria del sobre** → lo primero que va a leer. Tomate tu tiempo.
-8. **En GitHub: Settings → Pages → Source: GitHub Actions.** Un clic, y sin eso
-   no se publica nada.
+**La contrapartida de la frase en `.env`, para que no se te olvide:** dejó de
+vivir solo en la cabeza de ustedes dos y está escrita en tu computadora. Contra
+un desconocido con el enlace protege igual; contra alguien con acceso a tu
+máquina, o contra un respaldo de la carpeta, ya no.
 
 ---
 
@@ -134,7 +123,9 @@ Ordenado por lo que más nos atrasa si no llega:
 - [x] Yo: escritos y con su conversación cifrada — la primera foto, la pizza de
       chimichurri, el cumpleaños 20, el nacimiento de Nico y los videos
 - [x] Yo: los "instantes" — fotos sin momento exacto, intercaladas en la línea
-- [ ] Vos: faltan los momentos del 24 de noviembre en adelante
+- [x] Vos: apuntados el 24 de noviembre y el 1 de enero (salen en la línea con
+      su "por escribir")
+- [ ] Vos: escribir esos dos y seguir con 2025 en adelante
 
 ### Día 1 bis · Instagram como segunda fuente
 - [x] `chat:instagram` — 6.077 mensajes, con la codificación de Meta arreglada
@@ -170,14 +161,15 @@ Ordenado por lo que más nos atrasa si no llega:
 - [x] Yo: `revisar` se cae si aparece algo en claro en `public/media/` o si un
       momento pide una foto que no existe
 - [x] Yo: cerrar la puerta (`olvidarClave`) borra de memoria fotos y chats
-- [ ] Vos: aprobar cómo se ven y decidir los pies de foto
+- [x] Vos: aprobadas — se ven en el teléfono (14 fotos y el video)
+- [ ] Vos: los pies de foto que faltan (2 momentos y los 4 "instantes")
 - [ ] Yo: las fotos de los momentos que faltan, según vayan llegando
 
 **El video (`momento10.mp4`) va igual, con una salvedad:** cifrado no se puede ir
 reproduciendo mientras baja, hay que bajarlo entero y armarlo en memoria. Con
 900 KB no se nota. Si algún día entra uno de 40 MB, ese hay que pensarlo aparte.
 
-### Día 4 · El candado
+### Día 4 · El candado — cerrado el 17 de agosto
 - [x] Yo: la puerta con la frase-contraseña y su pista
 - [x] Yo: que la clave se recuerde durante la visita y no la pida a cada rato
 - [x] Vos: decidido — **todas** las conversaciones reales van cifradas
@@ -186,9 +178,9 @@ reproduciendo mientras baja, hay que bajarlo entero y armarlo en memoria. Con
       cifra nada (un error de tipeo dejaba la puerta cerrada para siempre)
 - [x] Yo: el cifrado corre solo con un hook al tocar `private/publicable/`,
       y no rehace nada si el contenido no cambió
-- [ ] **Vos: poner `CLAVE_DOSOSITOS` en `.env` y correr `npm run secretos:cifrar`
-      una vez.** Sin eso `public/cifrado/chats.enc` no existe y la web se
-      publica sin conversaciones
+- [x] **Vos: `CLAVE_DOSOSITOS` en `.env`** — desde ahí todo se cifra solo
+- [ ] Vos: decidir si algún momento lleva `privado: true` (hoy ninguno, y puede
+      quedarse así: la puerta de entrada ya cubre todo)
 
 ### Día 5 · El juego — adelantado al 17 de agosto
 - [x] Vos: aprobar frases — 341 aprobadas (254 de uno solo, 87 de los dos)
@@ -208,9 +200,14 @@ reproduciendo mientras baja, hay que bajarlo entero y armarlo en memoria. Con
 - [x] Yo: finales personalizados según el puntaje, con lo de mandar la captura
 - [x] Yo: `juego:preparar` corre solo con el hook al tocar las frases, y
       `npm run build` se cae si el juego cifrado se quedó atrás
-- [ ] Vos: revisar las 14 frases inventadas de `private/frases-inventadas.json`
-      (son mías, imitándolos, para que «ninguno» pueda ser la respuesta buena)
-- [ ] Vos: jugarlo en el teléfono y decirme si alguna frase se entiende sola
+- [x] Vos: revisadas las frases inventadas — quedaron 20, para que «ninguno»
+      pueda ser la respuesta buena
+- [x] Vos: jugado en el teléfono. Salió un fallo: a veces se resaltaba la
+      burbuja equivocada en el contexto
+- [x] Yo: arreglado — la burbuja se busca por parecido y, si no hay una clara,
+      la frase se queda sin contexto antes que señalar la que no es
+- [ ] Vos: si al jugar ves una frase que se resuelve sola, decímela y la
+      arreglo en `private/juego-normalizacion.json`
 
 ### Día 6 · Secciones cortas
 - [ ] Yo: diccionario oso-español
@@ -233,8 +230,10 @@ reproduciendo mientras baja, hay que bajarlo entero y armarlo en memoria. Con
 - [ ] Vos: leer todos los textos y corregir mi voz por la tuya
 
 ### Día 9 · Antes de entregar
-- [ ] Activar Pages y publicar de verdad
-- [ ] Probar en el teléfono real, no en el navegador de la computadora
+- [x] Activar Pages y publicar de verdad — hecho el 17 de agosto
+- [x] Probar en el teléfono real — de ahí salieron dos arreglos: las flores de
+      la línea del tiempo no aparecían y el juego resaltaba mal el contexto
+- [ ] Volver a probarlo en el teléfono al final, con todo puesto
 - [ ] Revisar que nada privado quedó en claro en el repositorio
 - [ ] Abrir el enlace con datos móviles, sin wifi
 - [ ] Comprobar que la contraseña funciona en un teléfono limpio
@@ -244,22 +243,27 @@ reproduciendo mientras baja, hay que bajarlo entero y armarlo en memoria. Con
 
 ## Consideraciones y riesgos
 
-**La puerta no protege lo que hay detrás, todavía.** Frena a quien abra el
-enlace, y eso ya es bastante — pero el contenido de `src/content/` viaja dentro
-del código de la página, así que alguien que sepa mirar el código fuente puede
-leer los momentos y los relatos sin escribir la contraseña. La protección de
-verdad es el cifrado, y solo cubre lo que metamos en `private/publicable/`.
-Hoy ahí solo está el saludo de bienvenida.
+**La puerta no protege lo que hay detrás.** Frena a quien abra el enlace, y eso
+ya es bastante — pero el contenido de `src/content/` viaja dentro del código de
+la página, así que alguien que sepa mirar el código fuente puede leer los
+momentos y los relatos sin escribir la contraseña. La protección de verdad es el
+cifrado, y cubre lo que vive en `private/publicable/`: hoy el saludo, las once
+conversaciones y las 360 frases del juego con su contexto. Más las fotos, que
+van por su propio camino cifrado.
 
 **Entonces, la regla:** lo que te importaría que leyera un desconocido **no puede
-vivir en `src/content/`**. Va cifrado. Decime qué momentos, chats y frases entran
-en esa categoría y los muevo — es lo que falta del día 4.
+vivir en `src/content/`**. Va cifrado. Si algún relato te incomoda, decímelo y lo
+muevo.
 
 **Eso ya está resuelto para los chats.** Ninguna conversación real vive en
-`src/content/`. Las seis están en `private/publicable/chats.json`, se cifran con
-`npm run secretos:cifrar` y salen publicadas como `public/cifrado/chats.enc`, que
-sin la frase de la puerta es ruido. En `momentos.ts` solo queda la ficha: cuántos
-mensajes son y de qué app — y eso no le dice nada a nadie.
+`src/content/`. Las once están en `private/publicable/chats.json`, se cifran
+solas y salen publicadas como `public/cifrado/chats.enc`, que sin la frase de la
+puerta es ruido. En `momentos.ts` solo queda la ficha: cuántos mensajes son y de
+qué app — y eso no le dice nada a nadie.
+
+**Y para el juego.** Ninguna frase suya ni mía está en claro: viven en
+`public/cifrado/juego.enc` con los mensajes de alrededor. Lo único en claro es
+la aclaración de la primera pantalla, que es mi voz explicando las reglas.
 
 Como ella ya escribió la frase para entrar, el chat se descifra solo al abrir la
 cápsula: no ve ningún candado extra.
@@ -281,9 +285,11 @@ enlace del sitio. Así que las AVIF ya optimizadas no van a vivir nunca en
 ilegibles. La línea del tiempo se ve completa recién después de escribir la
 frase; quien entre sin ella lee los relatos y ve los huecos.
 
-**Ojo mientras tanto:** `public/media/` no está en `.gitignore`. Hasta que el
-día 3 esté hecho, no hay que correr `fotos:optimizar` y hacer commit, porque
-eso sube las fotos en claro. Hoy no hay ninguna en el repositorio.
+**Eso ya no hay que vigilarlo a mano:** `npm run revisar` corre antes de cada
+build y se cae si aparece una sola foto en claro en `public/media/`, si un
+momento pide una foto que no existe, si un nombre de tercero se coló en lo que
+se publica sin cifrar, o si los chats o el juego cifrados se quedaron atrás del
+contenido.
 
 **Lo que sostiene todo eso es la frase.** AES-256-GCM no se rompe, pero la
 frase tiene que ser adivinable por ella y por nadie más. Si termina siendo algo
@@ -350,7 +356,36 @@ y chats, y el sobre de apertura. Eso es el regalo.
   en la misma línea del tiempo como un punto pequeño con una línea manuscrita,
   sin cápsula, sin chat y sin "abrir →". Si a uno le empiezan a salir párrafos,
   deja de ser instante y pasa a `momentos.ts`.
+- **Las frases del juego van emparejadas** en mayúsculas, abreviaciones y tildes,
+  y se avisa en pantalla. Los dedazos no se tocan: son el chiste, y están
+  repartidos entre los dos.
+- **El `margin` de los `viewport` de motion lleva siempre los dos ejes**
+  (`'-60px 0px'`). Suelto recorta también por los lados y deja invisible
+  cualquier cosa angosta pegada al borde, que fue lo que pasó con las flores de
+  la línea del tiempo en el teléfono.
 - **Todo el código en español**, incluidos nombres de variables y archivos.
+
+---
+
+## Por dónde seguimos — cerrado el 17 de agosto de 2026
+
+**Cómo está la web ahora mismo:** publicada y andando en el teléfono. Puerta con
+la frase, portada con contadores, línea del tiempo con 13 momentos (11 escritos,
+2 apuntados) y 2 instantes, 14 fotos y un video cifrados, 11 conversaciones
+reales, playlist, estadísticas y el juego de las frases entero.
+
+**Lo primero al retomar (yo):** el día 2 — la línea del tiempo horizontal para
+computadora. Es lo único que quedó atrasado del orden original, y es lo primero
+que se cae si vamos con el tiempo justo, así que tampoco es urgente. Si preferís,
+saltamos al día 6 (diccionario y frasco), que es contenido que se ve.
+
+**Lo primero al retomar (vos):** los momentos de 2025 en adelante, en
+`private/plantilla-momentos.md`. Con la fecha y dos líneas por momento me
+alcanza. Todo lo demás que falta depende de eso o es de la última semana.
+
+**Nada quedó a medias:** no hay ramas abiertas, ni archivos sin commitear, ni
+pasos manuales pendientes. El cifrado corre solo con el hook y el build se cae
+antes de publicar algo incompleto.
 
 ---
 
