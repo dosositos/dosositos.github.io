@@ -14,7 +14,8 @@
 - [x] **Día 4 (17 ago)** · El candado: cifrado y contenido privado
 - [x] **Día 5 (17 ago)** · Juego "¿quién dijo esto?"
 - [ ] Día 2 (18 ago) · Línea del tiempo horizontal en computadora
-- [ ] Día 6 (19 ago) · Diccionario oso + frasco de mensajitos + "un día como hoy"
+- [ ] Día 6 (19 ago) · Diccionario oso + frasco de mensajitos
+      (el "un día como hoy" ya está, adelantado el 17)
 - [ ] Día 7 (20-21 ago) · El sobre de apertura, easter eggs, peluches escondidos
 - [ ] Día 8 (22 ago) · PWA, música, celebraciones del calendario, pulido
 - [ ] Día 9 (23 ago) · Pruebas en móvil de verdad, ensayo general
@@ -218,7 +219,31 @@ de 40 MB, ese hay que pensarlo aparte.
 ### Día 6 · Secciones cortas
 - [ ] Yo: diccionario oso-español
 - [ ] Yo: frasco de mensajitos con estrellitas de papel
-- [ ] Yo: "un día como hoy" en la portada, sacado del chat
+- [x] Yo: "un día como hoy" en la portada, sacado del chat — adelantado
+      al 17 de agosto
+- [ ] Vos: ojear los días que más importan (`npm run dia:preparar -- --ver 11-24`)
+      y cambiar a mano los que no te gusten
+
+**Cómo funciona:** `npm run dia:preparar` recorre los dos chats y para cada
+fecha del calendario elige, año por año, el mejor pedacito de ese día: hasta
+siete burbujas donde hablen los dos, sin cortar a nadie a media parrafada y sin
+terminar en "ya estoy en casa". Puntúa el cariño, las risas y las fechas
+marcadas (cumpleaños, Navidad, año nuevo, aniversarios), y castiga lo de todos
+los días ("buenos días", "ya llegué"). Deja fuera enlaces, códigos, lo subido de
+tono y los días de pelea: nadie revisa esas frases antes de que ella las lea.
+
+Dos reglas salieron de equivocarse primero. Una: entre dos mensajes del mismo se
+piden menos de 12 minutos, pero **entre uno y la respuesta del otro se permiten
+hasta 3 horas**. Lo mejor que tienen no son charlas seguidas — son ella
+escribiendo cuatro mensajes a las 7 de la mañana y él contestando a las 9,
+saliendo de clase — y pidiendo conversación corrida se perdían enteros los
+aniversarios. Dos: **siete burbujas y no seis**, porque la carta de ella ocupa
+cinco y con seis ya no cabía la respuesta de él.
+
+Sale un archivo por mes (`private/publicable/dia-como-hoy-08.json`), así el
+teléfono baja 70 KB y no los 366 días. Son JSON legibles: si un día quedó
+flojo, se edita a mano y se cifra solo. Hoy hay recuerdo para 365 de los 366
+días — el que falta es el 29 de febrero.
 
 ### Día 7 · Magia
 - [ ] Vos: la dedicatoria
@@ -358,6 +383,9 @@ y chats, y el sobre de apertura. Eso es el regalo.
   lo que Pages publica se puede bajar por URL igual.
 - **Todas las fotos cifradas**, no unas sí y otras no: decidir foto por foto se
   vuelve un trabajo interminable y una portada en claro ya enseña de más.
+- **"Un día como hoy" va por meses**, no en un solo archivo: son 366 días con
+  sus años, y bajar los 12 meses en la portada serían 800 KB para enseñar seis
+  burbujas. Cada mes cifrado pesa unos 70 KB y el teléfono baja el que toca.
 - **Fotos sin momento exacto = "instantes"** (`src/content/instantes.ts`): salen
   en la misma línea del tiempo como un punto pequeño con una línea manuscrita,
   sin cápsula, sin chat y sin "abrir →". Si a uno le empiezan a salir párrafos,
@@ -376,9 +404,9 @@ y chats, y el sobre de apertura. Eso es el regalo.
 ## Por dónde seguimos — cerrado el 17 de agosto de 2026
 
 **Cómo está la web ahora mismo:** publicada y andando en el teléfono. Puerta con
-la frase, portada con contadores, línea del tiempo con 15 momentos (13 escritos,
-2 apuntados) y 5 instantes, 20 fotos y 6 videos cifrados, 13 conversaciones
-reales, playlist, estadísticas y el juego de las frases entero.
+la frase, portada con contadores y "un día como hoy", línea del tiempo con 15
+momentos (13 escritos, 2 apuntados) y 5 instantes, 20 fotos y 6 videos cifrados,
+13 conversaciones reales, playlist, estadísticas y el juego de las frases entero.
 
 **Lo primero al retomar (yo):** el día 2 — la línea del tiempo horizontal para
 computadora. Es lo único que quedó atrasado del orden original, y es lo primero

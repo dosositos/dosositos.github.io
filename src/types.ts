@@ -74,6 +74,24 @@ export interface ChatGuardado {
   titulo?: string
 }
 
+/**
+ * Un día como hoy: el pedacito de conversación que hubo esta misma
+ * fecha, en otro año.
+ *
+ * Igual que los chats de los momentos, los mensajes no viven en el
+ * código: llegan de public/cifrado/dia-como-hoy-MM.enc, un archivo por
+ * mes para que el teléfono baje solo el que necesita. Los arma
+ * scripts/preparar-dia-como-hoy.mjs.
+ */
+export interface RecuerdoDelDia {
+  /** La fecha entera, con su año: '2025-08-17'. */
+  fecha: string
+  fuente: FuenteChat
+  /** Cuántos mensajes se escribieron ese día, entre las dos apps. */
+  total: number
+  mensajes: Mensaje[]
+}
+
 export interface Momento {
   /** Slug para la URL: /#/momento/primera-cita */
   id: string

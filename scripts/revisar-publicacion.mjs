@@ -188,6 +188,33 @@ if (huellaAhora) {
   console.log(`  ✓ ${recibo.frases} frases del juego cifradas y al día`)
 }
 
+// ── Un día como hoy ───────────────────────────────────────────────
+// La portada enseña lo que se dijeron esta misma fecha en otros años.
+// Si falta el archivo del mes, la sección desaparece sin decir nada —
+// y quien la echaría de menos es la única que no puede arreglarla.
+
+const MESES_SIN_CIFRAR = []
+for (let mes = 1; mes <= 12; mes++) {
+  const mm = String(mes).padStart(2, '0')
+  if (!existsSync(path.join(CIFRADO, `dia-como-hoy-${mm}.enc`))) MESES_SIN_CIFRAR.push(mm)
+}
+
+if (MESES_SIN_CIFRAR.length > 0) {
+  fallar(
+    `Faltan ${MESES_SIN_CIFRAR.length} meses de "un día como hoy"`,
+    `    Sin ellos, esos días la portada no enseña nada. Corré:
+
+      npm run dia:preparar
+
+    (deja los 12 archivos en private/publicable/, y el cifrado se encadena
+     solo. Si no, ${COMANDO})
+
+    Meses que faltan: ${MESES_SIN_CIFRAR.join(', ')}`,
+  )
+}
+
+console.log(`  ✓ los 12 meses de "un día como hoy" cifrados`)
+
 // ── Qué chats pide la web ─────────────────────────────────────────
 const fuente = readFileSync(MOMENTOS, 'utf8')
 const pedidos = new Map()

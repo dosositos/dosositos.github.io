@@ -98,6 +98,8 @@ npm run chat:instagram   # private/instagram_export.json → datos utilizables
 npm run chat:dia -- 2024-08-25   # la conversación de un día (las dos fuentes)
 npm run chat:frases      # genera candidatas para el juego
 npm run juego:preparar   # aprobadas + contexto → private/publicable/juego.json
+npm run dia:preparar     # el «un día como hoy» de las 366 fechas (uno por mes)
+npm run dia:preparar -- --ver 11-24   # qué eligió para ese día
 npm run fotos:optimizar  # fotos-originales/ → private/media/ en AVIF, y las cifra
 npm run fotos:cifrar     # solo el cifrado (private/media/ → public/cifrado/media/)
 npm run secretos:cifrar  # private/publicable/ → public/cifrado/ (corre solo por hook)

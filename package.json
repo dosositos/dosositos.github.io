@@ -16,6 +16,7 @@
     "chat:frases": "node scripts/generar-frases.mjs",
     "chat:dia": "node scripts/ver-dia.mjs",
     "juego:preparar": "node scripts/preparar-juego.mjs",
+    "dia:preparar": "node scripts/preparar-dia-como-hoy.mjs && node scripts/cifrar-contenido.mjs",
     "fotos:optimizar": "node scripts/optimizar-fotos.mjs && node scripts/cifrar-medios.mjs",
     "fotos:cifrar": "node scripts/cifrar-medios.mjs",
     "secretos:cifrar": "node scripts/cifrar-contenido.mjs"

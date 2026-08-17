@@ -4,6 +4,7 @@ import { Contador } from '@/componentes/Contador'
 // El oso blanco está guardado por ahora, ver más abajo.
 // import { OrigenDelApodo } from '@/componentes/OrigenDelApodo'
 import { QuienAmaMas } from '@/componentes/QuienAmaMas'
+import { UnDiaComoHoy } from '@/componentes/UnDiaComoHoy'
 import { FECHAS, OSITA, OSITO } from '@/content/config'
 import { celebracionDeHoy } from '@/lib/celebraciones'
 import { diasQueFaltan, proximoAniversario, proximoMesiversario } from '@/lib/tiempo'
@@ -107,6 +108,9 @@ export function Portada() {
 
       {/* ── Quién ama más hoy ────────────────────────────────── */}
       <QuienAmaMas />
+
+      {/* ── Un día como hoy ──────────────────────────────────── */}
+      <UnDiaComoHoy />
 
       {/* ── Accesos a las secciones ──────────────────────────── */}
       <nav className="grid w-full gap-4 sm:grid-cols-2">
