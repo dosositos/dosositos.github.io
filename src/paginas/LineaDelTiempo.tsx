@@ -136,16 +136,21 @@ function Tarjeta({ momento, aLaIzquierda }: { momento: Momento; aLaIzquierda: bo
             whileInView={{ scale: 1, opacity: 1 }}
             viewport={{ once: true, margin: '-60px' }}
             transition={{ duration: 0.6, delay: 0.15, ease: [0.34, 1.56, 0.64, 1] }}
-            className="grid place-items-center rounded-full sm:absolute sm:left-1/2 sm:top-6 sm:-translate-x-1/2"
+            className="inline-flex shrink-0 items-center justify-center rounded-full sm:absolute sm:left-1/2 sm:top-6 sm:-translate-x-1/2"
             // 40 px es justo el ancho de la columna del tallo: así el centro
             // de la flor cae exactamente sobre la línea, sin desbordarse.
+            //
+            // El emoji va en píxeles y con line-height 1: en el teléfono, con
+            // el tamaño en rem y la altura de línea heredada, el glifo se
+            // salía del círculo de 32 px y no se veía.
             style={{
               width: momento.destacado ? 40 : 32,
               height: momento.destacado ? 40 : 32,
               backgroundColor: 'var(--t-fondo)',
               border: `2px solid ${flor.color}`,
               boxShadow: momento.destacado ? `0 0 22px -4px ${flor.color}` : undefined,
-              fontSize: momento.destacado ? '1.05rem' : '0.85rem',
+              fontSize: momento.destacado ? 18 : 15,
+              lineHeight: 1,
             }}
             aria-hidden
           >

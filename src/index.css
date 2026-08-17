@@ -40,9 +40,18 @@
   --color-oso-claro: #c99a67;
   --color-oso-hocico: #e5cba8;
 
-  --font-display: 'Fraunces Variable', 'Georgia', serif;
-  --font-cuerpo: 'Nunito Variable', system-ui, sans-serif;
-  --font-mano: 'Caveat Variable', cursive;
+  /* Las tres fuentes llevan pegada la pila de emoji del sistema. Hace
+     falta: nuestras fuentes traen solo el alfabeto latino (por el
+     unicode-range), y en algunos Android y en los navegadores metidos
+     dentro de WhatsApp o Instagram, un emoji sin fuente declarada no se
+     dibuja — se ve un hueco. El navegador solo usa estas familias para
+     los glifos que las anteriores no tienen, así que no cambia nada más. */
+  --emoji: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji',
+    'Android Emoji', 'EmojiOne Color', 'Twemoji Mozilla';
+
+  --font-display: 'Fraunces Variable', 'Georgia', var(--emoji), serif;
+  --font-cuerpo: 'Nunito Variable', system-ui, var(--emoji), sans-serif;
+  --font-mano: 'Caveat Variable', var(--emoji), cursive;
 
   --ease-suave: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-rebote: cubic-bezier(0.34, 1.56, 0.64, 1);
