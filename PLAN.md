@@ -13,7 +13,7 @@
 - [ ] Día 2 (16 ago) · Línea del tiempo horizontal en computadora
 - [x] **Día 3 (16 ago)** · Fotos cifradas: polaroids, galería, ampliar al tocar
 - [ ] Día 4 (18 ago) · El candado: cifrado y contenido privado
-- [ ] Día 5 (19 ago) · Juego "¿quién dijo esto?"
+- [x] **Día 5 (17 ago)** · Juego "¿quién dijo esto?"
 - [ ] Día 6 (20 ago) · Diccionario oso + frasco de mensajitos + "un día como hoy"
 - [ ] Día 7 (21 ago) · El sobre de apertura, easter eggs, peluches escondidos
 - [ ] Día 8 (22 ago) · PWA, música, celebraciones del calendario, pulido
@@ -109,8 +109,9 @@ Ordenado por lo que más nos atrasa si no llega:
 2. **Las fotos** → a `fotos-originales/` (ya hay 13 + un video). No corras
    `npm run fotos:optimizar` todavía: hasta que el día 3 esté hecho, eso deja
    las fotos en claro en `public/media/`.
-3. **Revisar las frases del juego** → `private/frases-candidatas.json`,
-   poner `"aprobada": true` en las buenas. Bloquea el día 5.
+3. ~~**Revisar las frases del juego**~~ — hecho el 16 de agosto: 341 aprobadas.
+   Si querés más, volvé a correr `npm run chat:frases` y aprobá; el juego se
+   rehace y se cifra solo.
 4. **Decidir qué momentos son privados** → los que lleven `privado: true`
    pedirán la contraseña. Bloquea el día 4.
 5. **El diccionario oso** → las palabras que solo existen entre ustedes.
@@ -189,11 +190,27 @@ reproduciendo mientras baja, hay que bajarlo entero y armarlo en memoria. Con
       una vez.** Sin eso `public/cifrado/chats.enc` no existe y la web se
       publica sin conversaciones
 
-### Día 5 · El juego
-- [ ] Vos: aprobar frases
-- [ ] Yo: buscar a mano las más raras y graciosas
-- [ ] Yo: 3 vidas, puntaje y las cuatro opciones (osito, osita, los dos, ninguno)
-- [ ] Yo: finales personalizados según el puntaje, con lo de mandar la captura
+### Día 5 · El juego — adelantado al 17 de agosto
+- [x] Vos: aprobar frases — 341 aprobadas (254 de uno solo, 87 de los dos)
+- [x] Yo: el puntaje de `chat:frases` reescrito para buscar lo gracioso y no lo
+      bonito (dedazos, cosas concretas; la cursilería genérica resta)
+- [x] Yo: **emparejar cómo escribimos** antes de que la frase entre al juego.
+      Sin eso el juego se resolvía con la primera letra: yo escribo en
+      minúscula, abrevio («m», «t», «q», «cn») y me como tildes; ella empieza
+      en mayúscula y escribe completo. La tabla vive en
+      `private/juego-normalizacion.json` y los dedazos NO se tocan
+- [x] Yo: se avisa en la primera pantalla, porque hacerlo callado sería trampa
+- [x] Yo: 3 vidas, puntaje con racha y las cuatro opciones (osito, osita, los
+      dos, ninguno)
+- [x] Yo: al responder, **de dónde salió la frase** — tres mensajes antes y tres
+      después, cifrados igual que todo. Las de "los dos" traen un ejemplo de
+      cada uno
+- [x] Yo: finales personalizados según el puntaje, con lo de mandar la captura
+- [x] Yo: `juego:preparar` corre solo con el hook al tocar las frases, y
+      `npm run build` se cae si el juego cifrado se quedó atrás
+- [ ] Vos: revisar las 14 frases inventadas de `private/frases-inventadas.json`
+      (son mías, imitándolos, para que «ninguno» pueda ser la respuesta buena)
+- [ ] Vos: jugarlo en el teléfono y decirme si alguna frase se entiende sola
 
 ### Día 6 · Secciones cortas
 - [ ] Yo: diccionario oso-español

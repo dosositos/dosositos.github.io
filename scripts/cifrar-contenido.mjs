@@ -268,6 +268,27 @@ for (const archivo of porCifrar) {
     )
     console.log(`    ✓ recibo    →  public/cifrado/chats.manifiesto.json`)
   }
+
+  // El mismo recibo, para el juego: cuántas frases entraron y con qué
+  // huella. Así `npm run build` avisa si aprobaste frases nuevas y no
+  // se volvió a preparar y cifrar el juego.
+  if (archivo === 'juego.json') {
+    const juego = JSON.parse(contenido)
+    writeFileSync(
+      path.join(DESTINO, 'juego.manifiesto.json'),
+      JSON.stringify(
+        {
+          generado: new Date().toISOString(),
+          huella: juego.huella ?? null,
+          frases: juego.frases?.length ?? 0,
+        },
+        null,
+        2,
+      ),
+      'utf8',
+    )
+    console.log(`    ✓ recibo    →  public/cifrado/juego.manifiesto.json`)
+  }
 }
 
 // Las huellas quedan anotadas para no repetir trabajo la próxima vez.

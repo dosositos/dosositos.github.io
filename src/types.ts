@@ -37,13 +37,16 @@ export interface Foto {
   encuadre?: string
 }
 
+/** Lo que no es texto dentro de una conversación. */
+export type TipoDeMensaje = 'texto' | 'audio' | 'foto' | 'video' | 'sticker' | 'reel'
+
 export interface Mensaje {
   de: Quien
   texto: string
   /** Hora tal cual salía en el chat: '11:47 p. m.' */
   hora?: string
   /** Para audios, fotos y stickers dentro de la conversación. */
-  tipo?: 'texto' | 'audio' | 'foto' | 'sticker'
+  tipo?: TipoDeMensaje
   /** Si el mensaje responde a otro, el texto citado arriba (como en Instagram). */
   responde?: string
   /** Reacción pegada a la burbuja: '❤️' */
@@ -142,16 +145,51 @@ export interface Estrellita {
   tono?: string
 }
 
+/* ────────────────────────────────────────────────────────────────
+   EL JUEGO — "¿quién dijo esto?"
+
+   Ninguna de estas frases vive en src/: llegan del archivo cifrado
+   public/cifrado/juego.enc, que arma scripts/preparar-juego.mjs a
+   partir de las que Armando aprobó. Aquí solo está la forma.
+   ──────────────────────────────────────────────────────────────── */
+
+export type RespuestaJuego = Quien | 'ambos' | 'ninguno'
+
+export interface MensajeContexto extends Mensaje {
+  /** La burbuja que hay que adivinar, para poder resaltarla. */
+  esLaFrase?: boolean
+}
+
+/** Un pedazo de conversación alrededor de la frase. */
+export interface ContextoDeFrase {
+  fecha: string
+  fuente: FuenteChat
+  mensajes: MensajeContexto[]
+}
+
 export interface FraseJuego {
+  id: string
+  /** Ya viene normalizada: ver la aclaración en src/content/juego.ts. */
   texto: string
-  /** La respuesta correcta. */
-  respuesta: Quien | 'ambos' | 'ninguno'
-  /** Contexto que se revela después de responder. */
-  pista?: string
+  respuesta: RespuestaJuego
   fecha?: string
-  /**
-   * De dónde salió. 'inventado' es para las que escribamos nosotros
-   * de adorno: conviene que en el juego se note cuáles son reales.
-   */
+  /** 'inventado' son las que escribimos nosotros: la respuesta es "ninguno". */
   fuente?: FuenteChat | 'inventado'
+  /** Cuántas veces la dijo cada uno. Solo en las de "los dos". */
+  veces?: { osito: number; osita: number }
+  /** Una línea escrita a mano que se muestra al responder. */
+  pista?: string
+  /**
+   * De dónde salió la frase, para leerlo después de responder. Las de
+   * "los dos" traen dos: una de cada uno, para que se vea que de verdad
+   * la dicen ambos. Las inventadas no traen ninguno.
+   */
+  contextos: ContextoDeFrase[]
+}
+
+/** El archivo cifrado completo. */
+export interface SobreJuego {
+  generado: string
+  huella: string
+  frases: FraseJuego[]
 }

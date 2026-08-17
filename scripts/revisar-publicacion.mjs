@@ -14,6 +14,7 @@
  */
 import { readFileSync, existsSync, readdirSync } from 'node:fs'
 import path from 'node:path'
+import { huellaDelJuego } from './huella-juego.mjs'
 
 const RAIZ = path.resolve(import.meta.dirname, '..')
 const MOMENTOS = path.join(RAIZ, 'src', 'content', 'momentos.ts')
@@ -132,6 +133,59 @@ if (fotosPedidas.size > 0) {
   }
 
   console.log(`  ✓ ${fotosPedidas.size} fotos cifradas y ninguna en claro`)
+}
+
+// ── El juego ──────────────────────────────────────────────────────
+// La página /juego no sirve de nada sin su archivo cifrado, y el fallo
+// sería silencioso: la web se ve entera y el juego dice "todavía no
+// puedo abrir las frases".
+
+const JUEGO_CIFRADO = path.join(CIFRADO, 'juego.enc')
+const JUEGO_MANIFIESTO = path.join(CIFRADO, 'juego.manifiesto.json')
+const JUEGO_EN_CLARO = path.join(RAIZ, 'private', 'publicable', 'juego.json')
+
+if (!existsSync(JUEGO_CIFRADO) || !existsSync(JUEGO_MANIFIESTO)) {
+  fallar(
+    'Falta public/cifrado/juego.enc',
+    `    La web tiene el juego "¿quién dijo esto?" y sus frases no están cifradas.
+    Corré:
+
+      npm run juego:preparar
+
+    (deja private/publicable/juego.json, y el cifrado se encadena solo. Si no,
+     ${COMANDO})`,
+  )
+}
+
+// Sólo en la máquina donde está el material en claro: ahí se puede
+// comprobar que lo cifrado es lo último que aprobaste.
+const huellaAhora = huellaDelJuego()
+if (huellaAhora) {
+  const recibo = JSON.parse(readFileSync(JUEGO_MANIFIESTO, 'utf8'))
+
+  if (recibo.huella !== huellaAhora) {
+    fallar(
+      'El juego se quedó atrás',
+      `    Aprobaste o cambiaste frases en private/frases-candidatas.json (o tocaste
+    la tabla de private/juego-normalizacion.json) y el juego publicado todavía
+    tiene las de antes. Corré:
+
+      npm run juego:preparar`,
+    )
+  }
+
+  if (existsSync(JUEGO_EN_CLARO)) {
+    const enClaro = JSON.parse(readFileSync(JUEGO_EN_CLARO, 'utf8'))
+    if (enClaro.frases?.length !== recibo.frases) {
+      fallar(
+        'El juego cifrado no es el último',
+        `    private/publicable/juego.json trae ${enClaro.frases?.length} frases y lo cifrado ${recibo.frases}.
+    Corré:  ${COMANDO}`,
+      )
+    }
+  }
+
+  console.log(`  ✓ ${recibo.frases} frases del juego cifradas y al día`)
 }
 
 // ── Qué chats pide la web ─────────────────────────────────────────

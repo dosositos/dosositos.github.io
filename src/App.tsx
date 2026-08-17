@@ -5,6 +5,7 @@ import { Petalos } from '@/componentes/Petalos'
 import { InterruptorTema, ProveedorTema } from '@/componentes/ProveedorTema'
 import { ScrollAlInicio } from '@/componentes/ScrollAlInicio'
 import { Estadisticas } from '@/paginas/Estadisticas'
+import { Juego } from '@/paginas/Juego'
 import { LineaDelTiempo } from '@/paginas/LineaDelTiempo'
 import { Momento } from '@/paginas/Momento'
 import { Playlist } from '@/paginas/Playlist'
@@ -56,10 +57,7 @@ function Marco() {
           <Route path="/" element={<Portada />} />
           <Route path="/linea-del-tiempo" element={<LineaDelTiempo />} />
           <Route path="/momento/:id" element={<Momento />} />
-          <Route
-            path="/juego"
-            element={<EnConstruccion titulo="¿quién dijo esto?" nota="el juego de las frases — día 6" />}
-          />
+          <Route path="/juego" element={<Juego />} />
           <Route
             path="/diccionario"
             element={<EnConstruccion titulo="diccionario oso-español" nota="las palabras que solo existen aquí — día 7" />}

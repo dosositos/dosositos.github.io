@@ -3,7 +3,9 @@
  * ║  EL HOOK QUE CIFRA SOLO                                          ║
  * ║                                                                  ║
  * ║  Claude Code lo ejecuta después de cada Write o Edit. Si lo que  ║
- * ║  se tocó estaba en private/publicable/, vuelve a cifrar.         ║
+ * ║  se tocó estaba en private/publicable/, vuelve a cifrar. Si era  ║
+ * ║  material del juego (las frases aprobadas, las inventadas o la   ║
+ * ║  tabla de normalización), primero lo pasa por preparar-juego.    ║
  * ║                                                                  ║
  * ║  Existe porque el 15 de agosto la web se publicó sin una sola    ║
  * ║  conversación: el cifrado era un paso manual y nadie lo corrió.  ║
@@ -36,15 +38,22 @@ const entrada = await leerEntrada()
 const archivo = entrada.tool_input?.file_path ?? entrada.tool_response?.filePath ?? ''
 
 // Normalizamos las barras: en Windows llegan invertidas.
-const esPublicable = /private[/\\]publicable[/\\]/i.test(archivo.replace(/\\/g, '/'))
-if (!esPublicable) process.exit(0)
+const ruta = archivo.replace(/\\/g, '/')
 
-// El script decide solo si hace falta: si el contenido no cambió, no cifra.
-const resultado = spawnSync(
-  process.execPath,
-  [path.join(RAIZ, 'scripts', 'cifrar-contenido.mjs')],
-  { cwd: RAIZ, encoding: 'utf8' },
-)
+const esPublicable = /private\/publicable\//i.test(ruta)
+// El material del juego no está en publicable/: hay que pasarlo antes por
+// preparar-juego.mjs, que es el que escribe private/publicable/juego.json.
+const esDelJuego = /private\/(frases-candidatas|frases-inventadas|juego-normalizacion)\.json$/i.test(ruta)
+
+if (!esPublicable && !esDelJuego) process.exit(0)
+
+const correr = (script) =>
+  spawnSync(process.execPath, [path.join(RAIZ, 'scripts', script)], { cwd: RAIZ, encoding: 'utf8' })
+
+let resultado = esDelJuego ? correr('preparar-juego.mjs') : { status: 0, stdout: '', stderr: '' }
+
+// El cifrado decide solo si hace falta: si el contenido no cambió, no cifra.
+if (resultado.status === 0) resultado = correr('cifrar-contenido.mjs')
 
 const salida = `${resultado.stdout ?? ''}${resultado.stderr ?? ''}`.trim()
 

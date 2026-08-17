@@ -15,6 +15,7 @@
     "chat:instagram": "node scripts/parse-instagram.mjs",
     "chat:frases": "node scripts/generar-frases.mjs",
     "chat:dia": "node scripts/ver-dia.mjs",
+    "juego:preparar": "node scripts/preparar-juego.mjs",
     "fotos:optimizar": "node scripts/optimizar-fotos.mjs && node scripts/cifrar-medios.mjs",
     "fotos:cifrar": "node scripts/cifrar-medios.mjs",
     "secretos:cifrar": "node scripts/cifrar-contenido.mjs"
