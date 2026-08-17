@@ -77,15 +77,16 @@ la web ya está publicada y se ve en el teléfono desde el 17 de agosto)*
 Ordenado por lo que más nos atrasa si no llega:
 
 1. **La lista de momentos** → `private/plantilla-momentos.md`. Es lo único que
-   de verdad nos atrasa. Van **11 momentos escritos** (del 24 de agosto al 19
-   de octubre de 2024) más 2 apuntados sin escribir: el 24 de noviembre («el
+   de verdad nos atrasa. Van **13 momentos escritos** (del 24 de agosto al 21
+   de noviembre de 2024) más 2 apuntados sin escribir: el 24 de noviembre («el
    día que dijiste que sí») y el 1 de enero (las flores de lego). Siguen 2025
    entero y lo que va de 2026. Con la fecha y dos líneas por momento me alcanza.
-2. **Las fotos** → a `fotos-originales/`. Hay 14 ya optimizadas y cifradas; las
-   que falten van de las mismas: las tirás ahí y corré `npm run fotos:optimizar`
-   (desde el 16 de agosto eso ya no las publica en claro, las cifra).
-   Los **pies de foto**: 8 de 10 escritos en los momentos, ninguno en los
-   "instantes". No es obligatorio, pero se leen lindo.
+2. **Las fotos** → a `fotos-originales/`. Hay 26 ya optimizadas y cifradas
+   (fotos y videos); las que falten van de las mismas: las tirás ahí y corré
+   `npm run fotos:optimizar` (desde el 16 de agosto eso ya no las publica en
+   claro, las cifra).
+   Los **pies de foto**: escritos en los momentos, ninguno en los "instantes".
+   No es obligatorio, pero se leen lindo.
 3. **Decidir qué momentos son privados** → los que lleven `privado: true`
    pedirán la contraseña otra vez. Hoy no hay ninguno, y puede quedar así: el
    candado de la entrada ya cubre todo.
@@ -123,6 +124,10 @@ máquina, o contra un respaldo de la carpeta, ya no.
 - [x] Yo: escritos y con su conversación cifrada — la primera foto, la pizza de
       chimichurri, el cumpleaños 20, el nacimiento de Nico y los videos
 - [x] Yo: los "instantes" — fotos sin momento exacto, intercaladas en la línea
+- [x] Vos: 2 momentos más, hasta el 21 de noviembre de 2024, y 3 videos sueltos
+      de octubre (17 ago)
+- [x] Yo: escritos y con su conversación cifrada — las papas con helado y el
+      nacimiento de Ovi; los tres videos quedaron como "instantes"
 - [x] Vos: apuntados el 24 de noviembre y el 1 de enero (salen en la línea con
       su "por escribir")
 - [ ] Vos: escribir esos dos y seguir con 2025 en adelante
@@ -161,13 +166,14 @@ máquina, o contra un respaldo de la carpeta, ya no.
 - [x] Yo: `revisar` se cae si aparece algo en claro en `public/media/` o si un
       momento pide una foto que no existe
 - [x] Yo: cerrar la puerta (`olvidarClave`) borra de memoria fotos y chats
-- [x] Vos: aprobadas — se ven en el teléfono (14 fotos y el video)
-- [ ] Vos: los pies de foto que faltan (2 momentos y los 4 "instantes")
+- [x] Vos: aprobadas — se ven en el teléfono (20 fotos y 6 videos)
+- [ ] Vos: los pies de foto que faltan (los 5 "instantes")
 - [ ] Yo: las fotos de los momentos que faltan, según vayan llegando
 
-**El video (`momento10.mp4`) va igual, con una salvedad:** cifrado no se puede ir
-reproduciendo mientras baja, hay que bajarlo entero y armarlo en memoria. Con
-900 KB no se nota. Si algún día entra uno de 40 MB, ese hay que pensarlo aparte.
+**Los videos van igual, con una salvedad:** cifrados no se pueden ir
+reproduciendo mientras bajan, hay que bajarlos enteros y armarlos en memoria. Van
+6 y el más pesado no llega a 2,5 MB, así que no se nota. Si algún día entra uno
+de 40 MB, ese hay que pensarlo aparte.
 
 ### Día 4 · El candado — cerrado el 17 de agosto
 - [x] Yo: la puerta con la frase-contraseña y su pista
@@ -370,8 +376,8 @@ y chats, y el sobre de apertura. Eso es el regalo.
 ## Por dónde seguimos — cerrado el 17 de agosto de 2026
 
 **Cómo está la web ahora mismo:** publicada y andando en el teléfono. Puerta con
-la frase, portada con contadores, línea del tiempo con 13 momentos (11 escritos,
-2 apuntados) y 2 instantes, 14 fotos y un video cifrados, 11 conversaciones
+la frase, portada con contadores, línea del tiempo con 15 momentos (13 escritos,
+2 apuntados) y 5 instantes, 20 fotos y 6 videos cifrados, 13 conversaciones
 reales, playlist, estadísticas y el juego de las frases entero.
 
 **Lo primero al retomar (yo):** el día 2 — la línea del tiempo horizontal para

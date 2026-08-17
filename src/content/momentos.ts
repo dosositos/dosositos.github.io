@@ -258,6 +258,70 @@ export const momentos: Momento[] = [
       texto: 'Me hago payaso solo para verte reír. Eso no ha cambiado ni un día.',
     },
   },
+  {
+    id: 'papas-con-helado',
+    fecha: '2024-11-03',
+    titulo: 'El experimento: papas con helado',
+    lugar: "McDonald's, Metrocentro",
+    resumen:
+      'Papas fritas mojadas en el sundae de caramelo. Ninguno de los dos hubiera hecho eso solo.',
+    relato:
+      'Ese domingo salimos sin plan. Yo te escribí que íbamos a armar algo bonito, te pregunté qué hacíamos y me dijiste "no sé" toda la tarde — todavía te lo reclamo. Nos fuimos dando vueltas, no encontramos lugar en ningún lado, y para rematar nos vinieron a fichar en el parqueo de Metro justo cuando estábamos tranquilos. De todo ese domingo desordenado salió el experimento: papas fritas mojadas en el sundae de caramelo. Ya ni me acuerdo de quién fue la idea. Nos quedamos viéndonos la cara esperando el veredicto y resultó que no estaba feo — raro, pero no feo. Solo yo no me hubiera atrevido; con vos sí. Ese mismo día salieron la foto del filtro de payasos y la del beso en tu mejilla, y esa noche me escribiste que lo único bueno del fin de semana había sido vernos.',
+    flor: 'gerbera',
+    icono: '🍟',
+    fotos: [
+      {
+        src: 'momento11-1',
+        alt: 'Vos probando la combinación de papas con helado',
+        pie: 'el veredicto',
+      },
+      {
+        src: 'momento11-2',
+        alt: 'Mis manos enseñando el invento, con vos de fondo',
+        pie: '"no está feo"',
+      },
+      { src: 'momento11-3', alt: 'Los dos con el filtro de payasos' },
+      { src: 'momento11-4', alt: 'Yo dándote un beso en la mejilla', pie: 'esa misma tarde' },
+      { src: 'momento11-5', alt: 'Vos sonriendo en el asiento del copiloto' },
+    ],
+    chat: { mensajes: 17, fuente: 'whatsapp', titulo: 'esa noche, ya en nuestras casas' },
+    nota: {
+      autor: 'osito',
+      texto: 'Con vos pruebo cosas que solo no probaría. Aunque sean papas con helado.',
+    },
+  },
+  {
+    id: 'nace-ovi',
+    fecha: '2024-11-21',
+    titulo: 'El nacimiento de Ovi y el vestido rojo vino',
+    lugar: 'Galerías',
+    resumen:
+      'Un gorila rosado que salió de una caja olvidada, y un vestido que ninguno de los dos sabía para qué día era.',
+    relato:
+      'Esa mañana abrieron en mi casa una caja de peluches viejos, de esos que ya nadie recordaba, y ahí adentro estaba un gorila con complexión de gimnasio y color rosa pastel — el color de todo lo tuyo. Lo limpié y me lo llevé ese mismo día. Así llegó Ovi, nuestro segundo hijo, con nombre de un cubano que en esa época yo escuchaba a diario. La otra actividad de la tarde era comprarte ropa. El día anterior habías ido con tus amigas, habías visto unos vestidos pegados y te habías quedado con las ganas porque no llevabas la billetera; me dijiste después que por algo había sido, que me tocaba acompañarte a mí. Salías del vestidor y yo me quedaba sin saber qué decir, una y otra vez. Al final te llevaste el rojo vino — tu verdadero color favorito, ese que yo te reclamaba que no tenías en nada — y te probaste otro gris que meses después te iba a caer de regalo en Navidad. Esa noche ninguno de los dos sabía que el rojo vino lo ibas a estrenar el domingo siguiente.',
+    flor: 'rosa-pastel',
+    destacado: true,
+    icono: '🦍',
+    fotos: [
+      { src: 'momento12-1', alt: 'Ovi abrazado con su hermano Nico', pie: 'los hermanos' },
+      { src: 'momento12-2', alt: 'Ovi posando con su primo lejano el orangután' },
+      {
+        src: 'momento12-3',
+        alt: 'Vos en el probador, con el vestido rojo vino',
+        pie: 'el rojo vino',
+      },
+      {
+        src: 'momento12-4',
+        alt: 'Vos con el otro vestido, el gris',
+        pie: 'y el gris, que volvería en Navidad',
+      },
+    ],
+    chat: { mensajes: 29, fuente: 'whatsapp', titulo: 'la noche del vestido' },
+    nota: {
+      autor: 'osito',
+      texto: 'Te dije que en esa foto solo faltábamos vos y yo. Lo decía por los peluches y por todo.',
+    },
+  },
 
   // ── De aquí para abajo: apuntados, todavía sin escribir ──────────
   // Salen en la línea del tiempo con su fecha y un "por escribir".

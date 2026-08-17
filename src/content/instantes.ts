@@ -26,6 +26,32 @@ export const instantes: Instante[] = [
     fotos: [{ src: 'fotox1', alt: 'Nosotros, un domingo en el parqueo' }],
   },
   {
+    id: 'el-jueves-que-andabas-enferma',
+    fecha: '2024-10-24',
+    lugar: 'Camino a tu casa',
+    texto:
+      'Un jueves con calentura y sin ánimos. Te grabé de camino a dejarte, solo por sacarte una sonrisa antes de despedirnos.',
+    flor: 'nube',
+    fotos: [{ src: 'videox1', alt: 'Vos en el carro, camino a tu casa' }],
+  },
+  {
+    id: 'un-rato-en-el-parqueo',
+    fecha: '2024-10-30',
+    lugar: 'Metrocentro',
+    texto:
+      'Un miércoles corto en el parqueo, de esos que uno arma solo porque ya hacía falta verse.',
+    flor: 'tulipan-violeta',
+    fotos: [{ src: 'videox2', alt: 'Vos, esa tarde en el parqueo' }],
+  },
+  {
+    id: 'esperandome-en-galerias',
+    fecha: '2024-10-31',
+    lugar: 'Galerías',
+    texto: 'Salí del baño y ahí estabas esperándome. Así de simple, y así lo guardé.',
+    flor: 'margarita',
+    fotos: [{ src: 'videox3', alt: 'Vos esperándome afuera del baño' }],
+  },
+  {
     id: 'el-hoodie-de-los-bucks',
     fecha: '2024-10-17',
     lugar: 'La universidad',
