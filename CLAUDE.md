@@ -50,6 +50,15 @@ algo ahí. Los nombres publicados son opacos, el índice va cifrado, y en
 `src/content/` las fotos se referencian por su nombre lógico sin extensión
 (`{ src: 'momento9-1', alt: '…' }`). En el navegador las abre `<FotoCifrada>`.
 
+**La única excepción: los tres retratos de los peluches.** Viven en claro en
+`src/assets/peluches/{id}.webp` y viajan en el bundle. Son ellos —no ustedes
+dos—, de un panda nadie deduce nada, y el guiño necesita que se asomen al
+instante: descifrar antes de aparecer mata la gracia. Son ilustraciones
+bordadas generadas a partir de las fotos, no las fotos. Se preparan con
+`npm run peluches:preparar`, que toma
+`fotos-originales/peluches/{id}-estampado.png`, le limpia el halo verde del
+recorte, lo centra y lo achica. **Ninguna otra foto se salta el cifrado.**
+
 **El cifrado corre solo.** Un hook de `PostToolUse` (ver `.claude/settings.json`)
 ejecuta `scripts/hook-cifrar.mjs` después de cada edición dentro de
 `private/publicable/`, y eso vuelve a cifrar. Tocar `frases-candidatas.json`,
@@ -102,6 +111,8 @@ npm run dia:preparar     # el «un día como hoy» de las 366 fechas (uno por me
 npm run dia:preparar -- --ver 11-24   # qué eligió para ese día
 npm run fotos:optimizar  # fotos-originales/ → private/media/ en AVIF, y las cifra
 npm run fotos:cifrar     # solo el cifrado (private/media/ → public/cifrado/media/)
+npm run peluches:preparar # los retratos bordados → src/assets/peluches/ (en claro)
+npm run peluches:hoy     # ¿dónde está escondido cada uno hoy? (-- --semana, -- 2026-08-24)
 npm run secretos:cifrar  # private/publicable/ → public/cifrado/ (corre solo por hook)
 npm run revisar          # ¿está todo cifrado y al día? (también antes de build)
 ```
@@ -110,6 +121,7 @@ npm run revisar          # ¿está todo cifrado y al día? (también antes de bu
 
 ```
 src/content/    ← lo que edita Armando (momentos, playlist, peluches, config)
+src/assets/     ← los retratos de los peluches, lo único visual en claro
 src/componentes/
 src/paginas/
 src/lib/        ← tiempo, celebraciones, cripto

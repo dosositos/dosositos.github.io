@@ -19,6 +19,8 @@
     "dia:preparar": "node scripts/preparar-dia-como-hoy.mjs && node scripts/cifrar-contenido.mjs",
     "fotos:optimizar": "node scripts/optimizar-fotos.mjs && node scripts/cifrar-medios.mjs",
     "fotos:cifrar": "node scripts/cifrar-medios.mjs",
+    "peluches:preparar": "node scripts/preparar-peluches.mjs",
+    "peluches:hoy": "node scripts/peluches-hoy.mjs",
     "secretos:cifrar": "node scripts/cifrar-contenido.mjs"
   },
   "dependencies": {
@@ -35,6 +37,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^6.0.5",
+    "playwright-core": "^1.62.1",
     "sharp": "^0.35.3",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",

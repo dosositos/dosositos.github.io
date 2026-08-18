@@ -1,6 +1,7 @@
 import { Link, Route, Routes, useLocation } from 'react-router-dom'
 import { Candado } from '@/componentes/Candado'
 import { CieloEstrellado } from '@/componentes/CieloEstrellado'
+import { PeluchesEscondidos } from '@/componentes/PeluchesEscondidos'
 import { Petalos } from '@/componentes/Petalos'
 import { InterruptorTema, ProveedorTema } from '@/componentes/ProveedorTema'
 import { ScrollAlInicio } from '@/componentes/ScrollAlInicio'
@@ -52,32 +53,41 @@ function Marco() {
         <InterruptorTema />
       </div>
 
-      <main className="relative">
-        <Routes>
-          <Route path="/" element={<Portada />} />
-          <Route path="/linea-del-tiempo" element={<LineaDelTiempo />} />
-          <Route path="/momento/:id" element={<Momento />} />
-          <Route path="/juego" element={<Juego />} />
-          <Route
-            path="/diccionario"
-            element={<EnConstruccion titulo="diccionario oso-español" nota="las palabras que solo existen aquí — día 7" />}
-          />
-          <Route path="/playlist" element={<Playlist />} />
-          <Route path="/estadisticas" element={<Estadisticas />} />
-          <Route
-            path="/frasco"
-            element={<EnConstruccion titulo="frasco de mensajitos" nota="las estrellitas de papel — día 7" />}
-          />
-          <Route
-            path="*"
-            element={<EnConstruccion titulo="te perdiste, osita" nota="esta página no existe todavía" />}
-          />
-        </Routes>
-      </main>
+      {/* Los peluches se anclan a la PÁGINA y no a la pantalla: así el que
+          se esconde abajo obliga a recorrer todo el scroll. El envoltorio
+          tiene que abarcar también el pie — anclados solo al <main>, el
+          alto del pie los dejaba flotando a media altura en vez de en la
+          esquina de abajo. */}
+      <div className="relative">
+        <PeluchesEscondidos />
 
-      <footer className="pb-10 text-center text-xs text-texto-suave/50">
-        hecho con las manos por {' '}osito{' '} para {' '}osita
-      </footer>
+        <main className="relative">
+          <Routes>
+            <Route path="/" element={<Portada />} />
+            <Route path="/linea-del-tiempo" element={<LineaDelTiempo />} />
+            <Route path="/momento/:id" element={<Momento />} />
+            <Route path="/juego" element={<Juego />} />
+            <Route
+              path="/diccionario"
+              element={<EnConstruccion titulo="diccionario oso-español" nota="las palabras que solo existen aquí — día 7" />}
+            />
+            <Route path="/playlist" element={<Playlist />} />
+            <Route path="/estadisticas" element={<Estadisticas />} />
+            <Route
+              path="/frasco"
+              element={<EnConstruccion titulo="frasco de mensajitos" nota="las estrellitas de papel — día 7" />}
+            />
+            <Route
+              path="*"
+              element={<EnConstruccion titulo="te perdiste, osita" nota="esta página no existe todavía" />}
+            />
+          </Routes>
+        </main>
+
+        <footer className="pb-10 text-center text-xs text-texto-suave/50">
+          hecho con las manos por {' '}osito{' '} para {' '}osita
+        </footer>
+      </div>
     </>
   )
 }

@@ -1,6 +1,6 @@
 // Ruta relativa a propósito: así este archivo se puede ejecutar suelto con
 // node para comprobar los cálculos sin levantar toda la web.
-import { ZONA_HORARIA } from '../content/config'
+import { ZONA_HORARIA } from '../content/config.ts'
 
 export interface Desglose {
   anios: number
@@ -167,4 +167,18 @@ export const MESES_ES = [
 export function fechaLarga(fecha: Date): string {
   const p = partesLocales(fecha)
   return `${p.dia} de ${MESES_ES[p.mes - 1]} de ${p.anio}`
+}
+
+/**
+ * El día de hoy en Nicaragua como un número: 20260824.
+ *
+ * Sirve de semilla para lo que tenga que cambiar una vez al día y
+ * quedarse quieto el resto: el mismo día da siempre lo mismo, en
+ * cualquier teléfono, y a la medianoche de aquí cambia. Con
+ * `new Date().getDate()` se movería a distintas horas según la zona
+ * horaria de quien mire.
+ */
+export function numeroDelDia(fecha: Date = new Date()): number {
+  const p = partesLocales(fecha)
+  return p.anio * 10_000 + p.mes * 100 + p.dia
 }

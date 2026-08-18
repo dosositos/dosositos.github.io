@@ -15,8 +15,9 @@
 - [x] **Día 5 (17 ago)** · Juego "¿quién dijo esto?"
 - [ ] Día 2 (18 ago) · Línea del tiempo horizontal en computadora
 - [ ] Día 6 (19 ago) · Diccionario oso + frasco de mensajitos
-      (el "un día como hoy" ya está, adelantado el 17)
-- [ ] Día 7 (20-21 ago) · El sobre de apertura, easter eggs, peluches escondidos
+      (el "un día como hoy" y el frasco ya están, adelantados el 17)
+- [ ] Día 7 (20-21 ago) · El sobre de apertura, easter eggs
+      (los peluches escondidos ya están, adelantados el 17)
 - [ ] Día 8 (22 ago) · PWA, música, celebraciones del calendario, pulido
 - [ ] Día 9 (23 ago) · Pruebas en móvil de verdad, ensayo general
 - [ ] **Día 10 (24 ago) · Entregar** 🌻
@@ -88,13 +89,23 @@ Ordenado por lo que más nos atrasa si no llega:
    claro, las cifra).
    Los **pies de foto**: escritos en los momentos, ninguno en los "instantes".
    No es obligatorio, pero se leen lindo.
-3. **Decidir qué momentos son privados** → los que lleven `privado: true`
+3. **Los retratos de Ovi, Boo y Nico** → hoy están puestos con emoji genérico
+   (🦍 🐼 🧸) y eso se nota: el gorila del emoji no es Ovi. Hacen falta las tres
+   fotos. Cómo tomarlas está más abajo, en «Los retratos de los peluches».
+4. **El nacimiento de Boo** → es el único de los tres sin historia. Contame
+   cuándo llegó, quién se lo dio a quién y qué pasó ese día, aunque la fecha
+   quede lejísimos del orden que llevamos: sin eso, Boo anda por la web con una
+   frase comodín.
+5. **Los mensajitos del frasco** → 20-30 frases cortas tuyas. No bloquea nada:
+   el frasco ya funciona con 29 borradores míos en `src/content/mensajitos.ts`.
+   Reescribilos con tus palabras — es un archivo de texto, uno debajo del otro,
+   y no hay que tocar ni una línea de código.
+6. **Decidir qué momentos son privados** → los que lleven `privado: true`
    pedirán la contraseña otra vez. Hoy no hay ninguno, y puede quedar así: el
    candado de la entrada ya cubre todo.
-4. **El diccionario oso** → las palabras que solo existen entre ustedes. Bloquea
+7. **El diccionario oso** → las palabras que solo existen entre ustedes. Bloquea
    el día 6.
-5. **Los mensajitos del frasco** → 20-30 frases cortas tuyas. Bloquea el día 6.
-6. **La dedicatoria del sobre** → lo primero que va a leer. Tomate tu tiempo.
+8. **La dedicatoria del sobre** → lo primero que va a leer. Tomate tu tiempo.
    Bloquea el día 7.
 
 ### Ya hecho, para no volver sobre eso
@@ -218,7 +229,14 @@ de 40 MB, ese hay que pensarlo aparte.
 
 ### Día 6 · Secciones cortas
 - [ ] Yo: diccionario oso-español
-- [ ] Yo: frasco de mensajitos con estrellitas de papel
+- [x] Yo: frasco de mensajitos con estrellitas de papel — adelantado al 17
+      de agosto. Las estrellitas están dibujadas (no son el emoji ⭐: cada una
+      lleva el color del mensajito que trae doblado adentro) y el nivel del
+      frasco baja según las que le falten por abrir. No se repite ninguna
+      hasta haberlas visto todas; cuando se acaban, se vuelve a llenar solo
+- [ ] Los dos: decidir cómo se mueven las estrellitas dentro del vidrio. Hoy
+      están quietas: entran una por una al cargar y ahí se quedan
+- [ ] Vos: reescribir los 29 mensajitos con tus palabras
 - [x] Yo: "un día como hoy" en la portada, sacado del chat — adelantado
       al 17 de agosto
 - [ ] Vos: ojear los días que más importan (`npm run dia:preparar -- --ver 11-24`)
@@ -249,7 +267,13 @@ días — el que falta es el 29 de febrero.
 - [ ] Vos: la dedicatoria
 - [ ] Yo: el sobre que se abre la primera vez
 - [ ] Yo: easter eggs (escribir "osito", código Konami, clics secretos)
-- [ ] Yo: Ovi, Boo y Nico escondidos por las esquinas
+- [x] Yo: Ovi, Boo y Nico escondidos por las esquinas — adelantado al 17 de
+      agosto. Uno por página (Ovi en la portada, Boo en la línea del tiempo,
+      Nico en el frasco), asomándose medio cuerpo y bamboleándose despacio.
+      Al tocarlos salen, dicen algo y se quedan; con los tres, el premio
+- [ ] Vos: las tres fotos, para jubilar los emojis (ver «Los retratos» abajo)
+- [ ] Los dos: decidir si se quedan siempre en la misma página o si aparecen
+      por ahí, cambiando de sitio
 - [ ] Yo: el oso blanco como guiño recurrente
 - [ ] **Los dos: decidir dónde y cómo va la historia del oso blanco.**
       Está fuera de la portada desde el 16 de agosto, esperando lugar
@@ -360,10 +384,11 @@ esa es la pantalla que manda.
 Se entrega igual recortando en este orden (lo primero que se cae, arriba):
 
 1. Línea del tiempo horizontal en computadora → se queda la vertical en ambas
-2. Frasco de mensajitos
-3. Diccionario oso
-4. Música de fondo
-5. Easter eggs
+2. Diccionario oso
+3. Música de fondo
+4. Easter eggs (los peluches escondidos ya están; faltan los otros guiños)
+
+*(el frasco de mensajitos salió de esta lista el 17 de agosto: ya está hecho)*
 
 **Nunca se caen:** los contadores, la línea del tiempo, las cápsulas con fotos
 y chats, y el sobre de apertura. Eso es el regalo.
@@ -397,31 +422,166 @@ y chats, y el sobre de apertura. Eso es el regalo.
   (`'-60px 0px'`). Suelto recorta también por los lados y deja invisible
   cualquier cosa angosta pegada al borde, que fue lo que pasó con las flores de
   la línea del tiempo en el teléfono.
+- **El frasco recuerda por huella, no por texto.** De los mensajitos que ella
+  ya abrió, en el teléfono queda guardado un número corto por cada uno, no la
+  frase. El localStorage lo lee cualquiera que agarre el teléfono, y ahí no
+  tienen por qué quedar los mensajitos en claro. De paso, reordenar
+  `mensajitos.ts` no descuadra la cuenta.
+- **Lo que cambia cada día se siembra con la fecha, no con `Math.random`.**
+  Los escondites de los peluches salen de `numeroDelDia()` (día de Nicaragua)
+  mezclado con el id de cada uno. Al azar de verdad, ella podría abrir la
+  portada tres veces y ver a Ovi solo en la tercera, y mandarla a buscarlo por
+  mensaje sería imposible.
+- **Los retratos de los peluches son la única foto en claro.** Van en
+  `src/assets/peluches/`. Son ellos, no ustedes dos, y el guiño necesita que se
+  asomen al instante: descifrar antes de aparecer mata la gracia.
 - **Todo el código en español**, incluidos nombres de variables y archivos.
 
 ---
 
-## Por dónde seguimos — cerrado el 17 de agosto de 2026
+## La próxima sesión — cerrado el 18 de agosto de 2026
+
+**Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
+arrancamos por donde diga, sin que tengás que acordarte de nada.
 
 **Cómo está la web ahora mismo:** publicada y andando en el teléfono. Puerta con
 la frase, portada con contadores y "un día como hoy", línea del tiempo con 15
 momentos (13 escritos, 2 apuntados) y 5 instantes, 20 fotos y 6 videos cifrados,
-13 conversaciones reales, playlist, estadísticas y el juego de las frases entero.
+13 conversaciones reales, playlist, estadísticas, el juego de las frases entero,
+el frasco de mensajitos y los tres peluches escondidos por las esquinas, ya con
+sus retratos bordados.
 
-**Lo primero al retomar (yo):** el día 2 — la línea del tiempo horizontal para
-computadora. Es lo único que quedó atrasado del orden original, y es lo primero
-que se cae si vamos con el tiempo justo, así que tampoco es urgente. Si preferís,
-saltamos al día 6 (diccionario y frasco), que es contenido que se ve.
+**Nada quedó a medias:** no hay ramas abiertas ni pasos manuales pendientes. El
+frasco, los mensajitos, los peluches y sus retratos siguen **sin commitear**,
+pero ya no falta nada para hacerlo: es un commit pendiente, no un bloqueo.
 
-**Lo primero al retomar (vos):** los momentos de 2025 en adelante, en
-`private/plantilla-momentos.md`. Con la fecha y dos líneas por momento me
-alcanza. Todo lo demás que falta depende de eso o es de la última semana.
+**Lo del 18 de agosto:** los 29 mensajitos quedaron pegados en
+`src/content/mensajitos.ts`; de las tres decisiones cortas se resolvieron dos
+—los escondites rotan por día y las estrellitas caen y se sacuden—, ya
+implementadas; y **llegaron los retratos de los peluches**. La decisión que
+sigue abierta es la tercera: cómo entra Boo en la línea del tiempo, que espera
+a tener su fecha.
 
-**Nada quedó a medias:** no hay ramas abiertas, ni archivos sin commitear, ni
-pasos manuales pendientes. El cifrado corre solo con el hook y el build se cae
-antes de publicar algo incompleto.
+### Lo que toca, en orden
 
----
+1. **Mirar los peluches en el teléfono y commitear.** Los retratos están puestos
+   pero solo se comprobó que compilan: falta verlos asomarse de verdad, sobre
+   todo el halo de color contra el fondo nocturno. Después entra el commit
+   entero: frasco, mensajitos, peluches y retratos.
+2. **El nacimiento de Boo.** Contame su historia y lo escribo como momento de
+   la línea del tiempo. Es el único de los tres que no tiene la suya, y por eso
+   su frase de la esquina es un comodín («Yo estuve en casi todas estas fechas.
+   Nadie me tomó fotos»). La fecha va a quedar lejísimos de todo lo demás —
+   probablemente años antes de conocerse — y eso está bien: la línea ordena
+   sola, y con la fecha ya puesta decidimos cómo se muestra, que es la decisión
+   que quedó abierta abajo.
+3. **El diccionario oso**, si ya tenés las palabras. Si no, me voy al día 2 —
+   la línea del tiempo horizontal para computadora — que es lo único atrasado
+   del orden original.
+
+### Los retratos de los peluches — hechos
+
+Ya están, y no son fotos: son **ilustraciones de parche bordado** generadas en
+higgsfield.ai (Nano Banana Pro, imagen de referencia + prompt, 2 créditos cada
+una) a partir de las fotos de los tres. La foto realista de un peluche sobre el
+fondo nocturno se veía como un recorte pegado; el parche bordado, con su borde
+de puntada, se lleva bien con el papel y la cinta adhesiva del resto.
+
+Los prompts y el porqué de cada decisión quedaron en
+`private/notas/retratos-peluches-higgsfield.md`, por si hay que regenerar
+alguno. Lo que más costó acertar y conviene no perder:
+
+- **Nada de códigos de color en el prompt.** Se le pide al modelo que saque el
+  color de la foto de referencia *y que neutralice la luz de la habitación*.
+  Las fotos de Ovi y Nico salieron subexpuestas y con tinte cálido: el color
+  medido en el archivo es el del peluche mal iluminado, no el del peluche. Y
+  las variables de `index.css` tampoco sirven, que son decisiones de diseño
+  para el halo.
+- **Lo que sí va explícito son los detalles que el modelo borra** hacia el
+  peluche genérico: los ojos ámbar de Boo (todo panda de IA los tiene negros),
+  el lazo floral y los ojos cerrados de Nico, las dos texturas de Ovi.
+- **El recorte deja halo verde.** Se generan sobre fondo chroma verde y ningún
+  quitafondos recorta perfecto: quedaban entre 3.000 y 9.000 píxeles verdosos
+  en el contorno, invisibles sobre blanco y clarísimos sobre el fondo nocturno.
+  Los limpia `npm run peluches:preparar`, que además los centra y los achica.
+  Ese script es el único paso entre la imagen recortada a mano y la web.
+
+### Cómo funciona el juego de los peluches (18 de agosto, segunda vuelta)
+
+Después de verlos en el teléfono cambió casi todo menos la idea:
+
+- **Van pegados a la página, no a la pantalla.** Antes eran `fixed` y viajaban
+  con el scroll como los botones de casa y de tema, o sea que no había nada que
+  buscar. Ahora son `absolute` dentro del `<main>`: el que se esconde arriba
+  está al entrar y se pierde al bajar, y el que se esconde abajo obliga a
+  recorrer toda la página. En la línea del tiempo y en el juego van siempre
+  arriba — mandarla al fondo de quince momentos es una tarea, no un guiño.
+- **Nunca dos en la misma página el mismo día.** El reparto del día se encarga
+  aunque las listas de escondites se pisen.
+- **Sombra corta y oscura, no resplandor.** El halo de color los delataba desde
+  la otra punta de la pantalla y encima los dejaba borrosos.
+- **Al encontrarlo sale al centro, grande, con el fondo apagado detrás**, dice
+  lo suyo, muestra «1 de 3» y **desaparece de la esquina**. Encontrado es
+  encontrado: quedarse ahí de adorno le quitaba sentido a haberlo buscado.
+- **El premio los muestra grandes, uno debajo del otro**, con nombre y ficha —
+  ahí sí se miran con calma los retratos bordados. Y ofrece dos salidas:
+  *esconderlos otra vez* (vuelven hoy mismo) o *que duerman hasta mañana* (no
+  aparecen hasta el día siguiente).
+- **El colado.** Un cuarto peluche que no es hijo: el pato de la hermanita, que
+  «se coló cuando dejamos la puerta abierta». No cuenta para el «1 de 3», no
+  hace falta para el premio, y **cada día amanece de otro color** (`hue-rotate`
+  sembrado con la fecha).
+- **`npm run peluches:hoy` dice dónde está cada uno.** Importa el mismo módulo
+  que la web (`src/lib/escondites.ts`), no una copia, así que no puede
+  desfasarse. Sirve para mandarle una pista por mensaje y, sobre todo, para
+  saber si un peluche que no aparece está mal escondido o mal dibujado — que
+  fue exactamente la duda la primera vez que no aparecieron.
+- **Los de abajo no van pegados al filo.** Con `bottom-6` caían dentro del
+  `pb-24` de las páginas: llegar al final no alcanzaba para verlos, había que
+  llegar al final *y* saber que estaban ahí. Ahora van a `bottom-28`.
+- **Las fichas a medio escribir no se publican.** La `descripcion` de un peluche
+  se ve en el premio desde que este se rediseñó, y la de Boo todavía dice
+  «FALTA: quién se lo regaló…». Mientras empiece por «FALTA», en su lugar habla
+  el peluche con su propia frase. Sigue haciendo falta escribirla, pero ya no se
+  publica sola.
+
+**Todo esto está visto en el navegador**, no solo compilado: con
+`private/notas/ver-peluches.mjs` y sus dos hermanos, que abren la web con Chrome
+en tamaño de teléfono, pasan la puerta con la frase de `.env` y sacan capturas.
+Están en `private/` porque usan esa frase, y nunca la imprimen. Si algo visual
+vuelve a fallar, ese es el camino corto: `npm run dev` y correrlos.
+
+### Decisiones ya tomadas (18 de agosto)
+
+1. **Los peluches rotan de escondite, uno por día.** Cada uno tiene tres
+   escondites en `src/content/peluches.ts` y el del día sale de la fecha de
+   Nicaragua mezclada con su id — no de `Math.random`. Así el mismo día están
+   siempre en el mismo lugar y se los puede mandar a buscar por mensaje («hoy
+   Ovi anda en la playlist»), pero mañana ya se movieron. Encontrado se queda
+   encontrado aunque después se mude. En 30 días el reparto sale parejo, unos
+   diez días en cada sitio. Cuidado al agregar escondites: dos peluches pueden
+   compartir ruta, pero nunca ruta **y** esquina.
+2. **Las estrellitas caen al entrar y se sacuden al tocar el frasco.** Entran
+   desde arriba, escalonadas, y se asientan con un rebote corto; después se
+   quedan quietas. Flotar todo el tiempo cansa en una página que se mira fijo y
+   gasta batería.
+
+   La primera versión no se veía: dependía de `useAnimationControls` disparado
+   desde un efecto y, si esa conexión no llegaba a hacerse, las estrellitas se
+   quedaban en su estado inicial —`opacity: 0`— y el frasco parecía vacío.
+   Ahora la caída es declarativa (el navegador la corre al montar, no hay nada
+   que conectar) y la sacudida se repite cambiando la `key` de un span interno,
+   que lo remonta. **Moraleja para lo que venga: si una animación tiene que
+   verse sí o sí, que no dependa de un efecto.**
+
+### La decisión que queda abierta
+
+**¿Cómo entra Boo en la línea del tiempo?** Su fecha va a caer años antes de
+todo lo demás. O se muestra como un momento normal y la línea empieza mucho
+antes de agosto de 2024, o le hacemos un apartado de «lo que ya existía antes de
+nosotros». **Lo que yo haría:** verlo con la fecha ya puesta y decidir
+mirándolo; con un solo momento suelto tan atrás capaz que ni molesta. Por eso
+espera a que me contés su historia.
 
 ## Para la versión 2 (después del 24)
 
