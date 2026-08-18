@@ -43,8 +43,8 @@ export interface Peluche {
   /** Lo que dice al ser encontrado. */
   frase: string
   /**
-   * El que no es hijo. No cuenta para el «1 de 3», no hace falta
-   * encontrarlo para el premio, y cada día se le cambia el color.
+   * El que no es hijo. No cuenta para el «1 de 3» y no hace falta
+   * encontrarlo para que salga el premio, aunque sí aparece en él.
    */
   esImpostor?: boolean
 }
@@ -107,9 +107,9 @@ export const peluches: Peluche[] = [
     frase: 'Yo estuve en casi todas estas fechas. Nadie me tomó fotos.',
   },
   {
-    // El chiste de la casa. No es hijo, no cuenta para el premio, y cada
-    // día amanece de otro color — nunca se sabe bien qué es ni de dónde
-    // salió, que es justamente la gracia.
+    // El chiste de la casa. No es hijo y no cuenta para el premio, pero
+    // sale en él: encontrado con su cara, y sin encontrar como una
+    // silueta con un signo de interrogación.
     id: 'dummy',
     nombre: 'El colado',
     especie: 'pato, creemos',
@@ -134,6 +134,13 @@ export const HALLAZGO_IMPOSTOR = {
   titulo: 'Este no es nuestro',
   mensaje:
     'Se coló un día que dejamos la puerta abierta y se quedó. No lo contamos entre los hijos, pero tampoco lo echamos.',
+}
+
+/** Su hueco en el resumen, para los días en que no dio con él. */
+export const IMPOSTOR_SIN_ENCONTRAR = {
+  titulo: 'Y uno que no es nuestro',
+  mensaje:
+    'Anda otro dando vueltas por la madriguera. No es hijo nuestro y hoy no lo encontraste. Mañana vuelve a estar en alguna esquina.',
 }
 
 /** Lo que sale cuando los encuentra a los tres. */

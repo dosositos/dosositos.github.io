@@ -2,7 +2,12 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { EstrellaDePapel } from '@/componentes/EstrellaDePapel'
-import { HALLAZGO_IMPOSTOR, PREMIO_PELUCHES, peluches } from '@/content/peluches'
+import {
+  HALLAZGO_IMPOSTOR,
+  IMPOSTOR_SIN_ENCONTRAR,
+  PREMIO_PELUCHES,
+  peluches,
+} from '@/content/peluches'
 import type { EsquinaEscondite, Peluche } from '@/content/peluches'
 import { repartoDelDia } from '@/lib/escondites'
 import { numeroDelDia } from '@/lib/tiempo'
@@ -39,6 +44,9 @@ const LLAVE_DORMIDOS = 'dosositos:peluches:dormidos'
 
 /** Los que sí son hijos. El colado no cuenta para el «1 de 3». */
 const HIJOS = peluches.filter((p) => !p.esImpostor)
+
+/** El que no es hijo. Sale en el resumen igual, encontrado o no. */
+const COLADO = peluches.find((p) => p.esImpostor)
 
 function leerEncontrados(): Set<string> {
   try {
@@ -118,18 +126,6 @@ const RETRATOS: Record<string, string> = Object.fromEntries(
 )
 
 /**
- * De cuánto se le corre el color al colado hoy.
- *
- * Amarillo con peluca verde es su color de fábrica; girando el matiz
- * amanece rosado, turquesa, violeta. Sale del día y no de `Math.random`
- * por lo mismo que los escondites: dentro de un mismo día tiene que ser
- * siempre el mismo, o deja de ser un peluche y pasa a ser un parpadeo.
- */
-function giroDeColor(dia: number): number {
-  return (dia * 47) % 360
-}
-
-/**
  * El retrato del peluche, con el emoji de la ficha como respaldo
  * mientras alguno no tenga el suyo.
  *
@@ -141,22 +137,16 @@ function Retrato({
   peluche,
   lado,
   nombrar = false,
-  dia,
 }: {
   peluche: Peluche
   lado: number
   nombrar?: boolean
-  dia?: number
 }) {
   const retrato = RETRATOS[peluche.id]
-  const giro = peluche.esImpostor && dia ? giroDeColor(dia) : 0
 
   if (!retrato) {
     return (
-      <span
-        className="block leading-none"
-        style={{ fontSize: lado * 0.8, filter: giro ? `hue-rotate(${giro}deg)` : undefined }}
-      >
+      <span className="block leading-none" style={{ fontSize: lado * 0.8 }}>
         {peluche.emoji}
       </span>
     )
@@ -169,12 +159,52 @@ function Retrato({
       aria-hidden={!nombrar}
       draggable={false}
       className="block object-contain"
-      style={{
-        width: lado,
-        height: lado,
-        filter: giro ? `hue-rotate(${giro}deg)` : undefined,
-      }}
+      style={{ width: lado, height: lado }}
     />
+  )
+}
+
+/**
+ * El colado cuando no lo encontró: su forma en negro y un signo de
+ * interrogación encima.
+ *
+ * Se hace con `brightness(0)` sobre el mismo retrato en vez de dibujar
+ * una silueta aparte — así la forma es exactamente la suya, con peluca y
+ * todo, y el día que se cambie el dibujo la silueta se cambia sola. El
+ * disco de atrás está porque negro sobre el panel nocturno no se
+ * distingue de un agujero.
+ */
+function Silueta({ peluche, lado }: { peluche: Peluche; lado: number }) {
+  const retrato = RETRATOS[peluche.id]
+
+  return (
+    <span
+      className="relative grid place-items-center rounded-full bg-texto/[0.07]"
+      style={{ width: lado * 1.15, height: lado * 1.15 }}
+    >
+      {retrato ? (
+        <img
+          src={retrato}
+          alt=""
+          aria-hidden
+          draggable={false}
+          className="block object-contain"
+          style={{ width: lado, height: lado, filter: 'brightness(0)', opacity: 0.55 }}
+        />
+      ) : (
+        <span className="block leading-none opacity-40" style={{ fontSize: lado * 0.8 }}>
+          {peluche.emoji}
+        </span>
+      )}
+
+      <span
+        aria-hidden
+        className="absolute font-display text-acento"
+        style={{ fontSize: lado * 0.5, textShadow: '0 2px 10px rgb(0 0 0 / 0.6)' }}
+      >
+        ?
+      </span>
+    </span>
   )
 }
 
@@ -231,12 +261,10 @@ const CHISPAS = Array.from({ length: 10 }, (_, i) => {
 function Escondido({
   peluche,
   esquina,
-  dia,
   alTocar,
 }: {
   peluche: Peluche
   esquina: EsquinaEscondite
-  dia: number
   alTocar: () => void
 }) {
   const sinMovimiento = useReducedMotion()
@@ -279,7 +307,7 @@ function Escondido({
               : { duration: 6, repeat: Infinity, ease: 'easeInOut' }
           }
         >
-          <Retrato peluche={peluche} lado={52} dia={dia} />
+          <Retrato peluche={peluche} lado={52} />
         </motion.span>
       </motion.button>
     </motion.div>
@@ -297,12 +325,10 @@ function Escondido({
 function Hallazgo({
   peluche,
   llevados,
-  dia,
   alCerrar,
 }: {
   peluche: Peluche
   llevados: number
-  dia: number
   alCerrar: () => void
 }) {
   const sinMovimiento = useReducedMotion()
@@ -361,7 +387,7 @@ function Hallazgo({
           }
           style={{ filter: `drop-shadow(0 12px 30px rgb(0 0 0 / 0.6))` }}
         >
-          <Retrato peluche={peluche} lado={190} nombrar dia={dia} />
+          <Retrato peluche={peluche} lado={190} nombrar />
         </motion.div>
 
         <motion.div
@@ -415,28 +441,30 @@ function Hallazgo({
 /* ── El premio de encontrarlos a los tres ────────────────────────── */
 
 function Premio({
-  alEsconderDeNuevo,
+  coladoEncontrado,
   alMandarADormir,
-  alCerrar,
 }: {
-  alEsconderDeNuevo: () => void
+  coladoEncontrado: boolean
   alMandarADormir: () => void
-  alCerrar: () => void
 }) {
   const sinMovimiento = useReducedMotion()
 
+  // Cerrar el resumen ES mandarlos a dormir, se toque el botón, la tecla
+  // o el fondo. Antes había también un «esconderlos otra vez», y sin él
+  // hacía falta esto: si se pudiera cerrar sin más, quedaban los tres
+  // marcados como encontrados para siempre y no volvían a salir nunca.
   useEffect(() => {
-    const alTecla = (e: KeyboardEvent) => e.key === 'Escape' && alCerrar()
+    const alTecla = (e: KeyboardEvent) => e.key === 'Escape' && alMandarADormir()
     window.addEventListener('keydown', alTecla)
     return () => window.removeEventListener('keydown', alTecla)
-  }, [alCerrar])
+  }, [alMandarADormir])
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      onClick={alCerrar}
+      onClick={alMandarADormir}
       className="fixed inset-0 z-[60] overflow-y-auto bg-fondo/90 p-5 backdrop-blur-sm"
     >
       <motion.div
@@ -493,29 +521,50 @@ function Premio({
 
         <p className="mt-9 text-sm text-texto-suave/70">— {PREMIO_PELUCHES.firma}</p>
 
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <button
-            type="button"
-            onClick={alEsconderDeNuevo}
-            className="rounded-full border border-acento/60 px-5 py-2 text-sm text-acento transition-colors hover:bg-acento/10"
-          >
-            esconderlos otra vez
-          </button>
-          <button
-            type="button"
-            onClick={alMandarADormir}
-            className="rounded-full border border-borde px-5 py-2 text-sm text-texto-suave transition-colors hover:border-acento hover:text-acento"
-          >
-            que duerman hasta mañana
-          </button>
-        </div>
+        {/* Y el que no es hijo. Si dio con él sale con su cara; si no,
+            solo su forma en negro, que ya es media pista para mañana. */}
+        {COLADO && (
+          <div className="mt-10 border-t border-borde/60 pt-8">
+            {coladoEncontrado ? (
+              <>
+                <p className="text-[0.68rem] uppercase tracking-[0.24em] text-texto-suave/60">
+                  {HALLAZGO_IMPOSTOR.titulo}
+                </p>
+                <div className="mt-5 flex flex-col items-center">
+                  <span style={{ filter: 'drop-shadow(0 10px 22px rgb(0 0 0 / 0.45))' }}>
+                    <Retrato peluche={COLADO} lado={132} nombrar />
+                  </span>
+                  <p className="mt-4 font-display text-xl text-texto">{COLADO.nombre}</p>
+                  <p className="text-[0.68rem] uppercase tracking-[0.22em] text-texto-suave/60">
+                    {COLADO.especie}
+                  </p>
+                  <p className="fuente-mano mt-3 max-w-xs text-lg leading-snug text-texto-suave">
+                    {HALLAZGO_IMPOSTOR.mensaje}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-[0.68rem] uppercase tracking-[0.24em] text-texto-suave/60">
+                  {IMPOSTOR_SIN_ENCONTRAR.titulo}
+                </p>
+                <div className="mt-5 flex flex-col items-center">
+                  <Silueta peluche={COLADO} lado={132} />
+                  <p className="fuente-mano mt-5 max-w-xs text-lg leading-snug text-texto-suave">
+                    {IMPOSTOR_SIN_ENCONTRAR.mensaje}
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
         <button
           type="button"
-          onClick={alCerrar}
-          className="mt-5 text-xs text-texto-suave/60 underline underline-offset-4 transition-colors hover:text-acento"
+          onClick={alMandarADormir}
+          className="mt-10 rounded-full border border-acento/60 px-6 py-2.5 text-sm text-acento transition-colors hover:bg-acento/10"
         >
-          dejarlos donde están
+          que duerman hasta mañana
         </button>
       </motion.div>
     </motion.div>
@@ -564,13 +613,6 @@ export function PeluchesEscondidos() {
     guardarEncontrados(nuevos)
   }
 
-  function esconderDeNuevo() {
-    olvidarTodo(0)
-    setEncontrados(new Set())
-    setDormidosEl(0)
-    setPremio(false)
-  }
-
   function mandarADormir() {
     olvidarTodo(dia)
     setEncontrados(new Set())
@@ -589,7 +631,6 @@ export function PeluchesEscondidos() {
                 key={peluche.id}
                 peluche={peluche}
                 esquina={esquina}
-                dia={dia}
                 alTocar={() => tocar(peluche)}
               />
             ))}
@@ -597,21 +638,15 @@ export function PeluchesEscondidos() {
 
       <AnimatePresence>
         {hallazgo && (
-          <Hallazgo
-            peluche={hallazgo}
-            llevados={hijosLlevados}
-            dia={dia}
-            alCerrar={() => setHallazgo(null)}
-          />
+          <Hallazgo peluche={hallazgo} llevados={hijosLlevados} alCerrar={() => setHallazgo(null)} />
         )}
       </AnimatePresence>
 
       <AnimatePresence>
         {premio && (
           <Premio
-            alEsconderDeNuevo={esconderDeNuevo}
+            coladoEncontrado={!!COLADO && encontrados.has(COLADO.id)}
             alMandarADormir={mandarADormir}
-            alCerrar={() => setPremio(false)}
           />
         )}
       </AnimatePresence>

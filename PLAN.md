@@ -451,9 +451,16 @@ momentos (13 escritos, 2 apuntados) y 5 instantes, 20 fotos y 6 videos cifrados,
 el frasco de mensajitos y los tres peluches escondidos por las esquinas, ya con
 sus retratos bordados.
 
-**Nada quedó a medias:** no hay ramas abiertas ni pasos manuales pendientes. El
-frasco, los mensajitos, los peluches y sus retratos siguen **sin commitear**,
-pero ya no falta nada para hacerlo: es un commit pendiente, no un bloqueo.
+**Los peluches ya están publicados** (commit «Los hijos escondidos», 18 de
+agosto). **El frasco no, a propósito.** Sigue entero en la máquina y sin
+commitear: `src/paginas/Frasco.tsx`, `src/content/mensajitos.ts` y los tipos de
+`Estrellita` en `src/types.ts`. En lo publicado, `/frasco` sigue siendo la
+página «en construcción» de antes.
+
+Ojo al retomarlo: `src/App.tsx` está **distinto en el repo y en la máquina** —
+publicado importa `EnConstruccion` para esa ruta, y aquí importa `Frasco`. Al
+commitear el frasco hay que subir también esa diferencia de `App.tsx`, o la
+página queda publicada en construcción con el código al lado sin usarse.
 
 **Lo del 18 de agosto:** los 29 mensajitos quedaron pegados en
 `src/content/mensajitos.ts`; de las tres decisiones cortas se resolvieron dos
@@ -524,13 +531,18 @@ Después de verlos en el teléfono cambió casi todo menos la idea:
   lo suyo, muestra «1 de 3» y **desaparece de la esquina**. Encontrado es
   encontrado: quedarse ahí de adorno le quitaba sentido a haberlo buscado.
 - **El premio los muestra grandes, uno debajo del otro**, con nombre y ficha —
-  ahí sí se miran con calma los retratos bordados. Y ofrece dos salidas:
-  *esconderlos otra vez* (vuelven hoy mismo) o *que duerman hasta mañana* (no
-  aparecen hasta el día siguiente).
+  ahí sí se miran con calma los retratos bordados. Y **el colado también sale
+  en él**: con su cara si lo encontró, y si no como su silueta en negro con un
+  signo de interrogación, que ya es media pista para mañana.
+- **Del premio se sale de una sola forma: mandándolos a dormir.** El botón, la
+  tecla y el fondo hacen lo mismo. No es pereza de diseño: sin una salida que
+  borre lo encontrado, los tres quedaban marcados para siempre y no volvían a
+  esconderse nunca. Así el ciclo cierra solo — encontrarlos, verlos, que
+  duerman, y mañana otra vez.
 - **El colado.** Un cuarto peluche que no es hijo: el pato de la hermanita, que
-  «se coló cuando dejamos la puerta abierta». No cuenta para el «1 de 3», no
-  hace falta para el premio, y **cada día amanece de otro color** (`hue-rotate`
-  sembrado con la fecha).
+  «se coló cuando dejamos la puerta abierta». No cuenta para el «1 de 3» y no
+  hace falta encontrarlo para el premio, aunque aparece en él. Va siempre con
+  su color de fábrica: amarillo, peluca verde y pico naranja.
 - **`npm run peluches:hoy` dice dónde está cada uno.** Importa el mismo módulo
   que la web (`src/lib/escondites.ts`), no una copia, así que no puede
   desfasarse. Sirve para mandarle una pista por mensaje y, sobre todo, para
