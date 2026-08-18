@@ -439,7 +439,7 @@ y chats, y el sobre de apertura. Eso es el regalo.
 
 ---
 
-## La próxima sesión — cerrado el 18 de agosto de 2026
+## La próxima sesión — cerrado el 18 de agosto de 2026 (segunda vuelta)
 
 **Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
 arrancamos por donde diga, sin que tengás que acordarte de nada.
@@ -471,17 +471,17 @@ a tener su fecha.
 
 ### Lo que toca, en orden
 
-1. **Mirar los peluches en el teléfono y commitear.** Los retratos están puestos
-   pero solo se comprobó que compilan: falta verlos asomarse de verdad, sobre
-   todo el halo de color contra el fondo nocturno. Después entra el commit
-   entero: frasco, mensajitos, peluches y retratos.
-2. **El nacimiento de Boo.** Contame su historia y lo escribo como momento de
+1. **La historia de Boo.** Contame su historia y lo escribo como momento de
    la línea del tiempo. Es el único de los tres que no tiene la suya, y por eso
    su frase de la esquina es un comodín («Yo estuve en casi todas estas fechas.
    Nadie me tomó fotos»). La fecha va a quedar lejísimos de todo lo demás —
    probablemente años antes de conocerse — y eso está bien: la línea ordena
    sola, y con la fecha ya puesta decidimos cómo se muestra, que es la decisión
-   que quedó abierta abajo.
+   que quedó abierta abajo. Además su ficha en `src/content/peluches.ts` sigue
+   diciendo «FALTA: quién se lo regaló a quién y cuándo» — hoy no se publica
+   porque el resumen la reemplaza por su frase, pero está esperando.
+2. **Publicar el frasco de mensajitos**, cuando él quiera. Está terminado y
+   probado, pero deliberadamente sin commitear (ver arriba). Ojo con `App.tsx`.
 3. **El diccionario oso**, si ya tenés las palabras. Si no, me voy al día 2 —
    la línea del tiempo horizontal para computadora — que es lo único atrasado
    del orden original.
