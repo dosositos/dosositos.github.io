@@ -156,11 +156,28 @@ export interface EntradaDiccionario {
   autor?: Quien
 }
 
+/**
+ * El tono de un mensajito del frasco. No es una etiqueta que se lea en
+ * pantalla: es lo que le da el color del papel a la estrellita.
+ */
+export type TonoEstrellita = 'animo' | 'amor' | 'chiste' | 'promesa' | 'recuerdo'
+
 export interface Estrellita {
+  /** Corto: tiene que caber doblado dentro de una estrellita de papel. */
   texto: string
   de: Quien
-  /** Para el frasco: 'ánimo' | 'amor' | 'chiste' | 'recuerdo' */
-  tono?: string
+  tono?: TonoEstrellita
+}
+
+/**
+ * El sobre cifrado del frasco: public/cifrado/frasco.enc.
+ *
+ * Ninguno de estos mensajitos vive en src/ — varios son frases reales
+ * del chat. Se escriben en private/publicable/frasco.json y llegan al
+ * teléfono cifrados, como las conversaciones.
+ */
+export interface FrascoGuardado {
+  mensajitos: Estrellita[]
 }
 
 /* ────────────────────────────────────────────────────────────────

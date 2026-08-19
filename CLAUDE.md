@@ -26,6 +26,12 @@ llave; en `src/content/momentos.ts` solo queda la ficha (`chat: { mensajes, fuen
 y `ChatCifrado` las descifra en el teléfono. Lo que sí va en claro son los
 relatos y las notas: son la voz de Armando contando, no citas de ella.
 
+**El frasco de mensajitos también va cifrado**, y no por ser de ella sino porque
+la mitad son mensajes textuales que él le mandó: `private/publicable/frasco.json`
+→ `public/cifrado/frasco.enc`. En `src/content/mensajitos.ts` solo quedan las
+reglas y los textos de la pantalla. Si alguna vez hay que agregar mensajitos, van
+al JSON de `private/`, nunca al archivo de `src/`.
+
 **En claro no se nombra a nadie más que a ellos dos.** Los relatos, notas, pies
 de foto y `alt` van sin cifrar, así que ahí los terceros se mencionan por
 parentesco: «mi hermanita», «su amiga», «un amigo», «mi primo». Nunca el nombre

@@ -6,6 +6,7 @@ import { Petalos } from '@/componentes/Petalos'
 import { InterruptorTema, ProveedorTema } from '@/componentes/ProveedorTema'
 import { ScrollAlInicio } from '@/componentes/ScrollAlInicio'
 import { Estadisticas } from '@/paginas/Estadisticas'
+import { Frasco } from '@/paginas/Frasco'
 import { Juego } from '@/paginas/Juego'
 import { LineaDelTiempo } from '@/paginas/LineaDelTiempo'
 import { Momento } from '@/paginas/Momento'
@@ -73,10 +74,7 @@ function Marco() {
             />
             <Route path="/playlist" element={<Playlist />} />
             <Route path="/estadisticas" element={<Estadisticas />} />
-            <Route
-              path="/frasco"
-              element={<EnConstruccion titulo="frasco de mensajitos" nota="las estrellitas de papel — día 7" />}
-            />
+            <Route path="/frasco" element={<Frasco />} />
             <Route
               path="*"
               element={<EnConstruccion titulo="te perdiste, osita" nota="esta página no existe todavía" />}

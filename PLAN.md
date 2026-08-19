@@ -14,8 +14,9 @@
 - [x] **Día 4 (17 ago)** · El candado: cifrado y contenido privado
 - [x] **Día 5 (17 ago)** · Juego "¿quién dijo esto?"
 - [ ] Día 2 (18 ago) · Línea del tiempo horizontal en computadora
-- [ ] Día 6 (19 ago) · Diccionario oso + frasco de mensajitos
-      (el "un día como hoy" y el frasco ya están, adelantados el 17)
+- [x] **Día 6 (18 ago)** · Frasco de mensajitos: reescrito, cifrado y publicado
+- [ ] Día 6 bis (19 ago) · Diccionario oso
+      (el "un día como hoy" ya está, adelantado el 17)
 - [ ] Día 7 (20-21 ago) · El sobre de apertura, easter eggs
       (los peluches escondidos ya están, adelantados el 17)
 - [ ] Día 8 (22 ago) · PWA, música, celebraciones del calendario, pulido
@@ -451,23 +452,16 @@ momentos (13 escritos, 2 apuntados) y 5 instantes, 20 fotos y 6 videos cifrados,
 el frasco de mensajitos y los tres peluches escondidos por las esquinas, ya con
 sus retratos bordados.
 
-**Los peluches ya están publicados** (commit «Los hijos escondidos», 18 de
-agosto). **El frasco no, a propósito.** Sigue entero en la máquina y sin
-commitear: `src/paginas/Frasco.tsx`, `src/content/mensajitos.ts` y los tipos de
-`Estrellita` en `src/types.ts`. En lo publicado, `/frasco` sigue siendo la
-página «en construcción» de antes.
+**Los peluches y el frasco ya están publicados.** El frasco salió el 18 de
+agosto de noche, con los mensajitos reescritos, cifrados y con cupo diario (ver
+abajo). `/frasco` ya no es la página «en construcción», y `src/App.tsx` volvió a
+quedar igual en el repo y en la máquina.
 
-Ojo al retomarlo: `src/App.tsx` está **distinto en el repo y en la máquina** —
-publicado importa `EnConstruccion` para esa ruta, y aquí importa `Frasco`. Al
-commitear el frasco hay que subir también esa diferencia de `App.tsx`, o la
-página queda publicada en construcción con el código al lado sin usarse.
-
-**Lo del 18 de agosto:** los 29 mensajitos quedaron pegados en
-`src/content/mensajitos.ts`; de las tres decisiones cortas se resolvieron dos
-—los escondites rotan por día y las estrellitas caen y se sacuden—, ya
-implementadas; y **llegaron los retratos de los peluches**. La decisión que
-sigue abierta es la tercera: cómo entra Boo en la línea del tiempo, que espera
-a tener su fecha.
+**Lo del 18 de agosto:** se resolvieron dos de las tres decisiones cortas —los
+escondites rotan por día y las estrellitas caen y se sacuden—, **llegaron los
+retratos de los peluches**, y de noche **se rehízo y publicó el frasco entero**.
+La decisión que sigue abierta es la tercera: cómo entra Boo en la línea del
+tiempo, que espera a tener su fecha.
 
 ### Lo que toca, en orden
 
@@ -480,11 +474,45 @@ a tener su fecha.
    que quedó abierta abajo. Además su ficha en `src/content/peluches.ts` sigue
    diciendo «FALTA: quién se lo regaló a quién y cuándo» — hoy no se publica
    porque el resumen la reemplaza por su frase, pero está esperando.
-2. **Publicar el frasco de mensajitos**, cuando él quiera. Está terminado y
-   probado, pero deliberadamente sin commitear (ver arriba). Ojo con `App.tsx`.
-3. **El diccionario oso**, si ya tenés las palabras. Si no, me voy al día 2 —
+2. **El diccionario oso**, si ya tenés las palabras. Si no, me voy al día 2 —
    la línea del tiempo horizontal para computadora — que es lo único atrasado
    del orden original.
+
+### El frasco de mensajitos — publicado el 18 de agosto (de noche)
+
+Se tiró todo lo que había y se rehízo con material de verdad:
+
+- **Los 29 borradores se borraron.** No sonaban a él: eran frases largas, con
+  mayúscula inicial y punto final. Medido sobre sus 79.239 mensajes, Armando
+  escribe con mediana de 19 caracteres, empieza en mayúscula el 3,5 % de las
+  veces y casi no usa emojis (0,3 %).
+- **Ahora son 34**, de los cuales **20 son frases textuales suyas** sacadas del
+  chat con `private/notas/` y las dos fuentes (WhatsApp + Instagram), 6 armadas
+  con fórmulas que repite («de aquí a la luna a pasitos de tortuga», «mi
+  solecito, mi cielo, mi estrellita») y 8 escritas imitándolo. Él aprobó,
+  rechazó y editó uno por uno en `private/mensajitos-candidatos.md`, que queda
+  como el registro de qué salió de dónde.
+- **Van capitalizados y sin abreviaciones**, por decisión suya: en un papelito
+  de regalo la minúscula y la «q» se leen como descuido, no como voz.
+- **No hay ninguno de tono `chiste`.** Los rechazó todos. El tono sigue
+  existiendo en el tipo y en la paleta por si alguna vez vuelve.
+- **El frasco entero va cifrado.** Varios mensajitos son frases reales del chat
+  y `src/` se publica en claro, así que se movieron a
+  `private/publicable/frasco.json` → `public/cifrado/frasco.enc`. En
+  `src/content/mensajitos.ts` solo quedan `POR_DIA` y los textos de pantalla.
+- **Tres por día, contados en horario de Nicaragua** (`POR_DIA` en
+  `src/content/mensajitos.ts`). Sin límite, el frasco se lee entero la primera
+  tarde y después no queda nada por lo que volver; con tres son casi dos
+  semanas. Al agotar el cupo el botón «sacar otra» desaparece —más claro que un
+  botón apagado— y el frasco se sigue sacudiendo al tocarlo, pero no sale nada.
+- **La última del día sigue desdoblada al volver.** Si cierra la página sin
+  querer, no perdió una de las tres. Se guardan las huellas, nunca el texto.
+
+Probado en el navegador con `private/notas/ver-frasco.mjs`: saca las tres, la
+cuarta no sale, sobrevive a la recarga y al día siguiente no repite ninguna de
+las de ayer. **Ojo con el tiempo de descifrado**: PBKDF2 con 250.000 vueltas
+tarda más de 1,8 s, así que cualquier prueba automática que mire la pantalla
+antes de eso ve el frasco vacío y parece un fallo que no existe.
 
 ### Los retratos de los peluches — hechos
 
