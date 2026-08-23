@@ -137,7 +137,7 @@ function Expediente({ datos, sinBorde = false }: { datos: DatosDePalabra; sinBor
  * en vez de apretar la letra. Es lo que hace un diccionario de papel
  * cuando una palabra se le va de largo.
  */
-const CABE_EN_UNA_HOJA = 300
+const CABE_EN_UNA_HOJA = 240
 
 /**
  * La pestaña del apartado final.
@@ -153,7 +153,7 @@ const APARTADO_FRASES = '✦'
  * Pasando esto no queda sitio abajo ni para el expediente, así que la
  * ficha se queda con el texto y todo lo demás pasa a la vuelta.
  */
-const DEFINICION_LARGA = 190
+const DEFINICION_LARGA = 170
 
 /**
  * Cómo se reparte una entrada entre sus hojas.
@@ -245,7 +245,7 @@ function PaginaEntrada({
     return (
       <div className="relative flex h-full flex-col px-[8.5%] py-[4.8%]">
         <Cabecera guia={guia} folio={folio} />
-        <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+        <div className="caja-hoja min-h-0 flex-1 overflow-hidden">
           {/* Si lo que no cupo en la ficha fue el expediente, viene acá.
               Antes se iba a una hoja para él solo, y esa hoja quedaba
               con dos tercios de papel en blanco. */}
@@ -261,13 +261,13 @@ function PaginaEntrada({
 
           <DondeNacio id={entrada.id} />
 
-          {/* Y la curva: cuántas veces al mes se dijo, desde que nació
-              hasta hoy. Acá tiene sitio; en la ficha empujaba el texto
-              fuera de la hoja. */}
-          {!entrada.lemaCifrado && <CurvaDeUso id={entrada.id} titulo="mes a mes" alto={38} />}
+          {/* Las palabras no llevan gráfica: un diccionario no lleva
+              estadísticas de uso mes a mes, y el dato de cuántas veces
+              se dijo ya está arriba, en el expediente.
 
-          {/* En las fórmulas, lo que importa no es cuántas veces se
-              dijeron sino cómo se fueron estirando. */}
+              Las tres fórmulas sí, porque ahí la gráfica no cuenta
+              cuántas veces se dijeron: cuenta cuánto se fueron
+              estirando, que es la historia de la entrada. */}
           {entrada.lemaCifrado && (
             <>
               <CurvaDeUso id={entrada.id} mide="largo" alto={54} titulo="cómo fue creciendo" />
@@ -289,7 +289,7 @@ function PaginaEntrada({
     return (
       <div className="relative flex h-full flex-col px-[8.5%] py-[4.8%]">
         <Cabecera guia={guia} folio={folio} />
-        <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+        <div className="caja-hoja min-h-0 flex-1 overflow-hidden">
           <p className="palabra-guia mb-3">viene de la hoja anterior</p>
 
           {plan.acepcionesFuera &&
@@ -320,7 +320,7 @@ function PaginaEntrada({
     <div className="relative flex h-full flex-col px-[8.5%] py-[4.8%]">
       <Cabecera guia={guia} folio={folio} />
 
-      <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+      <div className="caja-hoja min-h-0 flex-1 overflow-hidden">
         {/* Cuando el título es una frase de ellos, no vive en claro:
             llega descifrado. Y como es largo, se compone más chico. */}
         <h2 className={`lema ${tamanoDelLema(entrada)}`}>
@@ -644,7 +644,7 @@ export function Diccionario() {
     // libro: de ahí salen los títulos de las fórmulas, las burbujas de
     // cada nacimiento y las curvas de uso.
     <ProveedorDiccionario>
-      <div className="mx-auto w-full max-w-6xl px-4 pb-4 pt-16 sm:px-6 lg:pb-16">
+      <div className="mx-auto w-full max-w-6xl px-4 pb-0 pt-16 sm:px-6 lg:pb-16">
         {/* El libro se queda con todo el ancho: las pestañas ya no le
           roban una columna al costado, van recortadas en su propio
           canto. Los cantos se salen de la pantalla a propósito. */}
@@ -661,7 +661,7 @@ export function Diccionario() {
           />
         </div>
 
-        <p className="fuente-mano mt-4 text-center text-base text-texto-suave sm:text-lg">
+        <p className="fuente-mano mt-3 text-center text-[0.95rem] text-texto-suave sm:text-lg">
           {abierto ? TEXTOS.ayuda : TEXTOS.abrir}
         </p>
       </div>

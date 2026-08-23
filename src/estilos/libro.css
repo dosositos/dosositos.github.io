@@ -64,7 +64,7 @@
        página tenga scroll, y el dedo no tiene que pelear entre rodar la
        página y pasar la hoja. */
     aspect-ratio: 3 / 5.4;
-    height: min(68dvh, 620px);
+    height: min(71dvh, 620px);
     width: auto;
     margin-inline: auto;
   }
@@ -144,34 +144,6 @@
       rgb(150 115 70 / 0.045) 3px 4px,
       transparent 4px 9px
     );
-  }
-
-  /* ── Cuando una ficha se pasa de largo ──────────────────────────
-     Alguna entrada no cabe ni partiéndola, y entonces el papel rueda.
-     La barra del navegador —azul, gorda, con su pista oscura— rompía
-     la ilusión de un plumazo: acá es una uña de tinta sobre el papel,
-     y el hueco se reserva siempre para que el texto no salte. */
-  .papel-libro [class*='overflow-y'] {
-    scrollbar-width: thin;
-    scrollbar-color: rgb(120 90 55 / 0.38) transparent;
-    scrollbar-gutter: stable;
-  }
-
-  .papel-libro [class*='overflow-y']::-webkit-scrollbar {
-    width: 5px;
-  }
-
-  .papel-libro [class*='overflow-y']::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .papel-libro [class*='overflow-y']::-webkit-scrollbar-thumb {
-    background: rgb(120 90 55 / 0.34);
-    border-radius: 999px;
-  }
-
-  .papel-libro [class*='overflow-y']::-webkit-scrollbar-thumb:hover {
-    background: rgb(120 90 55 / 0.55);
   }
 
   /* ── La guarda: la contratapa por dentro ────────────────────────

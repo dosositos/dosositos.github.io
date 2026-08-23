@@ -93,6 +93,7 @@ function Hoja({
   giro,
   doble,
   total,
+  enContratapa,
 }: {
   frente: ReactNode
   dorso: ReactNode
@@ -101,6 +102,7 @@ function Hoja({
   giro: MotionValue<number>
   doble: boolean
   total: number
+  enContratapa: boolean
 }) {
   /**
    * El ángulo de esta hoja.
@@ -142,6 +144,11 @@ function Hoja({
    */
   const z = indice >= pasadas ? total - indice : total + indice
 
+  /* Al pasar la última hoja, el bloque de hojas volteadas se guarda y
+     queda la contratapa sola. Vuelve a la vista en cuanto empezás a
+     retroceder — de ahí que dependa del giro y no solo del estado. */
+  const visible = useTransform(giro, (p) => (enContratapa && p === 0 ? 'hidden' : 'visible'))
+
   return (
     <motion.div
       // Marca cuál es la hoja de arriba de la pila: la usan las pruebas
@@ -154,6 +161,7 @@ function Hoja({
         skewY: combado,
         transformOrigin: 'left center',
         zIndex: z,
+        visibility: visible,
       }}
     >
       <motion.div
@@ -275,6 +283,8 @@ export function Libro({
   // Se pueden pasar todas las hojas, incluida la última: al voltearla
   // queda a la vista el fondo del libro, que es la contratapa.
   const hayAdelante = pasadas < totalHojas
+  /** Pasaste la última hoja: lo que se ve es la contratapa, sola. */
+  const enContratapa = pasadas >= totalHojas
   const hayAtras = pasadas > 0
 
   // La página que se está leyendo, para el índice de afuera.
@@ -455,10 +465,13 @@ export function Libro({
   /* ── El grosor del bloque ─────────────────────────────────────── */
   const grosor = useMemo(() => {
     const leido = totalHojas > 0 ? Math.min(1, pasadas / totalHojas) : 0
-    // El izquierdo nunca baja de la tapa; el derecho sí se acaba, porque
-    // al final ya no queda nada por leer de ese lado.
-    return { izq: 9 + leido * 28, der: 2 + (1 - leido) * 33 }
-  }, [pasadas, totalHojas])
+    /* En la contratapa no hay cantos: el libro se ve por detrás, no
+       abierto. Y del lado izquierdo siempre hay cuerpo, incluso en la
+       primera página — ahí lo que se ve es la tapa con sus guardas, no
+       un borde suelto en el aire. */
+    if (enContratapa) return { izq: 0, der: 0 }
+    return { izq: 22 + leido * 20, der: 2 + (1 - leido) * 34 }
+  }, [pasadas, totalHojas, enContratapa])
 
   /** Las hojas que se montan: la de arriba y unas pocas a cada lado. */
   const hojas = useMemo(() => {
@@ -538,6 +551,7 @@ export function Libro({
             giro={giro}
             doble={doble}
             total={totalHojas}
+            enContratapa={enContratapa}
             frente={h.frente}
             dorso={
               doble ? (
@@ -554,7 +568,7 @@ export function Libro({
         {/* ── Las pestañas del índice ──
             Recortadas en el canto de las hojas que faltan, montadas un
             poco sobre el papel, como las uñas de un diccionario. */}
-        {pestanas && pestanas.length > 0 && (
+        {pestanas && pestanas.length > 0 && !enContratapa && (
           <nav aria-label="Índice alfabético" className="tira-pestanas">
             {pestanas.map(({ letra, indice }) => (
               <button

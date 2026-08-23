@@ -526,12 +526,17 @@ acordó nunca. Y «futuro esposo» lo estrenó ella **diez minutos después** de
   ellos, así que el título no puede vivir en claro: llega descifrado, y en
   `src/` solo queda un nombre de referencia y la letra del índice.
 
-**La página del diccionario no rueda**: el libro se mide por el alto de la
+**Ninguna hoja tiene scroll.** En Safari de iPhone un contenedor con scroll
+dentro de un  no se puede rodar —bug viejo de WebKit— así que lo
+que no entra pasa a la hoja siguiente y listo.  lo comprueba
+en cuatro tamaños, incluido el iPhone con la barra del navegador puesta.
+
+**La página del diccionario tampoco rueda**: el libro se mide por el alto de la
 pantalla y entra entero, así el dedo no tiene que adivinar si está pasando una
 hoja o bajando la página. Y el gesto pide compromiso — 14 px de recorrido y que
 sea claramente horizontal — antes de mover el papel.
 
-**El libro quedó en 77 hojas y 37 entradas**, con un apartado final de frases
+**El libro quedó en 81 hojas y 37 entradas**, con un apartado final de frases
 (las tres fórmulas, bajo la pestaña ✦), una entrada por cada mascota —Polly de
 ella; Epi, Fiona, Lara y Frida de él— y una contratapa al pasar la última hoja. Se prueba solo con
 `node private/notas/probar-libro.mjs`: recorre el libro entero y comprueba que
