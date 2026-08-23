@@ -441,7 +441,7 @@ y chats, y el sobre de apertura. Eso es el regalo.
 
 ---
 
-## La próxima sesión — cerrado el 18 de agosto de 2026 (segunda vuelta)
+## La próxima sesión — cerrado el 22 de agosto de 2026 (el diccionario)
 
 **Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
 arrancamos por donde diga, sin que tengás que acordarte de nada.
@@ -450,8 +450,16 @@ arrancamos por donde diga, sin que tengás que acordarte de nada.
 la frase, portada con contadores y "un día como hoy", línea del tiempo con 15
 momentos (13 escritos, 2 apuntados) y 5 instantes, 20 fotos y 6 videos cifrados,
 13 conversaciones reales, playlist, estadísticas, el juego de las frases entero,
-el frasco de mensajitos y los tres peluches escondidos por las esquinas, ya con
-sus retratos bordados.
+el frasco de mensajitos, los tres peluches escondidos por las esquinas con sus
+retratos bordados, y **el diccionario oso–español**: 37 entradas en un libro de
+81 hojas que se pasan con el dedo.
+
+**Lo primero al volver:** que ella —o vos— abra `/diccionario` en el iPhone y
+me digás **si alguna ficha quedó cortada**. Las hojas ya no se ruedan (en Safari
+no se podía), así que lo que no entra pasa a la vuelta; está medido en cuatro
+tamaños, pero un teléfono de verdad manda más que cualquier medición mía.
+Lo segundo, si el gesto quedó bien de peso: son dos números en
+`src/componentes/Libro.tsx` (`ZONA_MUERTA` y `DUREZA`) y se ajustan en un minuto.
 
 **Los peluches y el frasco ya están publicados.** El frasco salió el 18 de
 agosto de noche, con los mensajitos reescritos, cifrados y con cupo diario (ver
