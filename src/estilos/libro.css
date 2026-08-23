@@ -58,10 +58,15 @@
   .cuerpo-libro {
     position: relative;
     transform-style: preserve-3d;
-    /* Alto de una página de diccionario en el teléfono. La proporción
-       es la de un libro de bolsillo, no la de la pantalla: alto, para
-       que la ficha entera quepa sin tener que rodar el papel. */
+    /* La proporción es la de un libro de bolsillo, no la de la
+       pantalla. En el teléfono el alto lo manda la pantalla y el ancho
+       sale de la proporción: así el libro entero entra sin que la
+       página tenga scroll, y el dedo no tiene que pelear entre rodar la
+       página y pasar la hoja. */
     aspect-ratio: 3 / 5.4;
+    height: min(68dvh, 620px);
+    width: auto;
+    margin-inline: auto;
   }
 
   @media (min-width: 1024px) {
@@ -70,6 +75,9 @@
        allá se lee de a una. */
     .cuerpo-libro[data-doble='si'] {
       aspect-ratio: 6.4 / 4.1;
+      /* En pantalla ancha manda el ancho otra vez: sobra alto. */
+      height: auto;
+      width: 100%;
     }
   }
 

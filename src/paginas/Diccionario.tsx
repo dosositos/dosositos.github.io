@@ -148,24 +148,68 @@ const CABE_EN_UNA_HOJA = 300
 const APARTADO_FRASES = '✦'
 
 /**
- * Qué se lleva la hoja siguiente cuando la entrada no cabe.
+ * Cuándo la definición sola ya llena la hoja.
  *
- * - 'entera': cabe todo junto, una sola hoja.
- * - 'acepciones': la ficha se queda con la definición y el expediente,
- *   y las acepciones pasan a la vuelta.
- * - 'expediente': no hay acepciones que mandar, así que lo que pasa a la
- *   vuelta es el expediente.
- *
- * Antes esto era un simple «es larga o no», y las entradas largas SIN
- * acepciones —gashas, por ejemplo— se partían igual y dejaban la hoja
- * siguiente completamente en blanco.
+ * Pasando esto no queda sitio abajo ni para el expediente, así que la
+ * ficha se queda con el texto y todo lo demás pasa a la vuelta.
  */
-type Reparto = 'entera' | 'acepciones' | 'expediente'
+const DEFINICION_LARGA = 190
 
-function repartoDe(entrada: EntradaDiccionario): Reparto {
+/**
+ * Cómo se reparte una entrada entre sus hojas.
+ *
+ * Un diccionario de papel hace esto todo el tiempo: la palabra empieza
+ * en una hoja y sigue en la otra. Acá se decide qué se queda y qué
+ * pasa, y sobre todo se evita el error que tuvimos dos veces — mandar a
+ * la vuelta una hoja que no lleva nada, o apretujar en la ficha algo
+ * que no entra.
+ */
+interface Plan {
+  /** Las acepciones se leen en la hoja siguiente. */
+  acepcionesFuera: boolean
+  /** El expediente también. */
+  expedienteFuera: boolean
+  /** Y si el expediente se junta con las burbujas en vez de ir solo. */
+  expedienteConLasBurbujas: boolean
+  /** Si hace falta una hoja de continuación. */
+  hayNota: boolean
+}
+
+function planDe(entrada: EntradaDiccionario): Plan {
   const acepciones = entrada.acepciones?.join(' ') ?? ''
-  if (entrada.definicion.length + acepciones.length <= CABE_EN_UNA_HOJA) return 'entera'
-  return acepciones ? 'acepciones' : 'expediente'
+  const definicion = entrada.definicion.length
+  const hayAcepciones = Boolean(entrada.acepciones?.length)
+
+  const cabeTodo = definicion + acepciones.length <= CABE_EN_UNA_HOJA
+  const definicionLarga = definicion > DEFINICION_LARGA
+
+  const acepcionesFuera = hayAcepciones && (!cabeTodo || definicionLarga)
+  const expedienteFuera = definicionLarga
+  // Si la entrada tiene hoja de nacimiento, el expediente viaja con las
+  // burbujas: una hoja para él solo quedaba con dos tercios en blanco.
+  const expedienteConLasBurbujas = expedienteFuera && Boolean(entrada.cifrada)
+
+  return {
+    acepcionesFuera,
+    expedienteFuera,
+    expedienteConLasBurbujas,
+    hayNota: acepcionesFuera || (expedienteFuera && !expedienteConLasBurbujas),
+  }
+}
+
+/**
+ * De qué tamaño se compone el lema.
+ *
+ * Un lema largo en cuerpo de titular se come media hoja y deja la
+ * definición sin sitio. Los diccionarios de papel hacen lo mismo: la
+ * palabra manda, pero no a costa de lo que dice.
+ */
+function tamanoDelLema(entrada: EntradaDiccionario): string {
+  if (entrada.lemaCifrado) return 'text-[clamp(1rem,4.2vw,1.25rem)] leading-tight'
+  const largo = entrada.palabra.length
+  if (largo > 22) return 'text-[clamp(1.05rem,4.4vw,1.45rem)] leading-tight'
+  if (largo > 14) return 'text-[clamp(1.3rem,5.4vw,1.8rem)] leading-tight'
+  return 'text-[clamp(1.6rem,6.5vw,2.3rem)] leading-none lg:text-[2rem]'
 }
 
 function Cabecera({ guia, folio }: { guia: string; folio: number }) {
@@ -192,20 +236,20 @@ function PaginaEntrada({
   guia: string
   parte?: 'ficha' | 'nota' | 'nacimiento'
 }) {
-  const reparto = repartoDe(entrada)
+  const plan = planDe(entrada)
 
   /* La hoja del nacimiento: el pedazo de conversación donde la palabra
      apareció por primera vez, con las burbujas de verdad. Todo esto
      llega cifrado — en el código no vive ni una palabra del chat. */
   if (parte === 'nacimiento') {
     return (
-      <div className="relative flex h-full flex-col px-[8.5%] py-[5.5%]">
+      <div className="relative flex h-full flex-col px-[8.5%] py-[4.8%]">
         <Cabecera guia={guia} folio={folio} />
         <div className="min-h-0 flex-1 overflow-y-auto pr-1">
           {/* Si lo que no cupo en la ficha fue el expediente, viene acá.
               Antes se iba a una hoja para él solo, y esa hoja quedaba
               con dos tercios de papel en blanco. */}
-          {reparto === 'expediente' && entrada.datos && (
+          {plan.expedienteConLasBurbujas && entrada.datos && (
             <div className="mb-4">
               <Expediente datos={entrada.datos} sinBorde />
             </div>
@@ -243,12 +287,12 @@ function PaginaEntrada({
 
   if (parte === 'nota') {
     return (
-      <div className="relative flex h-full flex-col px-[8.5%] py-[5.5%]">
+      <div className="relative flex h-full flex-col px-[8.5%] py-[4.8%]">
         <Cabecera guia={guia} folio={folio} />
         <div className="min-h-0 flex-1 overflow-y-auto pr-1">
           <p className="palabra-guia mb-3">viene de la hoja anterior</p>
 
-          {reparto === 'acepciones' &&
+          {plan.acepcionesFuera &&
             entrada.acepciones?.map((acepcion, i) => (
               <p
                 key={acepcion.slice(0, 24)}
@@ -259,7 +303,7 @@ function PaginaEntrada({
               </p>
             ))}
 
-          {reparto === 'expediente' && entrada.datos && (
+          {plan.expedienteFuera && !plan.expedienteConLasBurbujas && entrada.datos && (
             <Expediente datos={entrada.datos} sinBorde />
           )}
         </div>
@@ -273,19 +317,13 @@ function PaginaEntrada({
   }
 
   return (
-    <div className="relative flex h-full flex-col px-[8.5%] py-[5.5%]">
+    <div className="relative flex h-full flex-col px-[8.5%] py-[4.8%]">
       <Cabecera guia={guia} folio={folio} />
 
       <div className="min-h-0 flex-1 overflow-y-auto pr-1">
         {/* Cuando el título es una frase de ellos, no vive en claro:
             llega descifrado. Y como es largo, se compone más chico. */}
-        <h2
-          className={
-            entrada.lemaCifrado
-              ? 'lema text-[clamp(1rem,4.2vw,1.25rem)] leading-tight'
-              : 'lema text-[clamp(1.6rem,6.5vw,2.3rem)] leading-none lg:text-[2rem]'
-          }
-        >
+        <h2 className={`lema ${tamanoDelLema(entrada)}`}>
           {entrada.lemaCifrado ? (
             <LemaCifrado id={entrada.id} mientras={entrada.palabra} />
           ) : (
@@ -308,7 +346,7 @@ function PaginaEntrada({
 
         {/* Las acepciones solo van acá si la entrada cabe entera; si no,
             pasan a la hoja siguiente. */}
-        {reparto === 'entera' &&
+        {!plan.acepcionesFuera &&
           entrada.acepciones?.map((acepcion, i) => (
             <p
               key={acepcion.slice(0, 24)}
@@ -319,12 +357,10 @@ function PaginaEntrada({
             </p>
           ))}
 
-        {reparto !== 'expediente' && entrada.datos && (
-          <Expediente datos={entrada.datos} />
-        )}
+        {!plan.expedienteFuera && entrada.datos && <Expediente datos={entrada.datos} />}
       </div>
 
-      {reparto !== 'entera' ? (
+      {plan.hayNota ? (
         <p className="palabra-guia mt-3 text-right">sigue →</p>
       ) : (
         entrada.margen && (
@@ -449,24 +485,24 @@ function PortadillaFrases() {
  */
 function Contraportada() {
   return (
-    <div className="guarda flex h-full flex-col items-center justify-center px-[13%] text-center">
-      <p className="fuente-mano text-[1.35rem] leading-tight text-[var(--color-tinta)]">
+    <div className="flex h-full flex-col items-center justify-center px-[14%] text-center">
+      <p className="fuente-mano text-[1.35rem] leading-tight text-[#e2d0a8]">
         Este libro se va a seguir escribiendo
       </p>
-      <p className="fuente-mano mt-1 text-[1.35rem] leading-tight text-[var(--color-tinta)]">
+      <p className="fuente-mano mt-1 text-[1.35rem] leading-tight text-[#e2d0a8]">
         mientras nos sigamos hablando.
       </p>
 
-      <div className="my-6 flex items-center gap-3">
-        <span className="h-px w-10 bg-[rgb(120_90_55/0.45)]" />
-        <span className="text-[var(--color-tinta-roja)]">✦</span>
-        <span className="h-px w-10 bg-[rgb(120_90_55/0.45)]" />
+      <div className="my-7 flex items-center gap-3">
+        <span className="h-px w-10 bg-[rgb(201_162_39/0.45)]" />
+        <span className="text-[rgb(201_162_39/0.9)]">✦</span>
+        <span className="h-px w-10 bg-[rgb(201_162_39/0.45)]" />
       </div>
 
-      <p className="palabra-guia">{TEXTOS.tapa.pie}</p>
-      <p className="palabra-guia mt-1">Managua · Nicaragua</p>
+      <p className="palabra-guia !tracking-[0.1em] !text-[rgb(201_162_39/0.7)]">{TEXTOS.tapa.pie}</p>
+      <p className="palabra-guia mt-1 !text-[rgb(201_162_39/0.55)]">Managua · Nicaragua</p>
 
-      <p className="fuente-mano mt-8 text-[1.1rem] text-[var(--color-tinta-roja)]">
+      <p className="fuente-mano mt-9 text-[1.15rem] text-[#d8b98a]">
         de tu osito, para su osita
       </p>
     </div>
@@ -545,8 +581,7 @@ export function Diccionario() {
       // La hoja de continuación solo hace falta para las acepciones.
       // Si lo que sobra es el expediente y la entrada tiene hoja de
       // nacimiento, se va allá y no se gasta papel en una hoja aparte.
-      const parteQueSigue = repartoDe(entrada)
-      if (parteQueSigue === 'acepciones' || (parteQueSigue === 'expediente' && !entrada.cifrada)) {
+      if (planDe(entrada).hayNota) {
         deEntradas.push({
           id: `${entrada.id}-nota`,
           guia,
@@ -585,7 +620,6 @@ export function Diccionario() {
       ...previas,
       ...deEntradas,
       { id: 'colofon', contenido: <Colofon /> },
-      { id: 'contraportada', contenido: <Contraportada /> },
     ]
 
     return {
@@ -610,7 +644,7 @@ export function Diccionario() {
     // libro: de ahí salen los títulos de las fórmulas, las burbujas de
     // cada nacimiento y las curvas de uso.
     <ProveedorDiccionario>
-      <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-16 sm:px-6">
+      <div className="mx-auto w-full max-w-6xl px-4 pb-4 pt-16 sm:px-6 lg:pb-16">
         {/* El libro se queda con todo el ancho: las pestañas ya no le
           roban una columna al costado, van recortadas en su propio
           canto. Los cantos se salen de la pantalla a propósito. */}
@@ -619,6 +653,7 @@ export function Diccionario() {
             ref={libro}
             paginas={paginas}
             portada={<Tapa />}
+          contratapa={<Contraportada />}
             alCambiar={setPos}
             alAbrir={() => setAbierto(true)}
             pestanas={abierto ? pestanas : undefined}
@@ -626,7 +661,7 @@ export function Diccionario() {
           />
         </div>
 
-        <p className="fuente-mano mt-6 text-center text-lg text-texto-suave">
+        <p className="fuente-mano mt-4 text-center text-base text-texto-suave sm:text-lg">
           {abierto ? TEXTOS.ayuda : TEXTOS.abrir}
         </p>
       </div>

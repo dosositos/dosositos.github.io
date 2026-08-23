@@ -331,7 +331,7 @@ export const entradas: EntradaDiccionario[] = [
     palabra: 'futura esposa · futuro esposo',
     tipo: 'loc. s.',
     definicion:
-      'No es un apodo: es un plan, y se contesta. Él lo estrenó una noche de febrero de 2025; ella le devolvió «mi amado futuro esposo» diez minutos después, esa misma noche. Desde entonces ninguno de los dos dejó de decirlo.',
+      'No es un apodo: es un plan, y se contesta. Él lo estrenó una noche de febrero de 2025 y ella le devolvió «mi amado futuro esposo» diez minutos después, esa misma noche. Ninguno de los dos dejó de decirlo.',
     margen: 'diez minutos tardó la respuesta',
     cifrada: true,
     datos: {

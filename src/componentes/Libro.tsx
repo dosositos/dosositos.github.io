@@ -65,6 +65,17 @@ export interface ManejoLibro {
 
 /** Cuánto hay que arrastrar (del ancho de la página) para que pase. */
 const UMBRAL = 0.28
+/**
+ * Cuánto tiene que recorrer el dedo antes de que el libro se dé por
+ * aludido. Por debajo de esto, tocar el papel no mueve nada.
+ */
+const ZONA_MUERTA = 14
+/**
+ * Qué tan dura está la hoja. Con 1 el papel sigue al dedo milímetro a
+ * milímetro y se sentía nervioso; con 1.45 hay que llevarlo casi media
+ * página de más para darlo vuelta, que es como pesa un libro.
+ */
+const DUREZA = 1.45
 /** A partir de esta velocidad la hoja pasa aunque la hayás soltado antes. */
 const VELOCIDAD_MINIMA = 320
 /** Cuántas hojas se montan alrededor de la actual. El resto no existe. */
@@ -201,6 +212,7 @@ function Hoja({
 export function Libro({
   paginas,
   portada,
+  contratapa,
   className = '',
   alCambiar,
   alAbrir,
@@ -211,6 +223,8 @@ export function Libro({
   paginas: PaginaLibro[]
   /** La tapa. Si no la hay, el libro arranca abierto. */
   portada?: ReactNode
+  /** Lo que dice la contratapa, al fondo de todo. */
+  contratapa?: ReactNode
   className?: string
   /** Avisa qué página quedó a la vista, para el índice y las pestañas. */
   alCambiar?: (indice: number) => void
@@ -231,7 +245,16 @@ export function Libro({
   const [girando, setGirando] = useState(false)
 
   const caja = useRef<HTMLDivElement>(null)
-  const arrastre = useRef<{ x0: number; t0: number } | null>(null)
+  const arrastre = useRef<{
+    x0: number
+    y0: number
+    t0: number
+    /** Si ya se sabe hacia dónde va el gesto. */
+    decidido: boolean
+    /** Si ese gesto resultó ser pasar la hoja (y no rodar el papel). */
+    pasando: boolean
+    id: number
+  } | null>(null)
 
   /** -1 … 0 … 1 — cuánto lleva girado la hoja activa. */
   const giro = useMotionValue(0)
@@ -249,7 +272,9 @@ export function Libro({
   const porHoja = doble ? 2 : 1
   const totalHojas = Math.ceil(paginas.length / porHoja)
 
-  const hayAdelante = pasadas < totalHojas - 1
+  // Se pueden pasar todas las hojas, incluida la última: al voltearla
+  // queda a la vista el fondo del libro, que es la contratapa.
+  const hayAdelante = pasadas < totalHojas
   const hayAtras = pasadas > 0
 
   // La página que se está leyendo, para el índice de afuera.
@@ -326,21 +351,57 @@ export function Libro({
 
   useImperativeHandle(ref, () => ({ irA }), [irA])
 
-  /* ── El dedo ──────────────────────────────────────────────────── */
+  /* ── El dedo ──────────────────────────────────────────────────────
+     Tocar no es arrastrar. El dedo tiene que recorrer un trecho —y en
+     horizontal— antes de que la hoja se mueva un milímetro.
+
+     Antes se capturaba el puntero apenas apoyabas el dedo, y eso traía
+     tres males: la hoja saltaba con cualquier roce, el gesto peleaba con
+     el scroll de la página, y el papel no se podía rodar por dentro
+     porque la captura se comía el movimiento. Ahora el puntero se
+     captura recién cuando quedó claro que el gesto es horizontal; si es
+     vertical, el libro no se mete y deja rodar. */
   const alBajar = (e: React.PointerEvent) => {
     if (girando || sinMovimiento || !abierto) return
     // El arrastre no debe robarle el gesto a un enlace o a un botón.
     if ((e.target as HTMLElement).closest('a,button')) return
-    arrastre.current = { x0: e.clientX, t0: performance.now() }
-    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    arrastre.current = {
+      x0: e.clientX,
+      y0: e.clientY,
+      t0: performance.now(),
+      decidido: false,
+      pasando: false,
+      id: e.pointerId,
+    }
   }
 
   const alMover = (e: React.PointerEvent) => {
     const a = arrastre.current
     if (!a || !caja.current) return
-    const ancho = caja.current.offsetWidth / (doble ? 2 : 1)
-    // Arrastrar hacia la izquierda avanza; hacia la derecha retrocede.
-    let p = -(e.clientX - a.x0) / ancho
+
+    const dx = e.clientX - a.x0
+    const dy = e.clientY - a.y0
+
+    if (!a.decidido) {
+      // Todavía no se sabe qué quiere hacer el dedo.
+      if (Math.abs(dx) < ZONA_MUERTA && Math.abs(dy) < ZONA_MUERTA) return
+      a.decidido = true
+      // Vertical, o en diagonal dudosa: es scroll, no es pasar hoja.
+      if (Math.abs(dx) < Math.abs(dy) * 1.2) {
+        arrastre.current = null
+        return
+      }
+      a.pasando = true
+      ;(e.currentTarget as HTMLElement).setPointerCapture(a.id)
+    }
+
+    if (!a.pasando) return
+
+    // El recorrido cuenta desde donde se decidió, no desde donde se
+    // apoyó el dedo: si no, la hoja pega un salto de golpe.
+    const util = dx - Math.sign(dx) * ZONA_MUERTA
+    const ancho = (caja.current.offsetWidth / (doble ? 2 : 1)) * DUREZA
+    let p = -util / ancho
     if (p > 0 && !hayAdelante) p = 0
     if (p < 0 && !hayAtras) p = 0
     giro.set(Math.max(-1, Math.min(1, p)))
@@ -350,8 +411,9 @@ export function Libro({
     const a = arrastre.current
     if (!a || !caja.current) return
     arrastre.current = null
+    if (!a.pasando) return
 
-    const ancho = caja.current.offsetWidth / (doble ? 2 : 1)
+    const ancho = (caja.current.offsetWidth / (doble ? 2 : 1)) * DUREZA
     const recorrido = -(e.clientX - a.x0)
     const segundos = Math.max(0.001, (performance.now() - a.t0) / 1000)
     const velocidad = recorrido / segundos
@@ -392,9 +454,10 @@ export function Libro({
 
   /* ── El grosor del bloque ─────────────────────────────────────── */
   const grosor = useMemo(() => {
-    const leido = totalHojas > 1 ? pasadas / (totalHojas - 1) : 0
-    // Nunca llega a cero: hasta un libro casi terminado tiene tapa.
-    return { izq: 9 + leido * 26, der: 9 + (1 - leido) * 26 }
+    const leido = totalHojas > 0 ? Math.min(1, pasadas / totalHojas) : 0
+    // El izquierdo nunca baja de la tapa; el derecho sí se acaba, porque
+    // al final ya no queda nada por leer de ese lado.
+    return { izq: 9 + leido * 28, der: 2 + (1 - leido) * 33 }
   }, [pasadas, totalHojas])
 
   /** Las hojas que se montan: la de arriba y unas pocas a cada lado. */
@@ -456,10 +519,14 @@ export function Libro({
         <div className="canto" data-lado="izq" style={{ right: '100%', width: `${grosor.izq}px` }} />
         <div className="canto" data-lado="der" style={{ left: '100%', width: `${grosor.der}px` }} />
 
-        {/* ── El fondo del libro ──
-            Lo que se ve por debajo de todas las hojas: la contratapa. */}
-        <div className="papel-libro papel-quieto borde-hoja absolute inset-0 overflow-hidden">
-          <div className="lomo-sombra" data-lado="izq" />
+        {/* ── La contratapa ──
+            Es el fondo del libro: lo que queda debajo de todas las hojas,
+            y lo que se ve cuando pasás la última. Va en cuero, como la
+            tapa, porque eso es — la misma pieza por el otro lado. */}
+        <div className="tapa-libro papel-quieto absolute inset-0 overflow-hidden rounded-r-md rounded-l-sm">
+          <div className="filete-dorado" />
+          <div className="lomo-cuero absolute inset-y-0 left-0 w-[4%]" />
+          {contratapa}
         </div>
 
         {/* ── La pila de hojas ── */}
