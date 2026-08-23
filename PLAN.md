@@ -526,10 +526,12 @@ acordó nunca. Y «futuro esposo» lo estrenó ella **diez minutos después** de
   ellos, así que el título no puede vivir en claro: llega descifrado, y en
   `src/` solo queda un nombre de referencia y la letra del índice.
 
-**Ninguna hoja tiene scroll.** En Safari de iPhone un contenedor con scroll
-dentro de un  no se puede rodar —bug viejo de WebKit— así que lo
-que no entra pasa a la hoja siguiente y listo.  lo comprueba
-en cuatro tamaños, incluido el iPhone con la barra del navegador puesta.
+**Ninguna hoja tiene scroll.** En Safari de iPhone, un contenedor con scroll
+metido dentro de un `preserve-3d` no se puede rodar —bug viejo de WebKit— y por
+eso las fichas largas quedaban cortadas sin manera de llegar al final. Ahora lo
+que no entra pasa a la hoja siguiente, como en un diccionario de papel.
+`private/notas/ver-desbordes.mjs` lo comprueba en cuatro tamaños, incluido el
+iPhone con la barra del navegador puesta, que es donde menos alto queda.
 
 **La página del diccionario tampoco rueda**: el libro se mide por el alto de la
 pantalla y entra entero, así el dedo no tiene que adivinar si está pasando una
