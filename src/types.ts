@@ -146,14 +146,116 @@ export interface Instante {
   flor?: Flor
 }
 
+/* ────────────────────────────────────────────────────────────────
+   EL DICCIONARIO OSO–ESPAÑOL
+
+   La ficha de cada palabra va en claro en src/content/diccionario.ts:
+   es la voz del que cuenta, no una cita. Lo que sí es cita textual
+   —el ejemplo de uso y las burbujas donde nació la palabra— vive
+   cifrado en public/cifrado/diccionario.enc, igual que los chats.
+   ──────────────────────────────────────────────────────────────── */
+
+/** Una forma de escribir la misma palabra, con las veces que se usó. */
+export interface FormaDePalabra {
+  forma: string
+  veces: number
+}
+
+/**
+ * Lo que el chat sabe de una palabra.
+ *
+ * Nada de esto se escribe a mano: sale de peinar las dos fuentes con
+ * scripts/preparar-diccionario.mjs. Son números y fechas, no frases,
+ * así que pueden ir en claro sin romper la regla de privacidad — y son
+ * justo lo que hace que el libro se sienta un libro de verdad.
+ */
+export interface DatosDePalabra {
+  /** Mensajes que la contienen, en las dos fuentes juntas. */
+  veces: number
+  /** El reparto entre los dos. Es la mitad de la gracia de cada entrada. */
+  reparto: { osito: number; osita: number }
+  /** ISO 'YYYY-MM-DD' del primer mensaje donde aparece. */
+  nacio: string
+  /** 'HH:MM' de ese primer mensaje, en horario de Nicaragua. */
+  hora?: string
+  /** Quién la dijo primero. No siempre es quien más la usa. */
+  acuño: Quien
+  /** ISO de la última vez. Sirve para saber si la palabra sigue viva. */
+  ultima?: string
+  /** Variantes ortográficas, de la más usada a la menos. */
+  formas?: FormaDePalabra[]
+}
+
 export interface EntradaDiccionario {
+  /** Llave corta y estable. Es el ancla del índice alfabético. */
+  id: string
   palabra: string
+  /**
+   * Por qué palabra se alfabetiza, cuando el lema empieza con algo que
+   * no cuenta: «qué barbaridad» va en la B y «la letanía» en la L. Sin
+   * esto, el índice del canto sale en A, Q, C…
+   */
+  alfabetiza?: string
   /** Cómo se pronuncia, en broma: 'o·si·ti·ta' */
   fonetica?: string
+  /** La categoría, abreviada como en los diccionarios: 's. f.', 'interj.' */
   tipo: string
   definicion: string
-  ejemplo?: string
+  /** Acepciones siguientes, si la palabra tiene más de un uso. */
+  acepciones?: string[]
+  /** Quién la acuñó, cuando la ficha lo quiere decir en palabras. */
   autor?: Quien
+  datos?: DatosDePalabra
+  /** Nota manuscrita al margen de la página, opcional. */
+  margen?: string
+  /**
+   * Si tiene expediente cifrado (dónde nació y la curva de uso). La
+   * ficha se lee igual sin él; lo cifrado llega en una hoja aparte.
+   */
+  cifrada?: boolean
+  /**
+   * Cuando el título de la entrada ES una frase de la conversación —las
+   * fórmulas del saludo, las medidas del infinito— no puede vivir acá
+   * en claro: llega descifrado y `palabra` es solo lo que se ve
+   * mientras tanto.
+   */
+  lemaCifrado?: boolean
+  /**
+   * Bajo qué letra va en el índice del canto. Se usa cuando el lema
+   * llega cifrado y por lo tanto no se le puede mirar la primera letra.
+   */
+  letraIndice?: string
+}
+
+/* ── El expediente cifrado ────────────────────────────────────────
+   Lo que llega de public/cifrado/diccionario.enc. Lo arma
+   scripts/preparar-diccionario.mjs y no se escribe a mano. */
+
+/** Un mes de uso de una palabra, para dibujar la curva. */
+export interface MesDeUso {
+  /** 'YYYY-MM' */
+  mes: string
+  veces: number
+  /** Largo medio del mensaje ese mes. Solo importa en las fórmulas. */
+  largo: number
+}
+
+export interface ExpedienteDePalabra {
+  /** El título real, cuando la entrada es una frase entera. */
+  lema?: string
+  /** Cuánto medía de verdad el mensaje del que salió ese título. */
+  lemaLargo?: number
+  /** El pedazo de conversación donde la palabra apareció por primera vez. */
+  nacimiento: {
+    fecha: string
+    fuente: FuenteChat
+    mensajes: MensajeContexto[]
+  }
+  serie: MesDeUso[]
+}
+
+export interface DiccionarioGuardado {
+  entradas: Record<string, ExpedienteDePalabra>
 }
 
 /**

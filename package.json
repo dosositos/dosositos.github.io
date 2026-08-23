@@ -21,7 +21,8 @@
     "fotos:cifrar": "node scripts/cifrar-medios.mjs",
     "peluches:preparar": "node scripts/preparar-peluches.mjs",
     "peluches:hoy": "node scripts/peluches-hoy.mjs",
-    "secretos:cifrar": "node scripts/cifrar-contenido.mjs"
+    "secretos:cifrar": "node scripts/cifrar-contenido.mjs",
+    "diccionario:preparar": "node scripts/preparar-diccionario.mjs && node scripts/cifrar-contenido.mjs"
   },
   "dependencies": {
     "@fontsource-variable/caveat": "^5.2.9",

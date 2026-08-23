@@ -15,7 +15,8 @@
 - [x] **Día 5 (17 ago)** · Juego "¿quién dijo esto?"
 - [ ] Día 2 (18 ago) · Línea del tiempo horizontal en computadora
 - [x] **Día 6 (18 ago)** · Frasco de mensajitos: reescrito, cifrado y publicado
-- [ ] Día 6 bis (19 ago) · Diccionario oso
+- [x] **Día 6 bis (19 ago) · Diccionario oso** — libro, 37 entradas y las citas
+      cifradas (22 ago)
       (el "un día como hoy" ya está, adelantado el 17)
 - [ ] Día 7 (20-21 ago) · El sobre de apertura, easter eggs
       (los peluches escondidos ya están, adelantados el 17)
@@ -463,6 +464,79 @@ retratos de los peluches**, y de noche **se rehízo y publicó el frasco entero*
 La decisión que sigue abierta es la tercera: cómo entra Boo en la línea del
 tiempo, que espera a tener su fecha.
 
+### El diccionario — 22 de agosto
+
+Ella hizo un borrador de 20 palabras leyendo el chat. Está en
+`private/diccionario-borrador-de-ella.md` (llegó a la raíz del repo con citas
+textuales adentro; se movió antes de que un `git add .` lo publicara en claro).
+
+**Lo que salió de comprobarlo contra los 160.803 mensajes:**
+
+- Tres cosas del borrador estaban mal: «no hay de queso» la trajo él pero hoy
+  la dice más ella (102 contra 46); «logaritmo» no aparece nunca escrito por
+  ella, solo él citándola; y «dólar → dolor» **no existe** en ninguna de las dos
+  fuentes.
+- Aparecieron palabras que el borrador no tenía: `chi` (340 veces, la empezó él
+  a la medianoche del 21 de octubre de 2025 y ella se la quedó), `ño`, `ta`, y
+  sobre todo **la letanía**: «Cómo amaneció mi osito bello, hermoso, precioso…»,
+  295 veces, todas de ella, que empezó midiendo 28 caracteres y llegó a 1.162
+  el 8 de junio de 2025.
+- `yaya` es de él (178 de 200) y `yayaya` es de ella (282 de 283). No se cruzan
+  nunca. El borrador las tenía como una sola.
+
+**Para aprobar: `private/diccionario-candidatas.md`** — 30 entradas con casilla,
+la definición ya redactada para corregir, y los datos duros de cada una.
+
+**El libro ya funciona** en `/diccionario`, con las 29 entradas aprobadas: tapa
+de cuero con la polaroid de ustedes dos de chiquitos
+(cifrada, como todas las fotos), papel con grano, canto de páginas que adelgaza
+mientras avanzás, hojas que se pasan con el dedo y pestañas alfabéticas en el
+canto. En el teléfono se lee de a una página; en computadora se abre de par en
+par. Motor en `src/componentes/Libro.tsx`, contenido en
+`src/content/diccionario.ts`.
+
+**Aprobado el 22 de agosto.** Quedaron **29 entradas**: se cayeron alaa, okok,
+bienn, ta y el «dólar → dolor», que no existía en ninguna de las dos fuentes.
+Entraron con arreglos suyos: el origen brasileño de coxinho (la película del
+perro, Caramelo), que testraño y abriba están mal escritos **a propósito** y no
+son dedazos, que «no hay de queso» es de Chespirito y que la variación más usada
+es «ni de papa» (71 veces), que «soñá con los angelitos» se lo decía su mamá y
+antes su abuela, y que numinosa la buscó él aposta. Se sumaron «la madre de mis
+hijos» y el par futura esposa / futuro esposo.
+
+**El hallazgo de esa pasada:** en «gashas» cada uno tiene su letra. Ella escribe
+sh (881 veces) y ch una sola vez; él escribe ch (381) y sh cuatro. Nadie lo
+acordó nunca. Y «futuro esposo» lo estrenó ella **diez minutos después** de que
+él dijera «mi amada futura esposa», la misma noche del 26 de febrero de 2025.
+
+**Polly, Epi, Fiona y Lara son mascotas** —Polly de ella; Epi, Fiona y Lara de
+él— así que no van a `nombres-prohibidos.json`. Igual no se nombran en claro.
+
+**Las citas ya están cifradas — 22 de agosto, de noche.**
+`npm run diccionario:preparar` peina los dos chats y arma
+`private/publicable/diccionario.json`, que el hook convierte en
+`public/cifrado/diccionario.enc`. De ahí salen tres cosas:
+
+- **Dónde nació cada palabra**: el pedazo de conversación de aquel día, con la
+  burbuja que la estrena resaltada. Son las burbujas de verdad.
+- **La curva de uso mes a mes**, en la hoja del nacimiento, con el mes del pico
+  en rojo. En las fórmulas mide el largo en vez de las veces: ahí se ve cómo el
+  saludo de ella pasó de cuatro palabras a 1.150 caracteres.
+- **El título de las tres fórmulas.** Esas entradas son una frase entera de
+  ellos, así que el título no puede vivir en claro: llega descifrado, y en
+  `src/` solo queda un nombre de referencia y la letra del índice.
+
+**El libro quedó en 78 hojas y 37 entradas**, con un apartado final de frases
+(las tres fórmulas, bajo la pestaña ✦), una entrada por cada mascota —Polly de
+ella; Epi, Fiona, Lara y Frida de él— y una contratapa al pasar la última hoja. Se prueba solo con
+`node private/notas/probar-libro.mjs`: recorre el libro entero y comprueba que
+ninguna hoja quede en blanco, que ir y volver caiga donde debe, que lo cifrado
+llegue y que el índice del canto lleve a donde dice.
+
+Para verlo: `node private/notas/ver-libro.mjs` saca las capturas y
+`node private/notas/ver-desbordes.mjs` comprueba que ninguna ficha se salga de
+su hoja en 360, 390 y 1440 de ancho.
+
 ### Lo que toca, en orden
 
 1. **La historia de Boo.** Contame su historia y lo escribo como momento de
@@ -474,9 +548,11 @@ tiempo, que espera a tener su fecha.
    que quedó abierta abajo. Además su ficha en `src/content/peluches.ts` sigue
    diciendo «FALTA: quién se lo regaló a quién y cuándo» — hoy no se publica
    porque el resumen la reemplaza por su frase, pero está esperando.
-2. **El diccionario oso**, si ya tenés las palabras. Si no, me voy al día 2 —
-   la línea del tiempo horizontal para computadora — que es lo único atrasado
+2. **La línea del tiempo horizontal para computadora**, que es lo único atrasado
    del orden original.
+3. **Probar el diccionario en el teléfono de verdad.** Está terminado y las
+   pruebas pasan, pero el arrastre con el pulgar y las sombras durante el giro
+   solo se juzgan bien en un teléfono real.
 
 ### El frasco de mensajitos — publicado el 18 de agosto (de noche)
 

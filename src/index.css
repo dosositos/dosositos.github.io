@@ -8,6 +8,11 @@
 @import '@fontsource-variable/nunito';
 @import '@fontsource-variable/caveat';
 
+/* El diccionario es papel de verdad sobre el fondo nocturno: tiene su
+   propia paleta y sus propias texturas, y no se parece a nada más de
+   la web. Por eso vive aparte. */
+@import './estilos/libro.css';
+
 /* ═══════════════════════════════════════════════════════════════
    PALETA FIJA — los colores que significan algo para nosotros.
    Se usan como acentos sobre el fondo nocturno; no cambian con el

@@ -5,6 +5,7 @@ import { PeluchesEscondidos } from '@/componentes/PeluchesEscondidos'
 import { Petalos } from '@/componentes/Petalos'
 import { InterruptorTema, ProveedorTema } from '@/componentes/ProveedorTema'
 import { ScrollAlInicio } from '@/componentes/ScrollAlInicio'
+import { Diccionario } from '@/paginas/Diccionario'
 import { Estadisticas } from '@/paginas/Estadisticas'
 import { Frasco } from '@/paginas/Frasco'
 import { Juego } from '@/paginas/Juego'
@@ -68,10 +69,7 @@ function Marco() {
             <Route path="/linea-del-tiempo" element={<LineaDelTiempo />} />
             <Route path="/momento/:id" element={<Momento />} />
             <Route path="/juego" element={<Juego />} />
-            <Route
-              path="/diccionario"
-              element={<EnConstruccion titulo="diccionario oso-español" nota="las palabras que solo existen aquí — día 7" />}
-            />
+            <Route path="/diccionario" element={<Diccionario />} />
             <Route path="/playlist" element={<Playlist />} />
             <Route path="/estadisticas" element={<Estadisticas />} />
             <Route path="/frasco" element={<Frasco />} />
