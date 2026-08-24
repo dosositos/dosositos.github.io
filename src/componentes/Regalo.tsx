@@ -149,7 +149,6 @@ export function Regalo() {
           ? 'abierta'
           : 'yaAbierta'
 
-  const abierta = fase === 'estallando' || fase === 'carta'
   /** El enlace de verdad, o null si falló o si todavía nadie lo pegó. */
   const enlaceListo =
     enlace?.enlace && !enlace.enlace.includes(SIN_PEGAR) ? enlace.enlace : null
@@ -205,83 +204,93 @@ export function Regalo() {
         </motion.p>
       </section>
 
-      {/* ═══ La luz y la carta ════════════════════════════════════ */}
+      {/* ═══ El fogonazo ══════════════════════════════════════════
+          Vive aparte de la carta y se desmonta al terminar. Antes era
+          UNA sola capa que se encendía (0→1) y después se bajaba
+          (1→0,3): dos animaciones seguidas sobre el mismo elemento y
+          la misma propiedad, que es justo donde Safari se traba. Si la
+          segunda no arrancaba, la luz se quedaba encendida y se comía
+          el texto crema — quedaba solo el botón, que por ser una
+          pastilla sólida con letra oscura se lee sobre cualquier cosa.
+          Ahora ninguna capa tiene que dar marcha atrás. */}
       <AnimatePresence>
-        {abierta && (
+        {fase === 'estallando' && (
           <motion.div
-            key="regalo-abierto"
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6 }}
-            className="fixed inset-0 z-[80] grid place-items-center overflow-y-auto px-6 py-16"
-          >
-            {/* El fondo, que solo aparece cuando ya hay que leer */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: fase === 'carta' ? 1 : 0 }}
-              transition={{ duration: 0.9 }}
-              className="fixed inset-0 -z-10 bg-fondo"
-            />
+            key="destello"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.9, delay: 0, ease: 'easeIn' } }}
+            transition={{ duration: 0.45, delay: 0.3, ease: 'easeOut' }}
+            className="pointer-events-none fixed inset-0 z-[90]"
+            style={{
+              background:
+                'radial-gradient(circle at 50% 42%, #fffaf0 0%, #ffeec4 16%, #f7cf7c 30%, #e9963a 46%, #8d2a2f 68%, #200814 100%)',
+            }}
+          />
+        )}
+      </AnimatePresence>
 
-            {/* El golpe de luz */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: fase === 'carta' ? 0.3 : 1 }}
-              transition={{
-                duration: fase === 'carta' ? 1 : 0.5,
-                delay: fase === 'carta' ? 0 : 0.32,
-                ease: 'easeOut',
-              }}
-              className="fixed inset-0 -z-10"
+      {/* ═══ La carta ═════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {fase === 'carta' && (
+          <motion.div
+            key="carta"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className="fixed inset-0 z-[80] grid place-items-center overflow-y-auto bg-fondo px-6 py-16"
+          >
+            {/* El rescoldo del fogonazo. Es fijo, no se anima: lo que
+                se lee encima no puede depender de que algo se apague. */}
+            <div
+              className="pointer-events-none fixed inset-0 opacity-30"
               style={{
                 background:
                   'radial-gradient(circle at 50% 42%, #fffaf0 0%, #ffeec4 16%, #f7cf7c 30%, #e9963a 46%, #8d2a2f 68%, #200814 100%)',
               }}
             />
 
-            {fase === 'carta' && (
-              <motion.div
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                className="mx-auto w-full max-w-lg text-center"
-              >
-                <p className="text-[0.68rem] uppercase tracking-[0.3em] text-acento/80">
+            {(() => {
+              /* Los tiempos de entrada, en segundos. En CSS y no en
+                 JavaScript: ver `anima-aparecer` en index.css. */
+              const ultima = 0.3 + (REGALO.lineas.length - 1) * 0.2
+              return (
+              <div className="relative mx-auto w-full max-w-lg text-center">
+                <p
+                  className="anima-aparecer text-[0.68rem] uppercase tracking-[0.3em] text-acento/80"
+                  style={{ animationDelay: '0.05s' }}
+                >
                   {conocernos} · {novios} de ositos
                 </p>
 
-                <h2 className="resplandor mt-4 font-display text-5xl text-acento sm:text-6xl">
+                <h2
+                  className="anima-aparecer resplandor mt-4 font-display text-5xl text-acento sm:text-6xl"
+                  style={{ animationDelay: '0.15s' }}
+                >
                   {REGALO.titulo}
                 </h2>
 
                 <div className="mt-7 space-y-4">
                   {REGALO.lineas.map((linea, i) => (
-                    <motion.p
+                    <p
                       key={linea}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.8, delay: 0.5 + i * 0.35 }}
-                      className="fuente-mano text-xl leading-snug text-texto sm:text-2xl"
+                      className="anima-aparecer fuente-mano text-xl leading-snug text-texto sm:text-2xl"
+                      style={{ animationDelay: `${0.3 + i * 0.2}s` }}
                     >
                       {linea}
-                    </motion.p>
+                    </p>
                   ))}
                 </div>
 
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.5 + REGALO.lineas.length * 0.35 }}
-                  className="fuente-mano mt-5 text-lg text-texto-suave"
+                <p
+                  className="anima-aparecer fuente-mano mt-5 text-lg text-texto-suave"
+                  style={{ animationDelay: `${ultima + 0.2}s` }}
                 >
                   {REGALO.firma}
-                </motion.p>
+                </p>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.9, delay: 0.8 + REGALO.lineas.length * 0.35 }}
-                  className="mt-10"
-                >
+                <div className="anima-aparecer mt-10" style={{ animationDelay: `${ultima + 0.4}s` }}>
                   {enlaceListo ? (
                     <a
                       href={enlaceListo}
@@ -306,17 +315,19 @@ export function Regalo() {
                       {enlace?.pie ?? REGALO.aviso}
                     </p>
                   )}
-                </motion.div>
+                </div>
 
                 <button
                   type="button"
                   onClick={() => setFase('guardado')}
-                  className="fuente-mano mt-10 text-base text-texto-suave/60 underline-offset-4 transition-colors hover:text-acento hover:underline"
+                  className="anima-aparecer fuente-mano mt-10 text-base text-texto-suave/60 underline-offset-4 transition-colors hover:text-acento hover:underline"
+                  style={{ animationDelay: `${ultima + 0.5}s` }}
                 >
                   {REGALO.cerrar}
                 </button>
-              </motion.div>
-            )}
+              </div>
+              )
+            })()}
           </motion.div>
         )}
       </AnimatePresence>
