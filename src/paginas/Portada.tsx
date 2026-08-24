@@ -4,8 +4,10 @@ import { Contador } from '@/componentes/Contador'
 // El oso blanco está guardado por ahora, ver más abajo.
 // import { OrigenDelApodo } from '@/componentes/OrigenDelApodo'
 import { QuienAmaMas } from '@/componentes/QuienAmaMas'
+import { Regalo } from '@/componentes/Regalo'
 import { UnDiaComoHoy } from '@/componentes/UnDiaComoHoy'
 import { FECHAS, OSITA, OSITO } from '@/content/config'
+import { REGALO } from '@/content/regalo'
 import { celebracionDeHoy } from '@/lib/celebraciones'
 import { diasQueFaltan, proximoAniversario, proximoMesiversario } from '@/lib/tiempo'
 
@@ -28,9 +30,16 @@ export function Portada() {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col items-center gap-16 px-5 pb-24 pt-16 sm:gap-20 sm:pt-24">
+      {/* ── El regalo ────────────────────────────────────────────
+          Va antes que el título a propósito: es lo primero que tiene
+          que ver al pasar la puerta. Mientras esté activo, él se
+          encarga de anunciar la celebración del día; por eso el
+          cartelito de abajo se calla, para no decirlo dos veces. */}
+      <Regalo />
+
       {/* ── Encabezado ───────────────────────────────────────── */}
       <header className="text-center">
-        {celebracion && (
+        {celebracion && !REGALO.activo && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
