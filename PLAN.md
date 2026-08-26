@@ -441,10 +441,65 @@ y chats, y el sobre de apertura. Eso es el regalo.
 
 ---
 
-## La próxima sesión — cerrado el 22 de agosto de 2026 (el diccionario)
+## La próxima sesión — 26 de agosto de 2026: el juego de la luna
 
 **Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
 arrancamos por donde diga, sin que tengás que acordarte de nada.
+
+**Lo que toca:** programar *A la luna, a pasitos de tortuga*. Está diseñado
+entero y decidido con vos el 25 de agosto; el plan completo —mecánica, los tres
+mundos, valores de la física, orden de trabajo y un aviso serio sobre la
+vibración en el iPhone— vive en **`plan-juego-luna.md`**, en la raíz. Se lee
+antes de escribir la primera línea.
+
+Lo primero de esa sesión no es código: **la carta de la luna**, que se escribe
+entre los dos y es el premio por llegar arriba.
+
+**La web se entregó el 24 de agosto de 2026**, con el regalo de la portada: la
+caja que se abre, la luz y el video. Ese mismo día se arregló la carta para que
+se lea bien en Safari. De aquí en adelante todo lo que se haga es para una web
+que ella ya tiene en la mano, así que nada puede quedar a medias entre una
+sesión y otra.
+
+**Lo del 25 de agosto:**
+
+- El skill del repaso **pasa a vivir en el repositorio**, como
+  `.claude/skills/repasar-textos/` —es el `humanizer`, renombrado para que no
+  choque con la copia global—, con una hoja al lado, `voz-del-proyecto.md`,
+  que dice qué se repasa, qué no se toca nunca y cómo suena el español de aquí.
+  Ahora es parte del flujo: se escribe, se pasa el skill, se revisa, se
+  commitea. Está anotado en `CLAUDE.md`.
+- **Apareció la historia de Boo**, que era el hueco más viejo del plan. Vino en
+  el arreglo de Hot Wheels que ella le regaló en Navidad, con su lazo amarillo.
+  Buscando en el chat salió la fecha: **23 de diciembre de 2024**, el día que se
+  vieron de cinco a diez de la noche y se dieron los regalos. Esa noche él
+  escribió que iba a dormir con el osito, y diez días después Boo todavía olía
+  a ella. El nombre, además, viene de bamBOO, por el panda.
+- **El teléfono de ella es Android; el de él es iPhone.** Salió al planear el
+  juego y vale para todo lo demás: el aparato que manda al probar es el de ella.
+  Lo medido contra Safari sigue sirviendo como el caso más estrecho, pero no es
+  el que decide.
+- Con eso **se cierra la decisión que estaba abierta**: Boo no cae años antes de
+  conocerse, cae en pleno primer diciembre juntos y entra como un momento normal
+  de la línea del tiempo. Falta escribirlo en `src/content/momentos.ts` y
+  sacarle a Boo la frase comodín de `src/content/peluches.ts`.
+
+**Lo que sigue esperando, después del juego:**
+
+1. **El momento de Boo** en la línea del tiempo, con su fecha ya encontrada.
+2. **Los dos momentos apuntados sin escribir**: el 24 de noviembre de 2024 y las
+   flores de lego, que además no tiene fecha.
+3. **La línea del tiempo horizontal para computadora**, lo único atrasado del
+   orden original.
+4. **Probar el diccionario en el teléfono de verdad**: si alguna ficha quedó
+   cortada y si el gesto pesa bien (`ZONA_MUERTA` y `DUREZA` en
+   `src/componentes/Libro.tsx`).
+5. **PWA**: hoy no hay manifest ni ícono, así que agregarla a la pantalla de
+   inicio no le pone carátula propia.
+
+---
+
+## Lo que se cerró el 22 de agosto de 2026 (el diccionario)
 
 **Cómo está la web ahora mismo:** publicada y andando en el teléfono. Puerta con
 la frase, portada con contadores y "un día como hoy", línea del tiempo con 15
