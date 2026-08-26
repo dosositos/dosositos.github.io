@@ -101,6 +101,22 @@ inventar colores nuevos sin motivo: cada uno significa algo.
 **Móvil primero.** Se va a ver sobre todo en el teléfono de ella. Nada se prueba
 solo en escritorio.
 
+**Repaso de lo redactado, antes de publicar.** Todo texto nuevo o editado se
+pasa por el skill `repasar-textos`, que vive en el repositorio
+(`.claude/skills/repasar-textos/`) para que viaje con el proyecto. Se invoca con
+`/repasar-textos` sobre los archivos tocados. Es el skill `humanizer` con la
+voz de aquí encima; se renombró para que no choque con la copia que Armando
+tiene instalada en `~/.claude/skills/`, que es más vieja. Va **después** de
+escribir y **antes** de `npm run revisar` y del commit. Qué se repasa, qué no se
+toca y cómo suena el español de aquí está en
+`.claude/skills/repasar-textos/voz-del-proyecto.md`.
+
+La regla que manda sobre el skill: **las palabras reales de ellos dos no se
+reescriben jamás**. Los chats, las frases del juego, las citas del diccionario y
+los mensajitos textuales son voz de verdad; ahí los dedazos y los alargues son
+el punto. El skill entra sobre los relatos, las notas, los pies de foto y los
+textos de pantalla, que son la voz de Armando contando.
+
 ## Comandos
 
 ```bash
