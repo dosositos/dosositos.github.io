@@ -1,4 +1,4 @@
-import type { Plataforma } from '@/types'
+import type { PlataformaEscrita } from '@/types'
 
 /**
  * A la luna, a pasitos de tortuga.
@@ -110,21 +110,76 @@ export const TORTUGA = {
 }
 
 /**
- * El escenario de prueba de la fase 1: una sola plataforma, para
- * ajustar el salto sin nada que estorbe. Los mundos de verdad (la
- * pista de Boo, las cajas de Ovi, las almohadas de Nico) llegan
- * después y van a vivir aquí abajo.
+ * ══════════════════════════════════════════════════════════════
+ *  EL NIVEL DE PRUEBA
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Cada línea es una plataforma:
+ *
+ *   x       dónde empieza, de 0 (orilla izquierda) a 360 (derecha)
+ *   ancho   cuánto mide
+ *   altura  a qué altura está, contando desde el suelo. 0 es el
+ *           suelo mismo y los números crecen hacia arriba
+ *   hito    si es un punto de guardado (poné `hito: true`)
+ *
+ * Para tantear: el salto más flojo avanza unos 95 y sube unos 50; el
+ * más fuerte avanza unos 290 y sube unos 155. O sea que **dos
+ * plataformas nunca deberían estar a más de 150 de altura una de
+ * otra**, y conviene dejarlas más cerca que eso.
+ *
+ * Antes de dar por bueno un cambio, comprobalo sin abrir el navegador:
+ *
+ *   node --import ./private/notas/alias-luna.mjs private/notas/probar-luna.mjs
+ *
+ * Ese comando prueba cada salto del nivel con todas las fuerzas de la
+ * barra y avisa si algún tramo no se puede pasar.
+ *
+ * Los hitos van cada cinco a ocho saltos. Si se cae, vuelve al último
+ * que haya pisado, nunca al principio.
  */
-export const PLATAFORMAS_DE_PRUEBA: Plataforma[] = [
-  // Ancha a propósito: el salto más largo avanza unos 290, así que
-  // con 280 de plataforma se puede saltar y volver a caer encima.
-  // Con una angosta, cualquier salto terminaba en el vacío y no se
-  // podía tantear nada.
-  { x: 40, y: 500, ancho: 280 },
+export const NIVEL_DE_PRUEBA: PlataformaEscrita[] = [
+  // El suelo, ancho y tranquilo: aquí se aprende a saltar.
+  { x: 30, ancho: 310, altura: 0 },
+
+  // Primer tramo, de 85 en 85. Plataformas grandes y el zigzag ancho:
+  // se cruza de un lado al otro y eso enseña solo cuánta barra hace
+  // falta.
+  { x: 210, ancho: 110, altura: 85 },
+  { x: 40, ancho: 110, altura: 170 },
+  { x: 215, ancho: 100, altura: 255 },
+  { x: 35, ancho: 120, altura: 340, hito: true },
+
+  // Segundo tramo: sube un poco más de golpe y las plataformas se
+  // achican.
+  { x: 215, ancho: 95, altura: 435 },
+  { x: 45, ancho: 95, altura: 530 },
+  { x: 220, ancho: 90, altura: 625 },
+  { x: 50, ancho: 90, altura: 720 },
+  { x: 210, ancho: 120, altura: 815, hito: true },
+
+  // Tercer tramo: de 100 en 100, y ya hay que apuntar.
+  { x: 45, ancho: 85, altura: 915 },
+  { x: 225, ancho: 85, altura: 1015 },
+  { x: 50, ancho: 80, altura: 1115 },
+  { x: 230, ancho: 80, altura: 1215 },
+  { x: 40, ancho: 120, altura: 1315, hito: true },
+
+  // El último tramo, ya cerca de la luna: 105 de subida y las
+  // plataformas más chicas de todas.
+  { x: 225, ancho: 75, altura: 1420 },
+  { x: 55, ancho: 75, altura: 1525 },
+  { x: 230, ancho: 70, altura: 1630 },
+  { x: 60, ancho: 70, altura: 1735 },
+
+  // La cima: aquí, en el juego de verdad, está la carta. Va ancha a
+  // propósito: el último salto antes del premio no es el sitio para
+  // pedir puntería.
+  { x: 110, ancho: 145, altura: 1840, hito: true },
 ]
 
 /** Los textos de pantalla del juego. */
 export const TEXTOS = {
   ayudaTocar: 'mantené apretado y soltá',
   ayudaTeclado: 'o la barra espaciadora',
+  llegada: 'llegaste',
 }

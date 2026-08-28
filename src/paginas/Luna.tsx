@@ -1,9 +1,11 @@
 import { useReducedMotion } from 'motion/react'
-import { useEffect, useRef } from 'react'
-import { PLATAFORMAS_DE_PRUEBA, TEXTOS } from '@/content/luna'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { NIVEL_DE_PRUEBA, TEXTOS } from '@/content/luna'
 import { crearPintor } from '@/juego-luna/dibujo'
 import { conectarEntrada } from '@/juego-luna/entrada'
 import { crearMotor } from '@/juego-luna/motor'
+import { construirNivel } from '@/juego-luna/mundos'
+import { anotarCapitulo } from '@/juego-luna/progreso'
 import type { EventoLuna } from '@/types'
 
 /**
@@ -20,19 +22,27 @@ import type { EventoLuna } from '@/types'
  *
  * Acá adentro React solo monta el canvas y se aparta: el bucle, la
  * física y el dibujo viven en `src/juego-luna/`, fuera de React. No
- * hay un solo render por frame.
+ * hay un solo render por frame. Lo único que sube hasta React es
+ * cuando llega arriba, que pasa una vez.
  */
 export function Luna() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const cajaRef = useRef<HTMLDivElement>(null)
   const menosMovimiento = useReducedMotion()
 
+  /** Se enciende al pisar la última plataforma. */
+  const [llegada, setLlegada] = useState<{ pasitos: number; caidas: number } | null>(null)
+
+  // El nivel se arma una sola vez: convertir las alturas escritas a
+  // mano en plataformas no tiene por qué repetirse en cada render.
+  const nivel = useMemo(() => construirNivel(NIVEL_DE_PRUEBA), [])
+
   useEffect(() => {
     const canvas = canvasRef.current
     const caja = cajaRef.current
     if (!canvas || !caja) return
 
-    const pintor = crearPintor(canvas)
+    const pintor = crearPintor(canvas, nivel)
     pintor.movimientoReducido = menosMovimiento ?? false
 
     /**
@@ -53,10 +63,18 @@ export function Luna() {
       else if (evento === 'caida') vibrar([0, 30])
       // Agotada: tres toquecitos, que se sienten como un tropiezo.
       else if (evento === 'agotada') vibrar([0, 14, 60, 14, 60, 26])
+      else if (evento === 'hito') vibrar([0, 18, 70, 22])
+      else if (evento === 'cima') {
+        const cuenta = motor.cuenta()
+        // Se guarda al llegar arriba y no antes: es el único momento
+        // en que hay algo que valga la pena acordarse.
+        anotarCapitulo(1, cuenta.pasitos, cuenta.caidas)
+        setLlegada(cuenta)
+      }
     }
 
     const motor = crearMotor({
-      plataformas: PLATAFORMAS_DE_PRUEBA,
+      nivel,
       pintar: (escena) => pintor.pintar(escena),
       alEvento,
     })
@@ -73,6 +91,9 @@ export function Luna() {
       const alto = Math.round(vv?.height ?? window.innerHeight)
       caja.style.height = `${alto}px`
       pintor.medir(ancho, alto)
+      // La cámara necesita saber cuánto se ve para dejar a la tortuga
+      // donde va; el único que lo sabe es el pintor.
+      motor.medirVista(pintor.altoDeLaVista())
     }
 
     medir()
@@ -94,7 +115,7 @@ export function Luna() {
       window.visualViewport?.removeEventListener('scroll', medir)
       window.removeEventListener('orientationchange', medir)
     }
-  }, [menosMovimiento])
+  }, [menosMovimiento, nivel])
 
   return (
     <div
@@ -107,10 +128,20 @@ export function Luna() {
         aria-label="A la luna, a pasitos de tortuga"
       />
 
-      <p className="pointer-events-none absolute inset-x-0 bottom-6 text-center text-xs text-margarita/50">
-        {TEXTOS.ayudaTocar}
-        <span className="hidden sm:inline"> · {TEXTOS.ayudaTeclado}</span>
-      </p>
+      {llegada ? (
+        <div className="pointer-events-none absolute inset-x-0 bottom-16 text-center">
+          <p className="font-display text-3xl text-tulipan-amarillo">{TEXTOS.llegada}</p>
+          <p className="fuente-mano mt-2 text-lg text-margarita/70">
+            {llegada.pasitos} pasitos, {llegada.caidas}{' '}
+            {llegada.caidas === 1 ? 'caída' : 'caídas'}
+          </p>
+        </div>
+      ) : (
+        <p className="pointer-events-none absolute inset-x-0 bottom-6 text-center text-xs text-margarita/50">
+          {TEXTOS.ayudaTocar}
+          <span className="hidden sm:inline"> · {TEXTOS.ayudaTeclado}</span>
+        </p>
+      )}
     </div>
   )
 }

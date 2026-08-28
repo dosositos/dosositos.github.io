@@ -405,15 +405,42 @@ probador; lo que hay que sentir, al teléfono.
 
 ### 2 · El mundo: plataformas, cámara, hitos, caída y el probador
 
-Un nivel de prueba armado desde `luna.ts`, cámara que sigue, hitos que se pisan,
-caída fuera de pantalla y reaparición en el último hito. `progreso.ts` con el
-`localStorage`: capítulo alcanzado sí, progreso entre hitos no.
+**Hecha el 28 de agosto.** Un nivel de prueba de 20 plataformas y 4 hitos
+armado desde `luna.ts`, cámara que sigue, hitos que se pisan, caída fuera de
+pantalla y reaparición en el último hito. `progreso.ts` con el `localStorage`:
+capítulo alcanzado sí, progreso entre hitos no.
 
-**El probador ya existe desde la fase 1** y aquí le toca crecer: hoy mide un
-salto suelto, y lo que hace falta ahora es que corra una secuencia de saltos
-grabada sobre un nivel entero y conteste si algún tramo es imposible a carga
-máxima. Cada comprobación que haga ese script es una que no hay que hacer
-abriendo el navegador, y ahí es donde se van los créditos.
+**Las plataformas se escriben con altura, no con `y`.** En `luna.ts` cada una
+lleva `x`, `ancho` y `altura` contada desde el suelo y creciendo hacia arriba,
+que es como se piensa un nivel: «esta va 100 más arriba que la anterior».
+`mundos.ts` lo convierte a las coordenadas de pantalla, y esa conversión pasa
+en un solo sitio.
+
+**La luna se dibuja pegada a la pantalla y crece conforme se sube.** Puesta en
+el mundo, a mil y pico de altura, no se veía hasta el último salto, y es
+justamente lo que tiene que estar a la vista desde el principio.
+
+**El probador creció y ahora contesta cuatro cosas**, todas sin abrir el
+navegador:
+
+1. Cuánto avanza y cuánto sube el salto con cada punto de la barra.
+2. Si cada tramo del nivel se puede pasar: prueba cada uno desde todas las
+   posiciones del recorrido y con todas las fuerzas, y dice con qué rango de
+   barra sale y si queda apretado.
+3. Si el nivel se puede jugar de punta a punta: un robot lo sube entero
+   calculando cada salto, y reporta pasitos y caídas.
+4. Si al caerse vuelve al último hito y no al principio.
+
+Al lado está **`private/notas/mapa-saltos.mjs`**, que es la herramienta para
+armar niveles: dice, para cada altura que haya que subir, a qué distancias se
+puede aterrizar. La respuesta corta es que **la distancia cómoda ronda los 175
+para cualquier subida**, y que subir más de 130 de una vez deja una ventana tan
+estrecha que no vale la pena.
+
+Un salto no llega «hasta donde alcanza»: tiene que estar *bajando* al pasar por
+la altura de la plataforma. Apuntar al punto más alto del salto es fallar,
+porque ahí la tortuga va parada en el aire y el motor solo la deja aterrizar
+mientras baja.
 
 ### 3 · Boo entero
 

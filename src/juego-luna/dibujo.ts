@@ -1,6 +1,6 @@
 import { MUNDO, TORTUGA } from '@/content/luna'
 import { cabezaDe, dibujarTortuga } from '@/juego-luna/tortuga'
-import type { EscenaLuna } from '@/types'
+import type { EscenaLuna, Nivel, Plataforma } from '@/types'
 
 /**
  * Pintar el mundo de la luna en un canvas 2D.
@@ -9,15 +9,16 @@ import type { EscenaLuna } from '@/types'
  * y la tortuga en `tortuga.ts`, que es un archivo aparte porque el
  * personaje solo ya tiene bastante adentro.
  *
- * El mundo mide 360 × 640 y se estira hasta llenar el alto de la
- * pantalla. Si el teléfono es más ancho que eso, el mundo queda
- * centrado y el cielo sigue hasta las orillas.
+ * El mundo mide 360 de ancho y lo que mida el capítulo de alto. La
+ * cámara decide qué trozo se ve, y aquí solo se dibuja lo que entra
+ * en pantalla.
  */
 
 /* Los colores salen de la paleta de la web (ver index.css): la luna
-   es el blanco hueso de la margarita. Están escritos a mano y no
-   leídos del CSS porque esto corre sesenta veces por segundo. Los de
-   la tortuga viven en `tortuga.ts`. */
+   es el blanco hueso de la margarita y el lazo de los hitos es el
+   dorado del tulipán. Están escritos a mano y no leídos del CSS
+   porque esto corre sesenta veces por segundo. Los de la tortuga
+   viven en `tortuga.ts`. */
 const COLOR = {
   cieloArriba: '#0b1026',
   cieloAbajo: '#1b2148',
@@ -26,6 +27,8 @@ const COLOR = {
   lunaHalo: 'rgba(248, 244, 232, 0.14)',
   plataforma: '#2a3157',
   plataformaLuz: '#8a93c9',
+  hito: '#f5c451',
+  hitoApagado: '#6b6a5c',
   barra: '#f5c451',
   barraAviso: '#c33b52',
   barraFondo: 'rgba(11, 16, 38, 0.55)',
@@ -42,16 +45,19 @@ export interface Pintor {
   /** Vuelve a medir el canvas. Se llama al montar y al cambiar la ventana. */
   medir: (anchoCss: number, altoCss: number) => void
   pintar: (escena: EscenaLuna) => void
-  /** Sin movimiento de más: se apagan el polvo y el golpe de cámara. */
+  /** Cuánto alto del mundo entra en pantalla. Lo necesita la cámara. */
+  altoDeLaVista: () => number
+  /** Sin movimiento de más: se apagan el parallax, el polvo y el golpe. */
   movimientoReducido: boolean
 }
 
 /**
  * Estrellas fijas, sembradas una sola vez con una cuenta y no con
  * `Math.random`: así el cielo es el mismo en cada partida y no
- * parpadea de un frame a otro.
+ * parpadea de un frame a otro. Se siembran por todo el alto del
+ * capítulo y un poco más.
  */
-function sembrarEstrellas(cantidad: number) {
+function sembrarEstrellas(cantidad: number, desde: number, hasta: number) {
   const estrellas: { x: number; y: number; r: number; brillo: number }[] = []
   let semilla = 20260824
   const siguiente = () => {
@@ -61,7 +67,7 @@ function sembrarEstrellas(cantidad: number) {
   for (let i = 0; i < cantidad; i += 1) {
     estrellas.push({
       x: siguiente() * MUNDO.ancho,
-      y: siguiente() * MUNDO.alto * 0.85,
+      y: desde + siguiente() * (hasta - desde),
       r: 0.5 + siguiente() * 1.1,
       brillo: 0.25 + siguiente() * 0.55,
     })
@@ -69,17 +75,21 @@ function sembrarEstrellas(cantidad: number) {
   return estrellas
 }
 
-export function crearPintor(canvas: HTMLCanvasElement): Pintor {
+export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('sin canvas 2d')
 
-  const estrellas = sembrarEstrellas(60)
+  /** Cuánto hay que subir en este capítulo, de abajo del todo a arriba. */
+  const subidaTotal = Math.max(1, nivel.suelo - nivel.cima.y)
+
+  // Las estrellas se siembran en un sitio fijo del mundo y se dibujan
+  // corridas: eso es lo que da la sensación de altura.
+  const estrellas = sembrarEstrellas(150, nivel.cima.y - 400, nivel.suelo + 250)
 
   let anchoCss = 0
   let altoCss = 0
   let escala = 1
   let margen = 0
-  let margenAlto = 0
 
   /** Dónde despegó la última vez, para dejar ahí el fogonazo. */
   let despegue = { x: 0, y: 0 }
@@ -87,6 +97,8 @@ export function crearPintor(canvas: HTMLCanvasElement): Pintor {
 
   const pintor: Pintor = {
     movimientoReducido: false,
+
+    altoDeLaVista: () => (escala > 0 ? altoCss / escala : MUNDO.alto),
 
     medir(ancho: number, alto: number) {
       anchoCss = ancho
@@ -102,16 +114,11 @@ export function crearPintor(canvas: HTMLCanvasElement): Pintor {
       canvas.style.width = `${ancho}px`
       canvas.style.height = `${alto}px`
 
-      // El mundo entero tiene que verse, y sobre todo tiene que verse
-      // entero de ANCHO: escalando solo por el alto, en un teléfono
-      // largo el mundo se salía por los costados y una plataforma
-      // pegada al borde quedaba fuera de la pantalla. Se toma la
-      // escala que más chica quede de las dos y el mundo se ancla
-      // abajo, porque lo que sobra es cielo y el cielo va arriba, que
-      // es para donde se sube.
+      // El mundo tiene que verse entero de ancho: escalando solo por
+      // el alto, en un teléfono largo se salía por los costados y una
+      // plataforma pegada al borde quedaba fuera de la pantalla.
       escala = Math.min(alto / MUNDO.alto, ancho / MUNDO.ancho)
       margen = (ancho - MUNDO.ancho * escala) / 2
-      margenAlto = alto - MUNDO.alto * escala
       ctx.setTransform(densidad, 0, 0, densidad, 0, 0)
     },
 
@@ -136,12 +143,45 @@ export function crearPintor(canvas: HTMLCanvasElement): Pintor {
         golpe = Math.sin(resto * Math.PI * 2) * 3 * resto
       }
 
+      const altoVista = pintor.altoDeLaVista()
+
+      // Las estrellas van en su propia capa, corridas más despacio que
+      // el mundo: eso hace sentir que se sube de verdad, en vez de que
+      // las plataformas bajen. Con «menos movimiento» viajan pegadas
+      // al mundo y no hay parallax.
+      const arrastre = pintor.movimientoReducido ? 1 : 0.45
       ctx.save()
-      ctx.translate(margen, margenAlto + golpe)
+      ctx.translate(margen, -escena.camara * arrastre * escala + golpe)
+      ctx.scale(escala, escala)
+      dibujarEstrellas(ctx, estrellas, escena.camara * arrastre, altoVista)
+      ctx.restore()
+
+      // La luna se dibuja pegada a la pantalla y no al mundo, y va
+      // creciendo conforme se sube. Puesta en el mundo, a mil y pico
+      // de altura, no se veía hasta el último salto: justo la que
+      // tiene que estar ahí desde el principio, porque es a donde se
+      // va. Así se acerca de verdad.
+      const subido = Math.min(1, Math.max(0, (nivel.suelo - escena.camara) / subidaTotal))
+      ctx.save()
+      ctx.translate(margen, golpe)
+      ctx.scale(escala, escala)
+      dibujarLuna(ctx, {
+        x: MUNDO.ancho * 0.66,
+        y: 78 + subido * 34,
+        r: 20 + subido * 34,
+      })
+      ctx.restore()
+
+      ctx.save()
+      ctx.translate(margen, -escena.camara * escala + golpe)
       ctx.scale(escala, escala)
 
-      dibujarCielo(ctx, estrellas)
-      for (const p of escena.plataformas) dibujarPlataforma(ctx, p)
+      const arriba = escena.camara - 40
+      const abajo = escena.camara + altoVista + 40
+      for (const p of escena.plataformas) {
+        if (p.y < arriba || p.y > abajo) continue
+        dibujarPlataforma(ctx, p, escena.hitoAlcanzado, escena.reloj)
+      }
 
       if (!escena.cayendo) {
         dibujarSombra(ctx, escena)
@@ -166,47 +206,56 @@ export function crearPintor(canvas: HTMLCanvasElement): Pintor {
   return pintor
 }
 
-function dibujarCielo(ctx: CanvasRenderingContext2D, estrellas: ReturnType<typeof sembrarEstrellas>) {
+function dibujarEstrellas(
+  ctx: CanvasRenderingContext2D,
+  estrellas: ReturnType<typeof sembrarEstrellas>,
+  camara: number,
+  altoVista: number,
+) {
+  ctx.fillStyle = COLOR.estrella
   for (const e of estrellas) {
+    if (e.y < camara - 20 || e.y > camara + altoVista + 20) continue
     ctx.globalAlpha = e.brillo
-    ctx.fillStyle = COLOR.estrella
     ctx.beginPath()
     ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2)
     ctx.fill()
   }
   ctx.globalAlpha = 1
+}
 
-  // La luna, arriba y al fondo: es a donde va, y conviene que se vea
-  // desde el primer salto aunque falte muchísimo.
-  const cx = MUNDO.ancho * 0.72
-  const cy = 74
-  const halo = ctx.createRadialGradient(cx, cy, 20, cx, cy, 90)
+/** La luna, esperando arriba. Es a donde se va. */
+function dibujarLuna(ctx: CanvasRenderingContext2D, luna: { x: number; y: number; r: number }) {
+  const halo = ctx.createRadialGradient(luna.x, luna.y, luna.r * 0.6, luna.x, luna.y, luna.r * 3.4)
   halo.addColorStop(0, COLOR.lunaHalo)
   halo.addColorStop(1, 'rgba(248, 244, 232, 0)')
   ctx.fillStyle = halo
   ctx.beginPath()
-  ctx.arc(cx, cy, 90, 0, Math.PI * 2)
+  ctx.arc(luna.x, luna.y, luna.r * 3.4, 0, Math.PI * 2)
   ctx.fill()
 
   ctx.fillStyle = COLOR.luna
   ctx.beginPath()
-  ctx.arc(cx, cy, 26, 0, Math.PI * 2)
+  ctx.arc(luna.x, luna.y, luna.r, 0, Math.PI * 2)
   ctx.fill()
 
-  // Tres cráteres, apenas más oscuros.
   ctx.fillStyle = 'rgba(180, 176, 166, 0.5)'
   for (const c of [
-    { x: -8, y: -6, r: 5 },
-    { x: 6, y: 4, r: 7 },
-    { x: 10, y: -10, r: 3 },
+    { x: -0.3, y: -0.24, r: 0.19 },
+    { x: 0.24, y: 0.16, r: 0.27 },
+    { x: 0.38, y: -0.38, r: 0.12 },
   ]) {
     ctx.beginPath()
-    ctx.arc(cx + c.x, cy + c.y, c.r, 0, Math.PI * 2)
+    ctx.arc(luna.x + c.x * luna.r, luna.y + c.y * luna.r, c.r * luna.r, 0, Math.PI * 2)
     ctx.fill()
   }
 }
 
-function dibujarPlataforma(ctx: CanvasRenderingContext2D, p: { x: number; y: number; ancho: number }) {
+function dibujarPlataforma(
+  ctx: CanvasRenderingContext2D,
+  p: Plataforma,
+  hitoAlcanzado: number,
+  reloj: number,
+) {
   const alto = 16
   ctx.fillStyle = COLOR.plataforma
   ctx.beginPath()
@@ -215,12 +264,70 @@ function dibujarPlataforma(ctx: CanvasRenderingContext2D, p: { x: number; y: num
 
   // La línea de arriba es la que se pisa: se marca clara para que no
   // haya duda de dónde está el suelo.
-  ctx.strokeStyle = COLOR.plataformaLuz
+  ctx.strokeStyle = p.hito ? COLOR.hito : COLOR.plataformaLuz
   ctx.lineWidth = 2
   ctx.beginPath()
   ctx.moveTo(p.x + 2, p.y + 1)
   ctx.lineTo(p.x + p.ancho - 2, p.y + 1)
   ctx.stroke()
+
+  if (p.hito) dibujarLazo(ctx, p, hitoAlcanzado >= p.indice, reloj)
+}
+
+/**
+ * El lazo del hito. Apagado hasta que lo pisa y encendido después,
+ * con un latido lento: sin eso no se entiende que se ganó algo.
+ *
+ * En el capítulo de Boo va a ser el lazo amarillo del arreglo de Hot
+ * Wheels. Por ahora es la forma, sin la historia.
+ */
+function dibujarLazo(ctx: CanvasRenderingContext2D, p: Plataforma, ganado: boolean, reloj: number) {
+  const x = p.x + p.ancho / 2
+  const y = p.y - 12
+  const latido = ganado ? 1 + Math.sin(reloj * 2.2) * 0.06 : 1
+
+  ctx.save()
+  ctx.translate(x, y)
+
+  if (ganado) {
+    ctx.globalAlpha = 0.22
+    ctx.fillStyle = COLOR.hito
+    ctx.beginPath()
+    ctx.arc(0, 0, 13, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.globalAlpha = 1
+  }
+
+  ctx.scale(latido, latido)
+  ctx.fillStyle = ganado ? COLOR.hito : COLOR.hitoApagado
+
+  // Las dos colas, que son las que hacen que se lea como un lazo y no
+  // como un bigote.
+  ctx.beginPath()
+  ctx.moveTo(-1.4, 1.2)
+  ctx.quadraticCurveTo(-5, 5, -7.5, 8.4)
+  ctx.lineTo(-3.6, 6.6)
+  ctx.closePath()
+  ctx.fill()
+  ctx.beginPath()
+  ctx.moveTo(1.4, 1.2)
+  ctx.quadraticCurveTo(5, 5, 7.5, 8.4)
+  ctx.lineTo(3.6, 6.6)
+  ctx.closePath()
+  ctx.fill()
+
+  // Las dos gasas y el nudo.
+  ctx.beginPath()
+  ctx.ellipse(-4.8, -1.4, 4.6, 3.4, -0.42, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.beginPath()
+  ctx.ellipse(4.8, -1.4, 4.6, 3.4, 0.42, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.beginPath()
+  ctx.arc(0, -1.4, 2.3, 0, Math.PI * 2)
+  ctx.fill()
+
+  ctx.restore()
 }
 
 /** La sombra dice dónde va a caer. Es media ayuda del juego. */

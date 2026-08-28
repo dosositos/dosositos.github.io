@@ -1,5 +1,5 @@
 import { CANSANCIO, MUNDO, SALTO, TORTUGA } from '@/content/luna'
-import type { EscenaLuna, EventoLuna, Plataforma } from '@/types'
+import type { EscenaLuna, EventoLuna, Nivel, Plataforma } from '@/types'
 
 /**
  * El motor del juego de la luna: el bucle, la física y las colisiones.
@@ -55,7 +55,7 @@ interface Tortuga {
 }
 
 export interface OpcionesMotor {
-  plataformas: Plataforma[]
+  nivel: Nivel
   /** Se llama una vez por frame con la escena ya interpolada. */
   pintar: (escena: EscenaLuna) => void
   /** Vibración, sonido y demás cosas de afuera. */
@@ -69,18 +69,39 @@ export interface Motor {
   presionar: () => void
   /** El dedo se levantó: sale disparada. */
   soltar: () => void
+  /**
+   * Cuánto alto del mundo se ve en pantalla. Lo dice el pintor, que
+   * es el único que sabe de qué tamaño es el teléfono, y la cámara lo
+   * necesita para saber dónde dejarla parada.
+   */
+  medirVista: (altoEnUnidades: number) => void
+  /** Los pasitos y las caídas de esta subida. */
+  cuenta: () => { pasitos: number; caidas: number }
 }
 
 const gradosARadianes = (grados: number) => (grados * Math.PI) / 180
 
-export function crearMotor({ plataformas, pintar, alEvento }: OpcionesMotor): Motor {
-  const primera = plataformas[0]
+export function crearMotor({ nivel, pintar, alEvento }: OpcionesMotor): Motor {
+  const { plataformas } = nivel
 
-  /** Dónde reaparece. En la fase 1 es el centro de la única plataforma. */
-  const reaparicion = {
-    x: primera ? primera.x + primera.ancho / 2 : MUNDO.ancho / 2,
-    y: primera ? primera.y : MUNDO.alto / 2,
-  }
+  /** Dónde reaparece: la salida, o el último hito que haya pisado. */
+  const reaparicion = { ...nivel.salida }
+
+  /** El hito más alto pisado. -1 es «todavía ninguno». */
+  let hitoAlcanzado = -1
+
+  /** Cuántos saltos dio y cuántas veces se cayó, en esta subida. */
+  let pasitos = 0
+  let caidas = 0
+
+  /** Ya llegó arriba: se deja de contar y no se avisa dos veces. */
+  let terminado = false
+
+  /** Cuánto alto del mundo se ve. El pintor lo corrige al medir. */
+  let altoVista = MUNDO.alto
+
+  /** La `y` del borde de arriba de lo que se ve. */
+  let camara = nivel.salida.y - MUNDO.alto * 0.62
 
   const t: Tortuga = {
     x: reaparicion.x,
@@ -117,6 +138,20 @@ export function crearMotor({ plataformas, pintar, alEvento }: OpcionesMotor): Mo
 
   const avisar = (evento: EventoLuna) => alEvento?.(evento)
 
+  /**
+   * Dónde debería estar mirando la cámara.
+   *
+   * La tortuga se queda a poco más de la mitad de la pantalla, con más
+   * espacio arriba que abajo: lo que hace falta ver es hacia dónde se
+   * va a saltar, no de dónde se viene. Y nunca baja del suelo, para
+   * que no aparezca un vacío debajo del primer escalón.
+   */
+  function camaraObjetivo() {
+    const deseada = t.y - altoVista * 0.62
+    const masAbajo = nivel.suelo + 90 - altoVista
+    return Math.min(deseada, masAbajo)
+  }
+
   /** La plataforma que está pisando, si es que pisa alguna. */
   function sueloDebajo(): Plataforma | undefined {
     return plataformas.find(
@@ -127,6 +162,9 @@ export function crearMotor({ plataformas, pintar, alEvento }: OpcionesMotor): Mo
   function volverAlHito() {
     t.x = reaparicion.x
     t.y = reaparicion.y
+    // La cámara va de un salto y no viajando: mirar el paisaje bajar
+    // durante un segundo después de cada caída sería insoportable.
+    camara = camaraObjetivo()
     t.vx = 0
     t.vy = 0
     t.mirando = 1
@@ -142,6 +180,12 @@ export function crearMotor({ plataformas, pintar, alEvento }: OpcionesMotor): Mo
 
   function paso() {
     reloj += PASO
+
+    // La cámara persigue a la tortuga sin alcanzarla del todo: se
+    // acerca un octavo de la distancia en cada paso, y eso solo ya da
+    // el suavizado. Al ir a paso fijo, sale igual en cualquier
+    // teléfono.
+    camara += (camaraObjetivo() - camara) * 0.12
 
     if (cayendo > 0) {
       cayendo -= PASO
@@ -239,12 +283,26 @@ export function crearMotor({ plataformas, pintar, alEvento }: OpcionesMotor): Mo
             t.sinSuelo = 0
             t.desdeAterrizaje = 0
             avisar('aterrizaje')
+
+            // Pisar un hito guarda el avance. Solo cuenta hacia
+            // arriba: volver a bajar a uno viejo no lo desanda.
+            if (p.hito && p.indice > hitoAlcanzado) {
+              hitoAlcanzado = p.indice
+              reaparicion.x = p.x + p.ancho / 2
+              reaparicion.y = p.y
+              avisar('hito')
+              if (p.indice === nivel.cima.indice && !terminado) {
+                terminado = true
+                avisar('cima')
+              }
+            }
             break
           }
         }
       }
 
-      if (t.y > MUNDO.alto + 120) {
+      if (t.y > camara + altoVista + 120) {
+        caidas += 1
         cayendo = MS_CAIDA / 1000
         t.cargando = false
         t.carga = 0
@@ -291,6 +349,7 @@ export function crearMotor({ plataformas, pintar, alEvento }: OpcionesMotor): Mo
     t.cargaMs = 0
     t.sinSuelo = 999
     t.desdeSalto = 0
+    if (!terminado) pasitos += 1
     avisar('salto')
   }
 
@@ -317,6 +376,10 @@ export function crearMotor({ plataformas, pintar, alEvento }: OpcionesMotor): Mo
           )
         : 0,
       cansancio: Math.max(0, (tirada * 1000) / CANSANCIO.msTirada),
+      camara,
+      hitoAlcanzado,
+      pasitos,
+      caidas,
       plataformas,
     }
   }
@@ -351,5 +414,10 @@ export function crearMotor({ plataformas, pintar, alEvento }: OpcionesMotor): Mo
     },
     presionar,
     soltar,
+    medirVista(alto: number) {
+      altoVista = alto
+      camara = camaraObjetivo()
+    },
+    cuenta: () => ({ pasitos, caidas }),
   }
 }

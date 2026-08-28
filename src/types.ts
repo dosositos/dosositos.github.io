@@ -336,17 +336,65 @@ export interface SobreJuego {
    geometría del mundo lógico de 360 × 640: nada que ver con píxeles
    de pantalla, que los pone el pintor según el alto del teléfono. */
 
-/** Un tramo de suelo. `y` es la línea de arriba, la que se pisa. */
+/**
+ * Un tramo de suelo, tal como se escribe en `luna.ts`.
+ *
+ * La `altura` se cuenta desde el suelo del capítulo y crece hacia
+ * arriba, que es como se piensa un nivel: «esta plataforma está 120
+ * más arriba que la anterior». El motor lo convierte solo.
+ */
+export interface PlataformaEscrita {
+  x: number
+  ancho: number
+  altura: number
+  /**
+   * Los hitos guardan el avance: si se cae, vuelve al último que
+   * pisó. Van tres o cuatro por capítulo.
+   */
+  hito?: boolean
+}
+
+/** La misma plataforma ya convertida. `y` es la línea que se pisa. */
 export interface Plataforma {
   x: number
   y: number
   ancho: number
-  /** Se marca distinto y guarda el avance. En la fase 1 no hay. */
   hito?: boolean
+  /** Su lugar en la lista, para saber qué hito se alcanzó. */
+  indice: number
+}
+
+/** Lo que se guarda en el teléfono entre una vez y otra. */
+export interface ProgresoLuna {
+  /** El capítulo más alto que ganó. 0 es «todavía ninguno». */
+  capitulo: number
+  /** Los pasitos que lleva dados en total. */
+  pasitos: number
+  /** Las veces que se cayó en total. */
+  caidas: number
+}
+
+/** Un capítulo entero, ya listo para jugarse. */
+export interface Nivel {
+  plataformas: Plataforma[]
+  hitos: Plataforma[]
+  /** La `y` del suelo, que es la plataforma de más abajo. */
+  suelo: number
+  /** La última de todas: llegar ahí es terminar. */
+  cima: Plataforma
+  /** Dónde aparece la tortuga al empezar. */
+  salida: { x: number; y: number }
 }
 
 /** Lo que le pasa al jugador y hay que oír fuera del motor. */
-export type EventoLuna = 'salto' | 'aterrizaje' | 'caida' | 'reaparicion' | 'agotada'
+export type EventoLuna =
+  | 'salto'
+  | 'aterrizaje'
+  | 'caida'
+  | 'reaparicion'
+  | 'agotada'
+  | 'hito'
+  | 'cima'
 
 /**
  * La foto del mundo que recibe el pintor, ya interpolada entre dos
@@ -380,5 +428,13 @@ export interface EscenaLuna {
   agobio: number
   /** Lo que le queda de desmayo, de 1 a 0. En 0 está entera. */
   cansancio: number
+  /** Dónde está mirando la cámara: la `y` del borde de arriba. */
+  camara: number
+  /** El hito más alto que pisó, o -1 si todavía ninguno. */
+  hitoAlcanzado: number
+  /** Cuántos saltos lleva dados. Son los pasitos de la tortuga. */
+  pasitos: number
+  /** Cuántas veces se cayó. */
+  caidas: number
   plataformas: Plataforma[]
 }

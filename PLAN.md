@@ -441,17 +441,23 @@ y chats, y el sobre de apertura. Eso es el regalo.
 
 ---
 
-## La próxima sesión — el juego de la luna, fase 2
+## La próxima sesión — el juego de la luna, fase 3
 
 **Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
 arrancamos por donde diga, sin que tengás que acordarte de nada.
 
-**Lo que toca:** la **fase 2** de *A la luna, a pasitos de tortuga*: el mundo.
-Plataformas leídas de `luna.ts`, cámara que sigue a la tortuga, hitos que se
-pisan, la caída fuera de pantalla con reaparición en el último hito, y
-`progreso.ts` con el `localStorage`. El capítulo alcanzado se guarda, el avance
-entre hitos no. El probador crece: de medir un salto suelto a recorrer un
-nivel entero y avisar si algún tramo no se pasa ni a barra llena.
+**Lo que toca:** la **fase 3** de *A la luna, a pasitos de tortuga*: el
+capítulo de Boo entero. Pista naranja de Hot Wheels y cañas de bambú, los
+tramos que se desvanecen al despegar de ellos, los tramos de impulso, el lazo
+amarillo en los hitos, el cartel de presentación con su retrato bordado, los
+primeros diez saltos regalados y **el empujón**, que es el poder que se gana al
+cerrarlo. Es la fase más cara de las tres y la plantilla de las otras dos.
+
+**Antes de eso, dos cosas cortas que quedaron anotadas:** contar lo del
+cansancio en el cartel de la primera pantalla (que se desmaye sin haber avisado
+nunca de que eso podía pasar sería tramposo), y comprobar en el teléfono que el
+progreso se guarda de verdad al llegar arriba — eso es lo único de la fase 2
+que no pude probar yo, porque hay que terminar el capítulo para que se escriba.
 
 El plan completo —mecánica, los tres mundos, valores de la física y orden de
 trabajo— vive en **`plan-juego-luna.md`**, en la raíz. Se lee antes de escribir
@@ -460,6 +466,23 @@ la primera línea.
 **Antes de empezar la fase 2, abrí `/luna` y saltá un rato.** La fase 1 no se
 cierra hasta que el salto se sienta bien, y eso no lo puedo medir yo. Si algo
 está pesado, lento o corto, son seis números en `src/content/luna.ts`.
+
+**Lo del 28 de agosto (fase 2):**
+
+- **El mundo.** Nivel de 20 plataformas y 4 hitos, cámara que sigue a la
+  tortuga, hitos que guardan el avance, caída con reaparición en el último hito
+  y `progreso.ts` con el `localStorage`.
+- **Las plataformas se escriben con altura desde el suelo**, no con
+  coordenadas de pantalla: `{ x, ancho, altura }`, y `mundos.ts` convierte.
+- **El probador ahora juega.** Un robot sube el nivel entero calculando cada
+  salto: lo termina en 19 pasitos sin caerse, y la prueba de la caída confirma
+  que vuelve al hito. Al lado quedó `mapa-saltos.mjs`, que dice a qué
+  distancias se puede aterrizar según lo que haya que subir. La regla que salió
+  de ahí: **la distancia cómoda ronda los 175 sea cual sea la subida**.
+- **El primer nivel que escribí era tramposo** y el probador lo cazó: seis
+  tramos salían apretadísimos, uno con solo el 0,2% de los intentos buenos. El
+  de ahora tiene entre 6% y 23% en todos, y va de fácil a difícil de abajo
+  arriba.
 
 **Lo del 27 de agosto (fases 0 y 1):**
 
