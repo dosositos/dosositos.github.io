@@ -330,3 +330,44 @@ export interface SobreJuego {
   huella: string
   frases: FraseJuego[]
 }
+
+/* ── A la luna, a pasitos de tortuga ──────────────────────────────
+   El juego escondido en la luna de la portada. Todo esto es
+   geometría del mundo lógico de 360 × 640: nada que ver con píxeles
+   de pantalla, que los pone el pintor según el alto del teléfono. */
+
+/** Un tramo de suelo. `y` es la línea de arriba, la que se pisa. */
+export interface Plataforma {
+  x: number
+  y: number
+  ancho: number
+  /** Se marca distinto y guarda el avance. En la fase 1 no hay. */
+  hito?: boolean
+}
+
+/** Lo que le pasa al jugador y hay que oír fuera del motor. */
+export type EventoLuna = 'salto' | 'aterrizaje' | 'caida' | 'reaparicion'
+
+/**
+ * La foto del mundo que recibe el pintor, ya interpolada entre dos
+ * pasos de física. Nadie de aquí para afuera toca el estado real.
+ */
+export interface EscenaLuna {
+  x: number
+  y: number
+  /** 1 mira a la derecha, -1 a la izquierda. */
+  mirando: 1 | -1
+  /** 0 a 1. Solo importa mientras `cargando`. */
+  carga: number
+  cargando: boolean
+  enSuelo: boolean
+  /** Cuánto lleva caminado, para alternar las paticas. */
+  caminado: number
+  /** Milisegundos desde el último despegue, para el fogonazo. */
+  desdeSalto: number
+  /** Milisegundos desde el último aterrizaje, para el golpe de cámara. */
+  desdeAterrizaje: number
+  /** Mientras cae fuera de pantalla no se dibuja. */
+  cayendo: boolean
+  plataformas: Plataforma[]
+}

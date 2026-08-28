@@ -441,19 +441,43 @@ y chats, y el sobre de apertura. Eso es el regalo.
 
 ---
 
-## La próxima sesión — 26 de agosto de 2026: el juego de la luna
+## La próxima sesión — el juego de la luna, fase 2
 
 **Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
 arrancamos por donde diga, sin que tengás que acordarte de nada.
 
-**Lo que toca:** programar *A la luna, a pasitos de tortuga*. Está diseñado
-entero y decidido con vos el 25 de agosto; el plan completo —mecánica, los tres
-mundos, valores de la física, orden de trabajo y un aviso serio sobre la
-vibración en el iPhone— vive en **`plan-juego-luna.md`**, en la raíz. Se lee
-antes de escribir la primera línea.
+**Lo que toca:** la **fase 2** de *A la luna, a pasitos de tortuga*: el mundo.
+Plataformas leídas de `luna.ts`, cámara que sigue a la tortuga, hitos que se
+pisan, la caída fuera de pantalla con reaparición en el último hito, y
+`progreso.ts` con el `localStorage`. El capítulo alcanzado se guarda, el avance
+entre hitos no. El probador crece: de medir un salto suelto a recorrer un
+nivel entero y avisar si algún tramo no se pasa ni a barra llena.
 
-Lo primero de esa sesión no es código: **la carta de la luna**, que se escribe
-entre los dos y es el premio por llegar arriba.
+El plan completo —mecánica, los tres mundos, valores de la física y orden de
+trabajo— vive en **`plan-juego-luna.md`**, en la raíz. Se lee antes de escribir
+la primera línea.
+
+**Antes de empezar la fase 2, abrí `/luna` y saltá un rato.** La fase 1 no se
+cierra hasta que el salto se sienta bien, y eso no lo puedo medir yo. Si algo
+está pesado, lento o corto, son seis números en `src/content/luna.ts`.
+
+**Lo del 27 de agosto (fases 0 y 1):**
+
+- **La carta ya está escrita y cifrada** en `public/cifrado/carta-luna.enc`.
+  Deja dos huecos, `{caidas}` y `{pasitos}`, que llena el juego en la fase 6.
+- **El motor pelado anda**: ruta `/luna` sin enlazar desde ningún lado, canvas
+  medido con `visualViewport` y `devicePixelRatio`, paso fijo de 60 Hz con
+  acumulador y dibujo interpolado, la tortuga caminando y dando la vuelta, la
+  barra de fuerza, la vibración y el fogonazo. La tortuga está dibujada a mano
+  en `dibujo.ts`: no hay una sola imagen.
+- **El probador se adelantó de la fase 2 a la 1** y encontró el primer error
+  antes de abrir el navegador: los impulsos del plan (700 y 1400) mandaban el
+  salto largo 671 px de lado en un mundo de 360 de ancho. Quedaron en 540 y 930.
+- **Nueva regla de voz:** nada de punto y coma en lo redactado en nombre de
+  Armando. Está en `.claude/skills/repasar-textos/voz-del-proyecto.md`.
+- **Queda pendiente, cuando haya un hueco:** sacar los 13 puntos y coma que se
+  colaron en los relatos de `src/content/momentos.ts` y los 5 de
+  `src/content/diccionario.ts`. Son de redacción mía, no citas.
 
 **El plan está partido en diez fases** (sección «Las fases» del mismo archivo),
 pensadas para que quedarse sin créditos a media sesión no duela: cada una

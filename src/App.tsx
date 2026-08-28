@@ -10,6 +10,7 @@ import { Estadisticas } from '@/paginas/Estadisticas'
 import { Frasco } from '@/paginas/Frasco'
 import { Juego } from '@/paginas/Juego'
 import { LineaDelTiempo } from '@/paginas/LineaDelTiempo'
+import { Luna } from '@/paginas/Luna'
 import { Momento } from '@/paginas/Momento'
 import { Playlist } from '@/paginas/Playlist'
 import { Portada } from '@/paginas/Portada'
@@ -37,10 +38,15 @@ function Marco() {
   const { pathname } = useLocation()
   const enPortada = pathname === '/'
 
+  /* El juego de la luna se toma la pantalla entera: nada de pétalos,
+     peluches escondidos ni pie de página encima del canvas. El botón
+     de la casa sí se queda, que es por donde se sale. */
+  const enLuna = pathname === '/luna'
+
   return (
     <>
       <ScrollAlInicio />
-      <Petalos cantidad={14} />
+      {!enLuna && <Petalos cantidad={14} />}
 
       <div className="fixed right-4 top-4 z-50 flex items-center gap-2 sm:right-6 sm:top-6">
         {!enPortada && (
@@ -61,7 +67,7 @@ function Marco() {
           alto del pie los dejaba flotando a media altura en vez de en la
           esquina de abajo. */}
       <div className="relative">
-        <PeluchesEscondidos />
+        {!enLuna && <PeluchesEscondidos />}
 
         <main className="relative">
           <Routes>
@@ -73,6 +79,9 @@ function Marco() {
             <Route path="/playlist" element={<Playlist />} />
             <Route path="/estadisticas" element={<Estadisticas />} />
             <Route path="/frasco" element={<Frasco />} />
+            {/* Fuera del menú y sin enlace desde ningún lado hasta que
+                la luna de la portada se vuelva tocable. */}
+            <Route path="/luna" element={<Luna />} />
             <Route
               path="*"
               element={<EnConstruccion titulo="te perdiste, osita" nota="esta página no existe todavía" />}

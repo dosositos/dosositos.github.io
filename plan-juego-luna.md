@@ -62,7 +62,10 @@ Mundo lógico de 360 × 640, escalado al alto de la pantalla. Estos números son
 punto de partida, no un resultado: se ajustan jugando.
 
 - Gravedad: 2200 px/s²
-- Impulso mínimo (carga 0): 700 px/s · máximo (carga 1): 1400 px/s
+- Impulso mínimo (carga 0): 540 px/s · máximo (carga 1): 930 px/s
+  (eran 700 y 1400 hasta que se midieron: con 1400 el salto largo
+  avanzaba 671 px de lado en un mundo que mide 360 de ancho, o sea que
+  rebotaba de pared a pared. Con 930 avanza 288 y sube 154)
 - Ángulo de salida: 65° desde la horizontal
 - Velocidad de caminata: 55 px/s
 - Tiempo de carga completa: 900 ms
@@ -330,9 +333,16 @@ carta cifrada y nada más.
 - `src/content/luna.ts` desde el primer día con los números (gravedad, impulsos,
   ángulo, caminata, carga), aunque todavía no haya niveles. Ajustar el salto no
   puede costar tocar código.
+- **El probador nació aquí y no en la fase 2**, porque hizo falta enseguida:
+  `private/notas/probar-luna.mjs` corre el motor de verdad sin dibujar y saca la
+  tabla de cuánto avanza y cuánto sube el salto en cada punto de la barra. Node
+  lee los `.ts` del proyecto tal cual; el `@/` se lo enseña
+  `private/notas/alias-luna.mjs`. Con eso salió el error de los impulsos sin
+  abrir el navegador ni una vez.
 
 **No se pasa a la 2 hasta que saltar se sienta bien.** Es la única fase donde
-vale la pena gastar créditos repitiendo lo mismo.
+vale la pena gastar créditos repitiendo lo mismo. Lo que se puede medir va al
+probador; lo que hay que sentir, al teléfono.
 
 ### 2 · El mundo: plataformas, cámara, hitos, caída y el probador
 
@@ -340,11 +350,11 @@ Un nivel de prueba armado desde `luna.ts`, cámara que sigue, hitos que se pisan
 caída fuera de pantalla y reaparición en el último hito. `progreso.ts` con el
 `localStorage`: capítulo alcanzado sí, progreso entre hitos no.
 
-**El probador se adelanta hasta aquí**, no al final como decía el orden viejo:
-`private/notas/probar-luna.mjs` corre el motor sin dibujar, con una secuencia de
-saltos grabada, y contesta si un salto es imposible a carga máxima. Cada
-comprobación que haga ese script es una que no hay que hacer abriendo el
-navegador, y ahí es donde se van los créditos.
+**El probador ya existe desde la fase 1** y aquí le toca crecer: hoy mide un
+salto suelto, y lo que hace falta ahora es que corra una secuencia de saltos
+grabada sobre un nivel entero y conteste si algún tramo es imposible a carga
+máxima. Cada comprobación que haga ese script es una que no hay que hacer
+abriendo el navegador, y ahí es donde se van los créditos.
 
 ### 3 · Boo entero
 
