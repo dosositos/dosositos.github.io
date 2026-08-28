@@ -346,7 +346,7 @@ export interface Plataforma {
 }
 
 /** Lo que le pasa al jugador y hay que oír fuera del motor. */
-export type EventoLuna = 'salto' | 'aterrizaje' | 'caida' | 'reaparicion'
+export type EventoLuna = 'salto' | 'aterrizaje' | 'caida' | 'reaparicion' | 'agotada'
 
 /**
  * La foto del mundo que recibe el pintor, ya interpolada entre dos
@@ -373,5 +373,12 @@ export interface EscenaLuna {
   desdeAterrizaje: number
   /** Mientras cae fuera de pantalla no se dibuja. */
   cayendo: boolean
+  /**
+   * Lo cerca que está de agotarse de tanto aguantar la barra, de 0 a
+   * 1. Sirve para avisar antes de que pase.
+   */
+  agobio: number
+  /** Lo que le queda de desmayo, de 1 a 0. En 0 está entera. */
+  cansancio: number
   plataformas: Plataforma[]
 }

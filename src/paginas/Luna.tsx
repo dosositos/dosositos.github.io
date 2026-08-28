@@ -51,6 +51,8 @@ export function Luna() {
     const alEvento = (evento: EventoLuna) => {
       if (evento === 'salto') vibrar(12)
       else if (evento === 'caida') vibrar([0, 30])
+      // Agotada: tres toquecitos, que se sienten como un tropiezo.
+      else if (evento === 'agotada') vibrar([0, 14, 60, 14, 60, 26])
     }
 
     const motor = crearMotor({

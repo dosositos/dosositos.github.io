@@ -27,6 +27,7 @@ const COLOR = {
   plataforma: '#2a3157',
   plataformaLuz: '#8a93c9',
   barra: '#f5c451',
+  barraAviso: '#c33b52',
   barraFondo: 'rgba(11, 16, 38, 0.55)',
   sombra: 'rgba(11, 16, 38, 0.35)',
 }
@@ -146,6 +147,7 @@ export function crearPintor(canvas: HTMLCanvasElement): Pintor {
         dibujarSombra(ctx, escena)
         dibujarTortuga(ctx, escena)
         if (escena.cargando) dibujarBarra(ctx, escena)
+        if (escena.cansancio > 0) dibujarEstrellitas(ctx, escena)
       }
 
       // El fogonazo se queda donde despegó, no donde va la tortuga.
@@ -254,9 +256,51 @@ function dibujarBarra(ctx: CanvasRenderingContext2D, escena: EscenaLuna) {
   ctx.roundRect(x - 1, y - 1, ancho + 2, alto + 2, 4)
   ctx.fill()
 
-  ctx.fillStyle = COLOR.barra
+  // Cuando se está pasando de tiempo, la barra se pone roja y
+  // parpadea. El desmayo tiene que verse venir.
+  const parpadeo = escena.agobio > 0 ? 0.5 + 0.5 * Math.sin(escena.reloj * 34) : 0
+  ctx.fillStyle = escena.agobio > 0 && parpadeo > 0.45 ? COLOR.barraAviso : COLOR.barra
   ctx.beginPath()
   ctx.roundRect(x, y, Math.max(2, ancho * escena.carga), alto, 3)
+  ctx.fill()
+}
+
+/**
+ * Las estrellitas del mareo, dando vueltas sobre la cabeza. Es el
+ * chiste que compensa haber perdido el salto.
+ */
+function dibujarEstrellitas(ctx: CanvasRenderingContext2D, escena: EscenaLuna) {
+  const cx = escena.x
+  const cy = escena.y - TORTUGA.alto * 0.62
+  const vuelta = escena.reloj * 4.4
+
+  // Se asoman al principio y se van al final, para que no aparezcan
+  // ni desaparezcan de golpe.
+  const entrada = Math.min(1, (1 - escena.cansancio) * 6)
+  const salida = Math.min(1, escena.cansancio * 5)
+  ctx.globalAlpha = Math.min(entrada, salida)
+
+  for (let i = 0; i < 3; i += 1) {
+    const a = vuelta + (i / 3) * Math.PI * 2
+    const x = cx + Math.cos(a) * 13
+    const y = cy + Math.sin(a) * 4.5
+    dibujarEstrella(ctx, x, y, 3.2 + Math.sin(a) * 0.7)
+  }
+  ctx.globalAlpha = 1
+}
+
+function dibujarEstrella(ctx: CanvasRenderingContext2D, x: number, y: number, r: number) {
+  ctx.fillStyle = COLOR.barra
+  ctx.beginPath()
+  for (let i = 0; i < 10; i += 1) {
+    const a = (i / 10) * Math.PI * 2 - Math.PI / 2
+    const radio = i % 2 === 0 ? r : r * 0.44
+    const px = x + Math.cos(a) * radio
+    const py = y + Math.sin(a) * radio
+    if (i === 0) ctx.moveTo(px, py)
+    else ctx.lineTo(px, py)
+  }
+  ctx.closePath()
   ctx.fill()
 }
 

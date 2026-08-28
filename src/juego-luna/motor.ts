@@ -1,4 +1,4 @@
-import { MUNDO, SALTO, TORTUGA } from '@/content/luna'
+import { CANSANCIO, MUNDO, SALTO, TORTUGA } from '@/content/luna'
 import type { EscenaLuna, EventoLuna, Plataforma } from '@/types'
 
 /**
@@ -45,6 +45,8 @@ interface Tortuga {
   enSuelo: boolean
   cargando: boolean
   carga: number
+  /** Milisegundos que lleva con el dedo apretado. */
+  cargaMs: number
   caminado: number
   /** Segundos desde que dejó el suelo, para el perdón del borde. */
   sinSuelo: number
@@ -89,6 +91,7 @@ export function crearMotor({ plataformas, pintar, alEvento }: OpcionesMotor): Mo
     enSuelo: true,
     cargando: false,
     carga: 0,
+    cargaMs: 0,
     caminado: 0,
     sinSuelo: 0,
     desdeSalto: 9999,
@@ -100,6 +103,9 @@ export function crearMotor({ plataformas, pintar, alEvento }: OpcionesMotor): Mo
 
   /** Segundos que faltan de la caída antes de reaparecer. */
   let cayendo = 0
+
+  /** Segundos que le quedan tirada después de agotarse. */
+  let tirada = 0
 
   /** Segundos desde que arrancó, para lo que respira y parpadea. */
   let reloj = 0
@@ -127,7 +133,9 @@ export function crearMotor({ plataformas, pintar, alEvento }: OpcionesMotor): Mo
     t.enSuelo = true
     t.cargando = false
     t.carga = 0
+    t.cargaMs = 0
     t.sinSuelo = 0
+    tirada = 0
     previo = { ...t }
     avisar('reaparicion')
   }
@@ -144,10 +152,28 @@ export function crearMotor({ plataformas, pintar, alEvento }: OpcionesMotor): Mo
     t.desdeSalto += PASO * 1000
     t.desdeAterrizaje += PASO * 1000
 
+    if (tirada > 0) {
+      // Desmayada. No camina, no salta y no oye el dedo hasta que se
+      // levante sola.
+      tirada -= PASO
+      return
+    }
+
     if (t.cargando) {
       // La barra sube y se queda arriba. No rebota ni se reinicia:
       // castigar dos veces el mismo error es mezquino.
       t.carga = Math.min(1, t.carga + (PASO * 1000) / SALTO.msDeCarga)
+      t.cargaMs += PASO * 1000
+
+      // Pero aguantarla para siempre esperando el momento perfecto sí
+      // cuesta: se agota, se desmaya y pierde el salto.
+      if (t.cargaMs >= CANSANCIO.msDeAguante) {
+        t.cargando = false
+        t.carga = 0
+        t.cargaMs = 0
+        tirada = CANSANCIO.msTirada / 1000
+        avisar('agotada')
+      }
     }
 
     if (t.enSuelo) {
@@ -222,13 +248,14 @@ export function crearMotor({ plataformas, pintar, alEvento }: OpcionesMotor): Mo
         cayendo = MS_CAIDA / 1000
         t.cargando = false
         t.carga = 0
+        t.cargaMs = 0
         avisar('caida')
       }
     }
   }
 
   function presionar() {
-    if (cayendo > 0 || t.cargando) return
+    if (cayendo > 0 || tirada > 0 || t.cargando) return
 
     // El perdón del borde: si acaba de dejar la plataforma, se la
     // devuelve al suelo para que pueda cargar el salto.
@@ -247,6 +274,7 @@ export function crearMotor({ plataformas, pintar, alEvento }: OpcionesMotor): Mo
 
     t.cargando = true
     t.carga = 0
+    t.cargaMs = 0
   }
 
   function soltar() {
@@ -260,6 +288,7 @@ export function crearMotor({ plataformas, pintar, alEvento }: OpcionesMotor): Mo
     t.enSuelo = false
     t.cargando = false
     t.carga = 0
+    t.cargaMs = 0
     t.sinSuelo = 999
     t.desdeSalto = 0
     avisar('salto')
@@ -281,6 +310,13 @@ export function crearMotor({ plataformas, pintar, alEvento }: OpcionesMotor): Mo
       desdeSalto: t.desdeSalto,
       desdeAterrizaje: t.desdeAterrizaje,
       cayendo: cayendo > 0,
+      agobio: t.cargando
+        ? Math.max(
+            0,
+            (t.cargaMs - (CANSANCIO.msDeAguante - CANSANCIO.msDeAviso)) / CANSANCIO.msDeAviso,
+          )
+        : 0,
+      cansancio: Math.max(0, (tirada * 1000) / CANSANCIO.msTirada),
       plataformas,
     }
   }

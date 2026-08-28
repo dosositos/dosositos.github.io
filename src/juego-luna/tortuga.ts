@@ -79,6 +79,8 @@ export interface Pose {
   ojos: number
   /** -1 esfuerzo, 0 normal, 1 sorpresa. */
   ceja: number
+  /** De 0 a 1: los ojos se le vuelven espirales. */
+  mareo: number
   boca: 'sonrisa' | 'apretada' | 'abierta' | 'onda'
 }
 
@@ -107,6 +109,7 @@ export function poseDe(e: EscenaLuna): Pose {
     cabeza: 0,
     ojos: 1,
     ceja: 0,
+    mareo: 0,
     boca: 'sonrisa',
   }
 
@@ -148,6 +151,11 @@ export function poseDe(e: EscenaLuna): Pose {
     pose.ceja = -f
     pose.boca = f > 0.55 ? 'apretada' : 'sonrisa'
     pose.temblor = Math.sin(e.reloj * 46) * f * 0.55
+    if (e.agobio > 0) {
+      // El aviso de que se está pasando: se sacude de verdad.
+      pose.temblor += Math.sin(e.reloj * 78) * e.agobio * 1.5
+      pose.ceja = -1
+    }
     pose.squashY = 1 - 0.03 * f
     pose.squashX = 1 + 0.04 * f
   }
@@ -192,6 +200,36 @@ export function poseDe(e: EscenaLuna): Pose {
     pose.rodilla = [pose.rodilla[0] + 0.45 * golpe, pose.rodilla[1] + 0.45 * golpe]
     pose.cadera += 2 * golpe
     pose.ojos = mezclar(pose.ojos, 0.25, golpe)
+  }
+
+  /* ── Desmayada ──────────────────────────────────────────────
+     Aguantó demasiado y se agotó. Se cae sentada, con las piernas
+     estiradas, los brazos colgando y los ojos hechos remolino, y se
+     va levantando sola al final. Se pierde el salto: eso es el
+     castigo, y el chiste de las estrellitas es el consuelo. */
+  if (e.cansancio > 0) {
+    // De 0 (recién se cayó) a 1 (ya está de pie).
+    const avance = 1 - e.cansancio
+    const caer = limitar(avance / 0.18, 0, 1)
+    const parar = limitar((avance - 0.72) / 0.28, 0, 1)
+    const tirada = caer * (1 - parar)
+
+    pose.cadera = mezclar(CUERPO.cadera, -7.5, tirada)
+    pose.inclinacion = mezclar(0.06, -0.42, tirada)
+    pose.muslo = [mezclar(0, 1.62, tirada), mezclar(0, 1.82, tirada)]
+    pose.rodilla = [mezclar(0, -0.5, tirada), mezclar(0, -0.62, tirada)]
+    pose.brazo = [mezclar(0, 1.1, tirada), mezclar(0, 1.35, tirada)]
+    pose.codo = [mezclar(0.15, 0.5, tirada), mezclar(0.15, 0.6, tirada)]
+    pose.cabeza = mezclar(0, -0.28, tirada) + Math.sin(e.reloj * 5) * 0.06 * tirada
+    pose.bob = Math.sin(e.reloj * 5) * 0.5 * tirada
+    pose.squashY = mezclar(1, 0.94, tirada)
+    pose.squashX = mezclar(1, 1.08, tirada)
+    pose.ojos = 1
+    pose.ceja = 0
+    pose.mareo = tirada
+    pose.boca = 'onda'
+    pose.temblor = 0
+    return pose
   }
 
   /* ── El parpadeo ────────────────────────────────────────────
@@ -309,7 +347,51 @@ function dibujarCaparazon(ctx: CanvasRenderingContext2D) {
   ctx.restore()
 }
 
+/** El ojo mareado de los dibujos animados: un remolino. */
+function dibujarRemolino(ctx: CanvasRenderingContext2D, x: number, y: number, r: number) {
+  ctx.strokeStyle = COLOR.ojo
+  ctx.lineWidth = 0.9
+  ctx.lineCap = 'round'
+  ctx.beginPath()
+  for (let i = 0; i <= 34; i += 1) {
+    const t = i / 34
+    const a = t * Math.PI * 4
+    const radio = r * t
+    const px = x + Math.cos(a) * radio
+    const py = y + Math.sin(a) * radio
+    if (i === 0) ctx.moveTo(px, py)
+    else ctx.lineTo(px, py)
+  }
+  ctx.stroke()
+}
+
 function dibujarCara(ctx: CanvasRenderingContext2D, pose: Pose) {
+  if (pose.mareo > 0.5) {
+    ctx.fillStyle = COLOR.ojoBlanco
+    ctx.beginPath()
+    ctx.ellipse(-1.6, -2.4, 2.5, 2.9, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.ellipse(3.6, -2.2, 3.3, 3.7, 0, 0, Math.PI * 2)
+    ctx.fill()
+    dibujarRemolino(ctx, -1.5, -2.4, 2.2)
+    dibujarRemolino(ctx, 3.7, -2.2, 3)
+
+    ctx.fillStyle = COLOR.pielClara
+    ctx.beginPath()
+    ctx.ellipse(5.9, 1.5, 3.9, 3.2, 0.1, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.strokeStyle = COLOR.boca
+    ctx.lineWidth = 1.4
+    ctx.beginPath()
+    ctx.moveTo(4.4, 3.2)
+    ctx.quadraticCurveTo(5.6, 4.4, 6.6, 3.2)
+    ctx.quadraticCurveTo(7.6, 2, 8.6, 3.2)
+    ctx.stroke()
+    return
+  }
+
   /* El ojo de más atrás, apenas asomando: con un solo ojo la cara
      queda de perfil plano, y con los dos puestos se ve como si
      estuviera un poco vuelta hacia nosotros. */
@@ -432,12 +514,13 @@ export function dibujarTortuga(ctx: CanvasRenderingContext2D, escena: EscenaLuna
   ctx.translate(cx, cy)
   ctx.rotate(-pose.inclinacion)
 
-  // La colita, asomando por debajo del caparazón.
+  // La colita. Nace bien metida debajo del caparazón y del cuerpo: si
+  // arranca más afuera se ve como un pedacito suelto flotando al lado.
   ctx.fillStyle = COLOR.pielOscura
   ctx.beginPath()
-  ctx.moveTo(-7.5, 0.8)
-  ctx.quadraticCurveTo(-12, 2.2, -10.5, 4.4)
-  ctx.lineTo(-7, 4)
+  ctx.moveTo(-2.5, -3)
+  ctx.quadraticCurveTo(-9.5, -1.4, -12.2, 3.4)
+  ctx.quadraticCurveTo(-8, 1.4, -2.5, 1.6)
   ctx.closePath()
   ctx.fill()
 

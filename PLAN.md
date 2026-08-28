@@ -480,6 +480,11 @@ está pesado, lento o corto, son seis números en `src/content/luna.ts`.
   al subir, se encoge y se asusta al caer, se aplasta al aterrizar y parpadea.
   Vive en `src/juego-luna/tortuga.ts` y su tamaño es un número de `luna.ts`.
   Para verla sin jugar está el banco de poses de `private/notas/`.
+- **Mecánica nueva, idea de Armando: el cansancio.** Aguantar la barra
+  esperando el momento perfecto ya no sale gratis. A los 2,1 segundos se agota,
+  se desmaya con estrellitas y pierde el salto; medio segundo antes la barra se
+  pone roja avisando. No baja al hito ni pierde nada más: solo hay que
+  esperarla. Los números están en `CANSANCIO`, en `luna.ts`.
 - **Dos arreglos que salieron de mirarlo en el teléfono:** al chocar contra el
   borde del mundo ahora se da la vuelta (antes caía mirando a la pared y volvía
   a saltar contra ella), y el mundo se escala con la medida más chica de las

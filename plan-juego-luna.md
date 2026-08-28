@@ -23,6 +23,7 @@ intentar**. El juego de las frases se contesta; este se aprende.
 | Capítulos | Tres, por peluche, en orden de llegada: **Boo → Ovi → Nico** |
 | Poderes | Uno por peluche ganado. **Se gastan**: un uso por capítulo, sin recarga |
 | Al caer | Vuelve al último hito. Intentos infinitos |
+| Aguantar de más | Se agota y se desmaya. Pierde el salto y hay que esperarla |
 | Duración | 15-25 minutos la primera vez |
 | Marcador | El récord de él, esperándola en cada capítulo |
 | Premio | Una carta suya, solo ahí. Se escribe con él en la sesión |
@@ -55,6 +56,25 @@ va a salir y obliga a esperar el momento.
 Son dos decisiones en un solo dedo: **cuándo** (posición y dirección) y **cuánta
 fuerza**. Con eso alcanza para que haya techo de habilidad sin pedirle un
 segundo dedo.
+
+### El cansancio
+
+La barra no rebota, pero **quedarse esperando el momento perfecto sí cuesta**.
+A los 2,1 segundos con el dedo apretado la tortuga se agota, se desmaya con sus
+estrellitas dando vueltas y pierde el salto; se queda tirada 1,3 segundos y se
+levanta sola.
+
+Sin esto, la respuesta óptima era cargar a tope y esperar tranquila a que la
+plataforma de enfrente estuviera perfecta. La caminata dejaba de ser el reloj
+del juego. Ahora esperar tiene precio y hay que decidir en el momento.
+
+**Avisa antes**: medio segundo antes la barra se pone roja y parpadea, y ella
+tiembla más fuerte. Un castigo que no se ve venir no se aprende, solo enoja. Y
+lo que se pierde es el salto, nunca el progreso: no baja al hito ni se le quita
+nada, solo hay que esperarla.
+
+Los tres números viven en `CANSANCIO`, en `luna.ts`. **Falta contarlo en el
+cartel de la primera pantalla**, junto con lo del mantener y soltar.
 
 En computadora, la barra espaciadora hace lo mismo. No es el escenario
 principal, pero que no quede tullido.
@@ -258,6 +278,8 @@ cambiar cómo se mueve se tocan números en un solo lugar. Lo que hay hoy:
   salto se ve como un movimiento y no como tres estampas pegadas.
 - **Aterrizaje**: se aplasta y se estira de vuelta, corto, para que el suelo se
   sienta duro.
+- **Desmayo**: se cae sentada, con las piernas al aire, los ojos hechos remolino
+  y tres estrellitas girándole encima, y se levanta sola al final.
 - **Parpadeo** cada tres segundos y pico, y respiración mientras carga.
 
 El tamaño sale de `TORTUGA.alto` en `luna.ts` y el dibujo entero se estira solo:

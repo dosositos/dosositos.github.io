@@ -68,6 +68,28 @@ export const SALTO = {
   msDePerdon: 90,
 }
 
+/**
+ * El cansancio.
+ *
+ * Aguantar la barra llena esperando el momento perfecto no puede salir
+ * gratis: si se queda apretado demasiado, la tortuga se agota, se
+ * desmaya con sus estrellitas dando vueltas y hay que esperar a que se
+ * levante. Pierde el salto.
+ *
+ * Avisa antes de que pase: la barra se pone roja y ella tiembla más.
+ * Un castigo que no se ve venir no se aprende, solo enoja.
+ */
+export const CANSANCIO = {
+  /** Desde que empieza a cargar hasta que se desmaya. */
+  msDeAguante: 2100,
+
+  /** Cuánto antes del desmayo empieza a avisar. */
+  msDeAviso: 550,
+
+  /** Cuánto se queda tirada antes de volver a caminar. */
+  msTirada: 1300,
+}
+
 /** La tortuga: cómo camina y cuánto ocupa. */
 export const TORTUGA = {
   /** Velocidad de la caminata. Es el reloj del juego. */
