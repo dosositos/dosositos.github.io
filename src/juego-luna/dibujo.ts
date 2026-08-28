@@ -1,5 +1,5 @@
 import { MUNDO, TORTUGA } from '@/content/luna'
-import { dibujarTortuga } from '@/juego-luna/tortuga'
+import { cabezaDe, dibujarTortuga } from '@/juego-luna/tortuga'
 import type { EscenaLuna } from '@/types'
 
 /**
@@ -270,8 +270,11 @@ function dibujarBarra(ctx: CanvasRenderingContext2D, escena: EscenaLuna) {
  * chiste que compensa haber perdido el salto.
  */
 function dibujarEstrellitas(ctx: CanvasRenderingContext2D, escena: EscenaLuna) {
-  const cx = escena.x
-  const cy = escena.y - TORTUGA.alto * 0.62
+  // Le giran sobre la cabeza, esté como esté: tirada boca arriba, la
+  // cabeza no está donde estaría de pie.
+  const cabeza = cabezaDe(escena)
+  const cx = cabeza.x
+  const cy = cabeza.y - 11 * cabeza.escala
   const vuelta = escena.reloj * 4.4
 
   // Se asoman al principio y se van al final, para que no aparezcan
@@ -282,9 +285,9 @@ function dibujarEstrellitas(ctx: CanvasRenderingContext2D, escena: EscenaLuna) {
 
   for (let i = 0; i < 3; i += 1) {
     const a = vuelta + (i / 3) * Math.PI * 2
-    const x = cx + Math.cos(a) * 13
-    const y = cy + Math.sin(a) * 4.5
-    dibujarEstrella(ctx, x, y, 3.2 + Math.sin(a) * 0.7)
+    const x = cx + Math.cos(a) * 11 * cabeza.escala
+    const y = cy + Math.sin(a) * 4 * cabeza.escala
+    dibujarEstrella(ctx, x, y, (2.8 + Math.sin(a) * 0.6) * cabeza.escala)
   }
   ctx.globalAlpha = 1
 }

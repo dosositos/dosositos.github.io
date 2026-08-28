@@ -244,6 +244,36 @@ export function poseDe(e: EscenaLuna): Pose {
   return pose
 }
 
+/**
+ * Dónde le queda la cabeza, en coordenadas del mundo.
+ *
+ * Hay que rehacer la misma cuenta que hace el canvas al encadenar los
+ * `translate` y los `rotate` del dibujo, porque desde afuera no se
+ * puede preguntar. Sirve para colgarle cosas encima: las estrellitas
+ * del mareo iban a la altura de la cabeza estando de pie, y desmayada
+ * la cabeza está tumbada y en otro sitio.
+ */
+export function cabezaDe(escena: EscenaLuna, pose = poseDe(escena)) {
+  const escala = TORTUGA.alto / ALTO_DIBUJADA
+
+  // La cabeza, dentro del grupo del torso.
+  const lx = 5.2
+  const ly = CUERPO.hombro - 10.4
+
+  // El torso va rotado por la inclinación.
+  const seno = Math.sin(-pose.inclinacion)
+  const coseno = Math.cos(-pose.inclinacion)
+  const rx = lx * coseno - ly * seno
+  const ry = lx * seno + ly * coseno
+
+  // Y de ahí para afuera: la cadera, el temblor, el sube y baja, el
+  // aplaste y el espejo.
+  const x = (rx + pose.temblor) * pose.squashX * escala * escena.mirando
+  const y = (ry + pose.cadera + pose.bob) * pose.squashY * escala
+
+  return { x: escena.x + x, y: escena.y + y, escala }
+}
+
 /** Un miembro de dos huesos. Devuelve dónde quedó la mano o el pie. */
 function miembro(
   ctx: CanvasRenderingContext2D,
