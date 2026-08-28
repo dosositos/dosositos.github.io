@@ -447,31 +447,109 @@ y chats, y el sobre de apertura. Eso es el regalo.
 arrancamos por donde diga, sin que tengás que acordarte de nada.
 
 **Lo que toca:** la **fase 4**, el capítulo de **Ovi**. Cajas apiladas que ceden
-hacia el lado con más peso, los huecos que solo se cruzan de una manera, y el
-poder que se gana al cerrarlo. Cuesta bastante menos que el de Boo: la fase 3
-dejó el molde hecho y Ovi es una variación. Lo que hay que escribir es su traba,
-su material en `dibujo.ts` y sus 32 plataformas.
+hacia el lado con más peso, los huecos que solo se cruzan de una manera. Cuesta
+bastante menos que el de Boo: la fase 3 dejó el molde hecho y Ovi es una
+variación. Hay que escribir su traba, su material en `dibujo.ts` y sus 32
+plataformas, y nada más.
 
-### Lo primero de la sesión: jugá el capítulo de Boo entero
+### Cómo está el juego ahora mismo (fase 3 cerrada)
 
-Está publicado en `https://dosositos.github.io/#/luna` y ahora sí es un capítulo
-de verdad. Lo que quiero saber:
+Publicado en `https://dosositos.github.io/#/luna`, sin enlace desde ningún lado
+y detrás del candado. El capítulo de Boo está entero.
 
-1. **Si ahora sí cuesta.** Son 32 plataformas en vez de 20 y la pista se borra
-   detrás desde la primera estrella, así que caerse ya no se arregla volviendo a
-   subir dos escalones.
-2. **Si el desvanecimiento se entiende sin que nadie lo explique.** El tramo
-   parpadea cada vez más rápido antes de irse. Si te agarró por sorpresa, hay
-   que alargar `PISTA.msDeAviso`.
-3. **Si los dos tramos de impulso se leen.** Son los que llevan galones
-   amarillos corriendo hacia un lado. Al caer ahí sale disparada sola.
-4. **Cuánto tardaste**, para saber si la cuenta de 12-15 minutos con los tres
-   capítulos se sostiene. El robot lo termina limpio en 68 segundos.
+- **Un solo gesto en todo el juego.** Mantener y soltar. Ni poderes ni
+  habilidades: se probaron dos y se tiraron los dos.
+- **32 plataformas y 5 estrellas** por capítulo. Las estrellas son las
+  estrellitas de papel del frasco, iguales en los tres mundos.
+- **La traba de Boo:** la pista se borra detrás. Parpadea siete veces
+  acelerando y se va. Cada estrella pisada le quita 380 ms de vida, con piso de
+  1,1 segundos, así que el capítulo se apura solo.
+- **Dos tramos de impulso**, que lanzan solos y siempre igual.
+- **La luna** abre el capítulo con una cinemática, se va para arriba, espera
+  sobre la última plataforma y se va otra vez al llegar. Un toque salta la
+  presentación.
+- **El fondo vive:** vías de pista que cruzan el mundo con carros corriendo por
+  encima, muy apagadas, y matas de bambú a los dos lados.
 
-Y una que solo se ve jugando dos veces: **el empujón**. Se gana al cerrar el
-capítulo, así que la primera vez no lo tenés. La segunda sí, y aparece abajo a
-la izquierda. Se gasta tocando en el aire **mientras caés**, y es uno solo por
-capítulo.
+### Los seis comandos que hacen falta
+
+```bash
+npm run dev              # y npm run dev:telefono para la red de casa
+npm run luna:probar      # ¿se pasa el capítulo? y todas las pruebas del juego
+npm run luna:mapa        # a qué distancia se aterriza según lo que haya que subir
+npm run luna:ver         # fotos del juego andando
+npm run luna:pista       # el banco del mundo, sin jugarlo
+npm run luna:tortuga     # el banco de poses del personaje
+```
+
+**Lo que más ahorra:** los dos bancos. El mundo y el personaje se ajustan
+mirándolos, no jugando hasta el tramo que se está tocando.
+
+### Lo que aprendí y no quiero volver a aprender
+
+- **El arnés miente antes que el juego.** Tres veces seguidas una prueba nueva
+  dijo que el motor estaba roto y el roto era la prueba. Antes de creerle a una
+  prueba que falla, romper el código a propósito y ver si la caza.
+- **La firma del congelamiento.** Si la tortuga se queda clavada en una pose
+  agachada y se arregla al saltar, es que el reloj de la pose dejó de correr.
+  Pasó dos veces y ya tiene prueba en `npm run luna:probar`.
+- **`ctx.globalAlpha` no se asigna dentro de una función de dibujo.** Se lo
+  lleva puesto todo lo que venga después. El desvanecimiento de un tramo entero
+  se rompió por un `globalAlpha = 1` suelto: el alfa viaja como parámetro.
+
+### Lo que sigue esperando, después del juego
+
+1. El **momento de Boo** en la línea del tiempo (23 de diciembre de 2024) y
+   sacarle su frase comodín de `src/content/peluches.ts`.
+2. Los dos momentos apuntados sin escribir: el 24 de noviembre de 2024 y las
+   flores de lego, que además no tiene fecha.
+3. La **línea del tiempo horizontal para computadora**, lo único atrasado del
+   orden original.
+4. Probar el **diccionario** en el teléfono de verdad.
+5. **PWA**: hoy no hay manifest ni ícono.
+6. Los **13 puntos y coma** de `src/content/momentos.ts` y los 5 de
+   `src/content/diccionario.ts`, que son de mi redacción y no citas.
+7. Antes de la última fase, **recordarte que juegues los tres capítulos** para
+   llenar los récords: sin eso el rival de ella no existe.
+
+### Dos decisiones que quedaron abiertas
+
+- **¿Se guarda la estrella dentro del capítulo?** Hoy al recargar la página se
+  empieza el capítulo desde abajo. *Mi voto: guardar también la última estrella,
+  porque un capítulo son tres o cuatro minutos y el Android mata las pestañas de
+  atrás.*
+- **El nombre de la tortuga.** Sigue llamándose «la tortuga». *Mi voto: que se
+  lo pongás vos, o que se lo ponga ella la primera vez que juegue.*
+
+El plan completo del juego, con la mecánica, los tres mundos, los valores de la
+física y las diez fases, vive en **`plan-juego-luna.md`**, en la raíz. Se lee
+antes de escribir la primera línea.
+
+### Lo que se cerró el 29, con tu tercera vuelta
+
+- **El bambú de la derecha estaba en espejo.** La caña nítida iba pegada al
+  borde y las apagadas hacia adentro, o sea al revés que la mata de la
+  izquierda. Ahora las dos matas se abren hacia el medio de la pantalla.
+- **La tortuga se congelaba mientras la luna se despedía.** Misma firma que la
+  vez del atasco en la orilla: el paso de física se cortaba durante la
+  cinemática y el reloj de la pose se paraba con él, dejándola agachada en el
+  golpe del aterrizaje. Ahora sigue caminando por la cima mientras la luna se
+  va, y hay prueba en `npm run luna:probar`.
+- **El desvanecimiento solo parpadeaba en la primera caña del soporte.** Era un
+  `ctx.globalAlpha = 1` suelto dentro de los soportes, que se llevaba puesto el
+  alfa de todo lo que venía después. Ahora el alfa viaja como parámetro y no
+  como estado del canvas.
+- **Los soportes de bambú, más cortos y sutiles**: de 74 píxeles a 34, con un
+  nudo en vez de tres, y apagados.
+- **Los loopings se fueron.** Eran aros flotando sin principio ni final. En su
+  lugar hay **vías de pista que cruzan el mundo entero ondulando, con carros
+  corriendo por encima**, muy apagadas. El fondo vive sin estorbar, y de paso se
+  entiende que la subida es un rincón de una pista de carreras enorme.
+- **Los poderes se fueron del juego entero.** Se probaron dos, el empujón y el
+  planeo, y ninguno hacía falta. Fuera el marcador, el aire, el estado en el
+  progreso, la pose de planeo y su prueba. El juego se sostiene con un gesto y
+  las trabas de cada mundo, y cada regla de más es una regla que explicar en un
+  regalo que se juega una vez.
 
 ### Lo que se afinó el 29, con tu segunda vuelta
 

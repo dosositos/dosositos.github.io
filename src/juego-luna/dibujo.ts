@@ -142,13 +142,20 @@ function sembrarBambu(desde: number, hasta: number) {
   // Una mata por lado y tres cañas por mata. Con más se hacía una
   // mancha verde: lo que se veía no era bambú, era ruido.
   for (const orilla of [0, 1]) {
+    // Hacia el medio de la pantalla. La mata de la derecha es la de
+    // la izquierda en espejo: sin esto, en la derecha la caña nítida
+    // quedaba pegada al borde y las apagadas hacia adentro, o sea al
+    // revés de la de la izquierda y al revés de como se lee una mata.
+    const haciaAdentro = orilla === 0 ? 1 : -1
+
     const canas = []
     for (let c = 0; c < 3; c += 1) {
+      // La de más adelante es la más nítida, y va más adentro.
       const profundidad = c / 2
       canas.push({
-        dx: (c - 1) * 9 + (siguiente() - 0.5) * 6,
+        dx: ((c - 1) * 9 + (siguiente() - 0.5) * 6) * haciaAdentro,
         grosor: 4 + profundidad * 3.5,
-        inclinacion: (siguiente() - 0.5) * 22,
+        inclinacion: (siguiente() - 0.5) * 22 * haciaAdentro,
         profundidad,
         conHojas: c === 2,
       })
@@ -168,8 +175,10 @@ function sembrarBambu(desde: number, hasta: number) {
  * cuatro, y nunca en los de impulso ni en los de estrella, que ya
  * tienen algo encima.
  */
+const COLORES_DE_CARRO = ['#c9455a', '#3f7fc4', '#e0a63a', '#5aa86a', '#8a6bc4']
+
 function sembrarCarritos(nivel: Nivel) {
-  const colores = ['#c9455a', '#3f7fc4', '#e0a63a', '#5aa86a', '#8a6bc4']
+  const colores = COLORES_DE_CARRO
   const donde = new Map<number, { x: number; color: string }>()
   for (const p of nivel.plataformas) {
     if (p.hito || p.impulso || p.indice === 0) continue
@@ -184,19 +193,55 @@ function sembrarCarritos(nivel: Nivel) {
   return donde
 }
 
-/** Un par de loopings de pista al fondo, de adorno. */
-function sembrarLoopings(desde: number, hasta: number) {
-  const loopings: { x: number; y: number; r: number }[] = []
-  const cuantos = Math.max(1, Math.round((hasta - desde) / 900))
-  for (let i = 0; i < cuantos; i += 1) {
-    const t = (i + 0.5) / cuantos
-    loopings.push({
-      x: i % 2 === 0 ? MUNDO.ancho * 0.24 : MUNDO.ancho * 0.76,
-      y: hasta - (hasta - desde) * t,
-      r: 52 + (i % 3) * 12,
+/**
+ * Las vías del fondo: tramos larguísimos de pista que cruzan el mundo
+ * de lado a lado, ondulando, con carros corriendo por ellos.
+ *
+ * Reemplazan a unos loopings sueltos que no se leían: eran aros
+ * flotando, sin principio ni final, y no decían nada. Una vía que
+ * entra por un borde y sale por el otro, con algo pasando encima, sí
+ * cuenta que el mundo es una pista de carreras enorme y que la subida
+ * es solo un rincón de ella.
+ *
+ * Van muy apagadas a propósito: el fondo tiene que estar vivo sin
+ * pelearse con las plataformas, que son lo que hay que mirar.
+ */
+function sembrarVias(desde: number, hasta: number) {
+  const vias: {
+    y: number
+    amplitud: number
+    fase: number
+    /** Vueltas por segundo del recorrido de un carro. */
+    velocidad: number
+    hacia: 1 | -1
+    carros: { salida: number; color: string }[]
+  }[] = []
+
+  let semilla = 20250829
+  const siguiente = () => {
+    semilla = (semilla * 1664525 + 1013904223) % 4294967296
+    return semilla / 4294967296
+  }
+
+  const cuantas = Math.max(2, Math.round((hasta - desde) / 620))
+  for (let i = 0; i < cuantas; i += 1) {
+    const carros = []
+    for (let c = 0; c < 1 + Math.floor(siguiente() * 2); c += 1) {
+      carros.push({
+        salida: siguiente(),
+        color: COLORES_DE_CARRO[Math.floor(siguiente() * COLORES_DE_CARRO.length)],
+      })
+    }
+    vias.push({
+      y: hasta - ((i + 0.5) / cuantas) * (hasta - desde),
+      amplitud: 30 + siguiente() * 44,
+      fase: siguiente() * Math.PI * 2,
+      velocidad: 0.045 + siguiente() * 0.045,
+      hacia: siguiente() < 0.5 ? 1 : -1,
+      carros,
     })
   }
-  return loopings
+  return vias
 }
 
 export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
@@ -217,7 +262,7 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
   // queda vacío y no se dibuja nada.
   const esDePista = nivel.material === 'pista'
   const matas = esDePista ? sembrarBambu(nivel.cima.y - 200, nivel.suelo + 200) : []
-  const loopings = esDePista ? sembrarLoopings(nivel.cima.y, nivel.suelo) : []
+  const vias = esDePista ? sembrarVias(nivel.cima.y, nivel.suelo) : []
   const carritos = esDePista ? sembrarCarritos(nivel) : new Map()
 
   let anchoCss = 0
@@ -320,9 +365,9 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
       // El decorado va detrás de la pista y no se toca: es lo que
       // dice de qué mundo estamos hablando cuando la pista ya se
       // borró y no queda nada.
-      for (const l of loopings) {
-        if (l.y + l.r < arriba || l.y - l.r > abajo) continue
-        dibujarLooping(ctx, l)
+      for (const v of vias) {
+        if (v.y + v.amplitud < arriba || v.y - v.amplitud > abajo) continue
+        dibujarVia(ctx, v, escena.reloj)
       }
       for (const m of matas) {
         if (m.desde > abajo || m.hasta < arriba) continue
@@ -337,18 +382,21 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
         const vida = escena.vidaDeLaPista[p.indice] ?? 1
         if (vida <= 0) continue
 
-        ctx.globalAlpha = opacidadDeLaPista(
-          vida,
-          escena.avisoDeLaPista,
-          pintor.movimientoReducido,
-        )
-        if (esDePista) dibujarPistaNaranja(ctx, p, escena.hitoAlcanzado, escena.reloj)
+        // El alfa viaja como parámetro además de como estado del
+        // canvas. Dejándolo solo en globalAlpha, cualquier función de
+        // adentro que lo tocara se lo llevaba puesto, y pasó: de un
+        // tramo que se estaba yendo solo parpadeaba la primera caña
+        // del soporte, que era lo único dibujado antes del pisotón.
+        const alfa = opacidadDeLaPista(vida, escena.avisoDeLaPista, pintor.movimientoReducido)
+
+        ctx.save()
+        ctx.globalAlpha = alfa
+        if (esDePista) dibujarPistaNaranja(ctx, p, escena.hitoAlcanzado, escena.reloj, alfa)
         else dibujarPlataforma(ctx, p, escena.hitoAlcanzado, escena.reloj)
 
         const carrito = carritos.get(p.indice)
         if (carrito) dibujarCarrito(ctx, carrito.x, p.y, carrito.color)
-
-        ctx.globalAlpha = 1
+        ctx.restore()
       }
 
       // Se dibuja siempre que entre en pantalla, cayéndose incluida:
@@ -560,12 +608,13 @@ function dibujarPistaNaranja(
   p: Plataforma,
   hitoAlcanzado: number,
   reloj: number,
+  alfa: number,
 ) {
   const alto = 15
   const izq = p.x
   const der = p.x + p.ancho
 
-  dibujarSoportesDeBambu(ctx, p, alto)
+  dibujarSoportesDeBambu(ctx, p, alto, alfa)
 
   // La pared de atrás, que asoma por encima del canal.
   ctx.fillStyle = COLOR.pistaFondo
@@ -603,7 +652,7 @@ function dibujarPistaNaranja(
   ctx.fillRect(izq - 3, p.y + 4, 3, 6)
   ctx.fillRect(der, p.y + 4, 3, 6)
 
-  if (p.impulso) dibujarGalones(ctx, p, reloj)
+  if (p.impulso) dibujarGalones(ctx, p, reloj, alfa)
   if (p.hito) dibujarEstrellaDePapel(ctx, p, hitoAlcanzado >= p.indice, reloj)
 }
 
@@ -612,32 +661,42 @@ function dibujarPistaNaranja(
  * oscuro en vez de terminar en el aire, que es lo que hacía que la
  * pista pareciera flotar.
  */
-function dibujarSoportesDeBambu(ctx: CanvasRenderingContext2D, p: Plataforma, alto: number) {
-  const largo = 74
+function dibujarSoportesDeBambu(
+  ctx: CanvasRenderingContext2D,
+  p: Plataforma,
+  alto: number,
+  alfa: number,
+) {
+  // Cortos y discretos. Colgando setenta píxeles parecían raíces y se
+  // llevaban la mirada, que tiene que estar en la pista.
+  const largo = 34
   const arriba = p.y + alto - 2
 
-  for (const donde of [0.26, 0.74]) {
+  ctx.save()
+
+  for (const donde of [0.28, 0.72]) {
     const x = p.x + p.ancho * donde
     const desvanecido = ctx.createLinearGradient(0, arriba, 0, arriba + largo)
     desvanecido.addColorStop(0, COLOR.bambuSoporte)
-    desvanecido.addColorStop(0.55, COLOR.bambuSoporte)
+    desvanecido.addColorStop(0.4, COLOR.bambuSoporte)
     desvanecido.addColorStop(1, 'rgba(37, 66, 46, 0)')
 
+    ctx.globalAlpha = alfa * 0.85
     ctx.fillStyle = desvanecido
-    ctx.fillRect(x - 2.6, arriba, 5.2, largo)
+    ctx.fillRect(x - 2.2, arriba, 4.4, largo)
 
-    // Los nudos, que son lo que la hace caña y no palo.
+    // Un nudo, uno solo: en treinta píxeles más de uno es ruido.
+    ctx.globalAlpha = alfa * 0.5
     ctx.fillStyle = COLOR.bambuSoporteNudo
-    for (let y = arriba + 16; y < arriba + largo * 0.7; y += 22) {
-      ctx.globalAlpha = 1 - (y - arriba) / largo
-      ctx.fillRect(x - 3.4, y, 6.8, 2)
-    }
-    ctx.globalAlpha = 1
+    ctx.fillRect(x - 2.9, arriba + 13, 5.8, 1.8)
 
     // La abrazadera con la que la caña agarra la pista.
+    ctx.globalAlpha = alfa
     ctx.fillStyle = COLOR.pistaSombra
-    ctx.fillRect(x - 4.4, arriba - 2, 8.8, 3)
+    ctx.fillRect(x - 3.8, arriba - 2, 7.6, 2.5)
   }
+
+  ctx.restore()
 }
 
 /**
@@ -713,7 +772,12 @@ function dibujarEstrellaDePapel(
  * Los galones de un tramo de impulso, corriendo hacia el lado que
  * lanza. Se mueven solos: quieta, la flecha no dice que empuja.
  */
-function dibujarGalones(ctx: CanvasRenderingContext2D, p: Plataforma, reloj: number) {
+function dibujarGalones(
+  ctx: CanvasRenderingContext2D,
+  p: Plataforma,
+  reloj: number,
+  alfa: number,
+) {
   const hacia = p.impulso ?? 1
   const paso = 16
   const corrida = (reloj * 46) % paso
@@ -733,7 +797,7 @@ function dibujarGalones(ctx: CanvasRenderingContext2D, p: Plataforma, reloj: num
     // Los de los extremos entran y salen apagándose, para que no
     // aparezcan de la nada en la orilla del tramo.
     const alOrilla = Math.min(x - p.x, p.x + p.ancho - x) / 18
-    ctx.globalAlpha = Math.min(1, alOrilla) * 0.9
+    ctx.globalAlpha = alfa * Math.min(1, alOrilla) * 0.9
 
     ctx.beginPath()
     ctx.moveTo(x - 4 * hacia, medio - 4)
@@ -890,60 +954,77 @@ function dibujarMata(
   ctx.restore()
 }
 /**
- * Un looping de pista al fondo. Dos rieles y sus travesaños, con las
- * rampas de entrada y salida: con una sola raya parecía un aro suelto.
+ * Una vía del fondo, con lo que pase por ella en este momento.
+ *
+ * La forma es una onda, así que dónde está un carro y hacia dónde
+ * apunta salen de una cuenta y no de un estado guardado: el fondo no
+ * tiene memoria y se dibuja igual aunque la pestaña haya estado
+ * dormida media hora.
  */
-function dibujarLooping(ctx: CanvasRenderingContext2D, l: { x: number; y: number; r: number }) {
+function dibujarVia(
+  ctx: CanvasRenderingContext2D,
+  via: {
+    y: number
+    amplitud: number
+    fase: number
+    velocidad: number
+    hacia: 1 | -1
+    carros: { salida: number; color: string }[]
+  },
+  reloj: number,
+) {
+  /** El recorrido va de -0,1 a 1,1 para que entre y salga de cuadro. */
+  const enLaVia = (u: number) => ({
+    x: u * MUNDO.ancho,
+    y: via.y + Math.sin(u * Math.PI * 2 + via.fase) * via.amplitud,
+  })
+
   ctx.save()
-  ctx.globalAlpha = 0.2
-  ctx.strokeStyle = COLOR.pistaLuz
   ctx.lineCap = 'round'
+  ctx.strokeStyle = COLOR.pistaLuz
 
   // Los travesaños, primero, que van por debajo de los rieles.
-  ctx.lineWidth = 1.6
-  for (let i = 0; i < 26; i += 1) {
-    const a = (i / 26) * Math.PI * 2
-    const cx = Math.cos(a)
-    const cy = Math.sin(a)
+  ctx.globalAlpha = 0.06
+  ctx.lineWidth = 1.4
+  for (let i = 0; i <= 40; i += 1) {
+    const p = enLaVia(-0.1 + (i / 40) * 1.2)
     ctx.beginPath()
-    ctx.moveTo(l.x + cx * (l.r - 5), l.y + cy * (l.r - 5))
-    ctx.lineTo(l.x + cx * (l.r + 5), l.y + cy * (l.r + 5))
+    ctx.moveTo(p.x, p.y - 5)
+    ctx.lineTo(p.x, p.y + 5)
     ctx.stroke()
   }
 
-  ctx.lineWidth = 3
-  for (const radio of [l.r - 5, l.r + 5]) {
+  // Los dos rieles.
+  ctx.globalAlpha = 0.14
+  ctx.lineWidth = 2.6
+  for (const lado of [-5, 5]) {
     ctx.beginPath()
-    ctx.arc(l.x, l.y, radio, 0, Math.PI * 2)
+    for (let i = 0; i <= 60; i += 1) {
+      const p = enLaVia(-0.1 + (i / 60) * 1.2)
+      if (i === 0) ctx.moveTo(p.x, p.y + lado)
+      else ctx.lineTo(p.x, p.y + lado)
+    }
     ctx.stroke()
   }
 
-  // Las rampas, que es lo que lo convierte en looping y no en aro.
-  // Se van apagando en la punta: cortadas en seco parecían un trazo
-  // olvidado a media pantalla.
-  ctx.lineWidth = 4
-  for (const lado of [-1, 1]) {
-    const puntaX = l.x + lado * (l.r + 62)
-    const rampa = ctx.createLinearGradient(puntaX, 0, l.x + lado * (l.r - 2), 0)
-    rampa.addColorStop(0, 'rgba(247, 147, 64, 0)')
-    rampa.addColorStop(0.45, COLOR.pistaLuz)
-    rampa.addColorStop(1, COLOR.pistaLuz)
-    ctx.strokeStyle = rampa
+  // Y los carros corriendo por ella, inclinados según la pendiente.
+  for (const carro of via.carros) {
+    const vuelta = (reloj * via.velocidad + carro.salida) % 1
+    const u = via.hacia > 0 ? -0.1 + vuelta * 1.2 : 1.1 - vuelta * 1.2
+    const aqui = enLaVia(u)
+    const ahi = enLaVia(u + 0.01 * via.hacia)
 
-    ctx.beginPath()
-    ctx.moveTo(puntaX, l.y + l.r + 26)
-    ctx.quadraticCurveTo(
-      l.x + lado * (l.r + 8),
-      l.y + l.r + 18,
-      l.x + lado * (l.r - 2),
-      l.y + l.r * 0.45,
-    )
-    ctx.stroke()
+    ctx.save()
+    ctx.globalAlpha = 0.3
+    ctx.translate(aqui.x, aqui.y - 1)
+    ctx.rotate(Math.atan2(ahi.y - aqui.y, (ahi.x - aqui.x) * via.hacia))
+    if (via.hacia < 0) ctx.scale(-1, 1)
+    dibujarCarrito(ctx, 0, 0, carro.color)
+    ctx.restore()
   }
 
   ctx.restore()
 }
-
 /** La sombra dice dónde va a caer. Es media ayuda del juego. */
 function dibujarSombra(ctx: CanvasRenderingContext2D, escena: EscenaLuna) {
   const debajo = escena.plataformas

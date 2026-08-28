@@ -166,34 +166,6 @@ export const IMPULSO = {
 }
 
 /**
- * El planeo, el poder que se gana con Boo.
- *
- * En el aire, con el dedo apoyado, la tortuga abre las patas y baja
- * despacio. Mientras plane sigue avanzando de lado igual, así que un
- * salto que salía corto llega, y uno que salía largo se puede acortar
- * soltando antes.
- *
- * Trae un tanque de aire por capítulo, que no se recarga. Se gasta
- * solo mientras baja: subiendo no hace nada, porque planear hacia
- * arriba no es planear.
- *
- * Es el segundo intento de este poder. El primero era un empujón de un
- * golpe, y no servía: había que acertarle a un instante, se gastaba
- * entero de una y nunca se llegaba a aprender qué hacía. Un poder que
- * dura lo que uno lo mantenga se entiende a la primera.
- */
-export const PLANEO = {
-  /** Cuánto aire trae por capítulo, en milisegundos de planeo. */
-  msDeAire: 1500,
-
-  /** Qué parte de la gravedad la agarra mientras planea. */
-  gravedad: 0.18,
-
-  /** Y por rápido que venga bajando, no cae más que esto. */
-  caidaMaxima: 140,
-}
-
-/**
  * La luna, que es a donde se va.
  *
  * No está pegada a la pantalla todo el rato: llena y grande arriba a
@@ -251,11 +223,6 @@ const BOO: CapituloEscrito = {
   numero: 1,
   material: 'pista',
   seDesvanece: true,
-  poder: {
-    id: 'planeo',
-    nombre: 'el planeo',
-    comoSeUsa: 'mantené apretado en el aire',
-  },
   presentacion: {
     titulo: 'Capítulo uno: Boo',
     texto: [
@@ -267,7 +234,7 @@ const BOO: CapituloEscrito = {
   cierre: {
     titulo: 'Ganaste a Boo',
     texto:
-      'Se te trepa al caparazón y ahí se queda. Desde ahora, cuando estés cayendo, mantené el dedo apretado y la tortuga abre las patas y baja despacio, como una hoja. Sigue avanzando igual, así que un salto que salía corto llega. Trae un tanque de aire por capítulo y se gasta mientras lo mantengas, así que soltá en cuanto ya no te haga falta.',
+      'Se te trepa al caparazón y ahí se queda, mirando para abajo lo que subiste. Uno de tres. Los otros dos están más arriba y la luna ya se fue para allá.',
   },
   plataformas: [
     // El suelo, ancho y tranquilo. Aquí se aprende a saltar.
@@ -382,8 +349,6 @@ export const TEXTOS = {
   llegada: 'llegaste',
   /** Lo acumulado de todas las veces, debajo de lo de esta subida. */
   enTotal: 'en total',
-  /** Cuando se le acaba el aire del planeo a mitad de vuelo. */
-  sinAire: 'se te acabó el aire',
   /** Al cerrar el capítulo, mientras los otros dos no existan. */
   siguiente: 'los otros dos capítulos todavía los estoy haciendo',
 }

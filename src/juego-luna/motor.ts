@@ -1,4 +1,4 @@
-import { CAIDA, CANSANCIO, IMPULSO, LUNA, MUNDO, PISTA, PLANEO, SALTO, TORTUGA } from '@/content/luna'
+import { CAIDA, CANSANCIO, IMPULSO, LUNA, MUNDO, PISTA, SALTO, TORTUGA } from '@/content/luna'
 import type { EscenaLuna, EventoLuna, Nivel, Plataforma } from '@/types'
 
 /**
@@ -63,8 +63,6 @@ interface Tortuga {
 
 export interface OpcionesMotor {
   nivel: Nivel
-  /** Si ya se ganó el poder del capítulo, viene con el aire cargado. */
-  conPoder?: boolean
   /**
    * Si el capítulo abre y cierra con la luna. Lo pide la página; el
    * probador no, que si no cada una de las veintitantas mil partidas
@@ -97,13 +95,7 @@ export interface Motor {
 
 const gradosARadianes = (grados: number) => (grados * Math.PI) / 180
 
-export function crearMotor({
-  nivel,
-  conPoder,
-  conCinematica,
-  pintar,
-  alEvento,
-}: OpcionesMotor): Motor {
+export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesMotor): Motor {
   const { plataformas } = nivel
 
   /**
@@ -128,18 +120,6 @@ export function crearMotor({
 
   /** En qué tramo está parada. -1 es en el aire. */
   let ultimoPiso = 0
-
-  /**
-   * Los milisegundos de planeo que le quedan. Se gastan mientras
-   * mantiene el dedo en el aire y no se recargan en todo el capítulo.
-   */
-  let aire = conPoder ? PLANEO.msDeAire : 0
-
-  /** Si el dedo está apoyado ahora mismo. El planeo vive de esto. */
-  let dedoAbajo = false
-
-  /** Si en este paso está planeando de verdad. */
-  let planeando = false
 
   /**
    * En qué momento del capítulo va. Durante las dos cinemáticas el
@@ -294,12 +274,13 @@ export function crearMotor({
         }
         cineMs = 0
       }
-      // La de entrada deja a la tortuga caminando por el suelo, que
-      // se ve viva. La de salida y el final la dejan quieta: ya
-      // llegó y lo que hay que mirar es la luna.
-      if (cine !== 'entrada') return
     }
-    if (cine === 'fin') return
+
+    // Durante las cinemáticas la tortuga sigue viva y caminando. Lo
+    // único que se le quita es el dedo, y de eso se encarga
+    // "presionar". Cortarle el paso aquí la dejaba congelada en la
+    // pose que tuviera puesta, casi siempre la del golpe del
+    // aterrizaje, que es agachada.
 
     if (cayendo > 0) {
       // Mientras se cae no manda nadie: sigue bajando y no choca con
@@ -385,21 +366,7 @@ export function crearMotor({
     if (!t.enSuelo) {
       t.sinSuelo += PASO
 
-      // El planeo: con el dedo apoyado y mientras baja, la tortuga
-      // abre las patas y se deja caer despacio. Es un poder que se
-      // siente porque dura lo que uno quiera y se ve todo el rato,
-      // no un golpe de un frame que hay que acertar.
-      const quierePlanear = dedoAbajo && aire > 0 && t.vy > 0
-      if (quierePlanear && !planeando) avisar('poder')
-      planeando = quierePlanear
-
-      if (planeando) {
-        aire = Math.max(0, aire - PASO * 1000)
-        t.vy += SALTO.gravedad * PLANEO.gravedad * PASO
-        t.vy = Math.min(t.vy, PLANEO.caidaMaxima)
-      } else {
-        t.vy += SALTO.gravedad * PASO
-      }
+      t.vy += SALTO.gravedad * PASO
 
       const yAntes = t.y
       t.x += t.vx * PASO
@@ -477,7 +444,6 @@ export function crearMotor({
                 if (conCinematica) {
                   cine = 'salida'
                   cineMs = 0
-                  dedoAbajo = false
                 } else {
                   avisar('fin')
                 }
@@ -515,7 +481,6 @@ export function crearMotor({
     t.cargaMs = 0
     t.sinSuelo = 999
     t.desdeSalto = 0
-    planeando = false
 
     if (nivel.seDesvanece && ultimoPiso > primerLazo && ritmo[ultimoPiso] === 0) {
       ritmo[ultimoPiso] = (PASO * 1000) / loQueDuraLaPista()
@@ -532,7 +497,6 @@ export function crearMotor({
       return
     }
     if (cine !== 'jugando') return
-    dedoAbajo = true
     if (cayendo > 0 || tirada > 0 || t.cargando) return
 
     // El perdón del borde: si acaba de dejar la plataforma, se la
@@ -549,8 +513,6 @@ export function crearMotor({
       }
     }
 
-    // En el aire, mantener el dedo es planear. De eso se encarga el
-    // paso de física, que es donde está la gravedad.
     if (!t.enSuelo) return
 
     t.cargando = true
@@ -559,7 +521,6 @@ export function crearMotor({
   }
 
   function soltar() {
-    dedoAbajo = false
     if (!t.cargando) return
 
     lanzar(SALTO.impulsoMinimo + (SALTO.impulsoMaximo - SALTO.impulsoMinimo) * t.carga)
@@ -599,8 +560,6 @@ export function crearMotor({
       // nadie.
       vidaDeLaPista: vida,
       avisoDeLaPista: cuandoAvisa(),
-      planeando,
-      aire: PLANEO.msDeAire > 0 ? aire / PLANEO.msDeAire : 0,
       cine,
       cineAvance:
         cine === 'entrada'

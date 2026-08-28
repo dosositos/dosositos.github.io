@@ -35,7 +35,7 @@ globalThis.cancelAnimationFrame = () => {
 const { crearMotor } = await import('@/juego-luna/motor.ts')
 const { construirNivel } = await import('@/juego-luna/mundos.ts')
 const { opacidadDeLaPista } = await import('@/juego-luna/dibujo.ts')
-const { SALTO, TORTUGA, MUNDO, PISTA, CAPITULOS } = await import('@/content/luna.ts')
+const { SALTO, TORTUGA, MUNDO, PISTA, LUNA, CAPITULOS } = await import('@/content/luna.ts')
 
 /**
  * Qué capítulo se prueba. Sin argumento, el primero.
@@ -47,12 +47,11 @@ const capitulo = CAPITULOS.find((c) => c.numero === cual) ?? CAPITULOS[0]
 const nivel = construirNivel(capitulo)
 
 /** Arranca un motor en un nivel cualquiera y devuelve cómo pisarlo. */
-function banco(nivelDePrueba, conPoder) {
+function banco(nivelDePrueba) {
   const ultima = { escena: null }
   const eventos = []
   const motor = crearMotor({
     nivel: nivelDePrueba,
-    conPoder,
     pintar: (escena) => {
       ultima.escena = escena
     },
@@ -720,83 +719,7 @@ function saltarCon(motor, frame, carga) {
 }
 console.log('')
 
-/* ── 7. El planeo ──────────────────────────────────────────────
-   El poder que se gana con Boo: con el dedo apoyado en el aire, baja
-   despacio y llega más lejos. Se mide contra el mismo salto sin
-   planear. Es el segundo intento del poder: el primero era un empujón
-   de un golpe que había que acertar y no servía. */
-
-console.log('  El planeo')
-
-/**
- * El mismo salto flojo, planeando o no. Planear es mantener el dedo
- * apoyado en el aire, así que aquí es presionar y no soltar.
- */
-function saltoPlaneado(conPoder, planear) {
-  const anchoReal = MUNDO.ancho
-  MUNDO.ancho = 9000
-  const { motor, frame, eventos } = banco(nivelLlano(), conPoder)
-
-  frame()
-  const x0 = frame().x
-  saltarCon(motor, frame, 0.5)
-
-  let e = frame()
-  let apoyado = false
-  let frames = 0
-  for (let i = 0; i < 600; i += 1) {
-    e = frame()
-    frames += 1
-    // En cuanto empieza a bajar, el dedo se apoya y se queda.
-    if (planear && !apoyado && e.vy > 0) {
-      motor.presionar()
-      apoyado = true
-    }
-    if (i > 3 && e.enSuelo) break
-  }
-  motor.detener()
-  MUNDO.ancho = anchoReal
-
-  return {
-    alcance: e.x - x0,
-    segundos: frames / 60,
-    planeo: eventos.includes('poder'),
-    aire: e.aire,
-  }
-}
-
-{
-  const normal = saltoPlaneado(false, true)
-  const conPoder = saltoPlaneado(true, true)
-  const guardado = saltoPlaneado(true, false)
-
-  console.log(
-    `   sin planear avanza ${Math.round(normal.alcance)} px en ${normal.segundos.toFixed(2)}s, planeando ${Math.round(conPoder.alcance)} px en ${conPoder.segundos.toFixed(2)}s`,
-  )
-  console.log(
-    conPoder.planeo && conPoder.alcance > normal.alcance + 60
-      ? `   ✓ el planeo suma ${Math.round(conPoder.alcance - normal.alcance)} px`
-      : '   ⚠ el planeo no hizo nada',
-  )
-  console.log(
-    !normal.planeo
-      ? '   ✓ sin haberlo ganado, apoyar el dedo en el aire no hace nada'
-      : '   ⚠ planeó sin haberlo ganado',
-  )
-  console.log(
-    !guardado.planeo && Math.abs(guardado.alcance - normal.alcance) < 1
-      ? '   ✓ sin apoyar el dedo, el salto sale igual que siempre'
-      : '   ⚠ el aire se gasta solo',
-  )
-  console.log(
-    conPoder.aire < 1
-      ? `   ✓ el aire se gasta: le quedó el ${Math.round(conPoder.aire * 100)}% del tanque`
-      : '   ⚠ el aire no se gasta',
-  )
-}
-console.log('')
-
-/* ── 8. El parpadeo de la pista ────────────────────────────────
+/* ── 7. El parpadeo de la pista ────────────────────────────────
    Que el tramo se vaya en el tiempo que toca ya está probado. Lo que
    se prueba aquí es cómo se va: tiene que parpadear cada vez más
    rápido y apagarse del todo al final, no esfumarse de golpe desde
@@ -846,6 +769,93 @@ console.log('  Cómo se va un tramo')
     opacidadDeLaPista(aviso + 0.01, aviso, false) === 1
       ? '   ✓ antes del aviso está entero y no parpadea'
       : '   ⚠ parpadea antes de tiempo',
+  )
+}
+console.log('')
+
+/* ── 8. La tortuga durante las cinemáticas ─────────────────────
+   Ya van dos veces que se queda congelada en la pose del golpe del
+   aterrizaje: la primera por un atasco en la orilla y la segunda
+   porque el paso de física se cortaba mientras la luna se despedía.
+   La firma es siempre la misma, que el reloj de la pose deje de
+   correr, y eso sí se puede medir. */
+
+console.log('  La tortuga mientras la luna entra y se va')
+
+/** Un mundo de dos tramos donde el de arriba es la cima. */
+function mundoConCima() {
+  const nivelCine = construirNivel({
+    ...capitulo,
+    seDesvanece: false,
+    plataformas: [
+      { x: 30, ancho: 140, altura: 0, hito: true },
+      { x: 30, ancho: 300, altura: 90, hito: true },
+    ],
+  })
+  const cima = nivelCine.plataformas[1]
+  nivelCine.salida = { x: cima.x + cima.ancho / 2, y: cima.y - 20 }
+  return nivelCine
+}
+
+{
+  const nivelCine = mundoConCima()
+  const eventos = []
+  let ultima = null
+  const motor = crearMotor({
+    nivel: nivelCine,
+    conCinematica: true,
+    pintar: (e) => {
+      ultima = e
+    },
+    alEvento: (e) => eventos.push(e),
+  })
+  motor.medirVista(MUNDO.alto)
+  motor.iniciar()
+  const frame = () => {
+    ahora += FRAME
+    const cb = pendiente
+    pendiente = null
+    if (cb) cb(ahora)
+    return ultima
+  }
+
+  // Durante la entrada tiene que seguir caminando.
+  let e = frame()
+  const caminadoAlEmpezar = e.caminado
+  for (let i = 0; i < 60; i += 1) e = frame()
+  const caminoEnLaEntrada = e.caminado - caminadoAlEmpezar
+
+  // Se la deja caer sobre la cima y arranca la despedida.
+  for (let i = 0; i < 600 && !eventos.includes('cima'); i += 1) e = frame()
+  const llego = eventos.includes('cima')
+
+  // Y durante la despedida, el reloj de la pose tiene que seguir.
+  const aterrizajeAlLlegar = e.desdeAterrizaje
+  for (let i = 0; i < 90; i += 1) e = frame()
+  const corrio = e.desdeAterrizaje - aterrizajeAlLlegar
+
+  // Y la despedida tiene que terminar sola y avisar, que es cuando
+  // sale el cartel del final.
+  const faltan = Math.ceil(LUNA.msDeSalida / FRAME) + 30
+  for (let i = 0; i < faltan && !eventos.includes("fin"); i += 1) e = frame()
+  motor.detener()
+
+  console.log(
+    caminoEnLaEntrada > 0.5
+      ? '   ✓ mientras la luna se presenta, sigue caminando'
+      : '   ⚠ se queda congelada durante la presentación',
+  )
+  console.log(
+    llego && corrio > 1000
+      ? '   ✓ mientras la luna se va, el reloj de la pose sigue corriendo'
+      : llego
+        ? `   ⚠ congelada en la despedida: el reloj solo avanzó ${Math.round(corrio)} ms`
+        : '   ⚠ no llegó a la cima, la prueba no dice nada',
+  )
+  console.log(
+    eventos.includes('fin')
+      ? '   ✓ la despedida termina y avisa, que es cuando sale el cartel'
+      : '   ⚠ la despedida no termina nunca',
   )
 }
 console.log('')

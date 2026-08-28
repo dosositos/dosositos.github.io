@@ -1,88 +1,13 @@
 import { useReducedMotion } from 'motion/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { ReactNode } from 'react'
 import { AYUDA, CARTEL, TEXTOS } from '@/content/luna'
 import { crearPintor } from '@/juego-luna/dibujo'
 import { conectarEntrada } from '@/juego-luna/entrada'
 import { crearMotor } from '@/juego-luna/motor'
 import { capituloNumero, construirNivel } from '@/juego-luna/mundos'
-import { anotarCapitulo, tienePoder } from '@/juego-luna/progreso'
+import { anotarCapitulo } from '@/juego-luna/progreso'
 import { RETRATOS } from '@/lib/retratos'
 import type { EventoLuna, ProgresoLuna } from '@/types'
-
-/**
- * El marcador de poderes, abajo a la izquierda.
- *
- * Un icono por poder ganado y un puntito por carga: lleno mientras le
- * quede, hueco cuando ya lo gastó. Con letras («te queda un empujón»)
- * había que leer en medio de un salto, y en medio de un salto nadie
- * lee. Cuando estén los tres poderes, esto es una fila de tres.
- */
-const DIBUJO_DEL_PODER: Record<string, ReactNode> = {
-  // El planeo: una cúpula con sus tirantes, que es lo que todo el
-  // mundo reconoce como «esto te hace bajar despacio».
-  planeo: (
-    <>
-      <path d="M2.4 9.2a7.6 7.6 0 0 1 15.2 0" />
-      <path d="M2.4 9.2l6.4 4.4M17.6 9.2l-6.4 4.4M10 9.2v4.4" />
-      <path d="M8.6 13.6h2.8v3.2H8.6z" />
-    </>
-  ),
-}
-
-function MarcadorDePoderes({
-  poderes,
-}: {
-  poderes: { id: string; nombre: string; cargas: number; sinGastar: number; usando?: boolean }[]
-}) {
-  if (poderes.length === 0) return null
-
-  return (
-    <div className="pointer-events-none absolute bottom-5 left-4 flex gap-3">
-      {poderes.map((poder) => {
-        const entero = poder.sinGastar > 0
-        return (
-          <div key={poder.id} className="flex flex-col items-center gap-1">
-            <div
-              aria-label={poder.nombre}
-              className={`grid h-9 w-9 place-items-center rounded-xl border transition-all duration-300 ${
-                poder.usando
-                  ? 'scale-110 border-tulipan-amarillo bg-tulipan-amarillo/35 text-tulipan-amarillo'
-                  : entero
-                    ? 'border-tulipan-amarillo/70 bg-tulipan-amarillo/15 text-tulipan-amarillo'
-                    : 'border-margarita/15 bg-margarita/5 text-margarita/25'
-              }`}
-            >
-              <svg
-                viewBox="0 0 20 20"
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2.2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                {DIBUJO_DEL_PODER[poder.id]}
-              </svg>
-            </div>
-
-            <div className="flex gap-1">
-              {Array.from({ length: poder.cargas }, (_, i) => (
-                <span
-                  key={i}
-                  className={`h-1.5 w-1.5 rounded-full transition-colors duration-500 ${
-                    i < poder.sinGastar ? 'bg-tulipan-amarillo/80' : 'bg-margarita/20'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
 
 /**
  * A la luna, a pasitos de tortuga.
@@ -112,13 +37,6 @@ export function Luna() {
   const capitulo = useMemo(() => capituloNumero(1), [])
   const nivel = useMemo(() => construirNivel(capitulo), [capitulo])
 
-/**
-   * El poder se gana cerrando el capítulo, así que la primera vez no
-   * lo tiene y en las siguientes sí. Se lee una sola vez al montar:
-   * que aparezca a media subida sería raro.
-   */
-  const conPoder = useMemo(() => tienePoder(capitulo.poder.id), [capitulo])
-
   /** Mientras está en falso se ve el cartel y el dedo no hace nada. */
   const [empezado, setEmpezado] = useState(false)
 
@@ -133,15 +51,6 @@ export function Luna() {
 
   /** El aviso de haber pisado un lazo. Dura un par de segundos. */
   const [aviso, setAviso] = useState<{ texto: string; yendose: boolean } | null>(null)
-
-/**
-   * El aire de planeo que le queda, de 1 a 0, y si está planeando
-   * ahora mismo. Es lo único de adentro del bucle que sube a React, y
-   * sube redondeado a tercios: así cambia tres veces por capítulo en
-   * vez de sesenta por segundo.
-   */
-  const [aire, setAire] = useState(conPoder ? 3 : 0)
-  const [planeando, setPlaneando] = useState(false)
 
   /**
    * Falso mientras la luna se presenta y mientras se despide. En esos
@@ -215,7 +124,6 @@ export function Luna() {
       else if (evento === 'agotada') vibrar([0, 14, 60, 14, 60, 26])
       // El tramo de impulso la manda sola: un empujón largo en la mano.
       else if (evento === 'impulso') vibrar(34)
-      else if (evento === 'poder') vibrar(10)
       else if (evento === 'hito') {
         vibrar([0, 18, 70, 22])
         // El lazo se enciende y late, pero eso solo se pasa por alto
@@ -226,7 +134,7 @@ export function Luna() {
         // Se guarda al pisar la cima y no al final de la cinemática:
         // si cierra la página mientras la luna se va, el capítulo
         // igual quedó ganado.
-        setTotales(anotarCapitulo(capitulo.numero, cuenta.pasitos, cuenta.caidas, capitulo.poder.id))
+        setTotales(anotarCapitulo(capitulo.numero, cuenta.pasitos, cuenta.caidas))
       } else if (evento === 'fin') {
         // El cartel espera a que la luna termine de irse. Taparla con
         // un cuadro de texto sería tirar la mejor parte.
@@ -234,32 +142,18 @@ export function Luna() {
       }
     }
 
-    /** El último tercio de aire que se le enseñó a React. */
-    let tercioPintado = conPoder ? 3 : 0
-    let planeabaAntes = false
     let jugandoAntes = false
 
     const motor = crearMotor({
       nivel,
-      conPoder,
       conCinematica: true,
       pintar: (escena) => {
         pintor.pintar(escena)
 
-        // El marcador se entera desde aquí, y solo cuando de verdad
-        // cambia: un setState por frame haría re-renderizar React
-        // sesenta veces por segundo, que es justo lo que este juego
-        // no hace.
-        const tercio = Math.ceil(escena.aire * 3)
-        if (tercio !== tercioPintado) {
-          tercioPintado = tercio
-          setAire(tercio)
-          if (tercio === 0) mostrarAviso(TEXTOS.sinAire)
-        }
-        if (escena.planeando !== planeabaAntes) {
-          planeabaAntes = escena.planeando
-          setPlaneando(escena.planeando)
-        }
+        // React se entera de la cinemática desde aquí, y solo cuando
+        // de verdad cambia: un setState por frame lo haría
+        // re-renderizar sesenta veces por segundo, que es justo lo
+        // que este juego no hace.
         if ((escena.cine === 'jugando') !== jugandoAntes) {
           jugandoAntes = escena.cine === 'jugando'
           setJugando(jugandoAntes)
@@ -310,7 +204,7 @@ export function Luna() {
       window.visualViewport?.removeEventListener('scroll', medir)
       window.removeEventListener('orientationchange', medir)
     }
-  }, [capitulo, conPoder, empezado, menosMovimiento, nivel])
+  }, [capitulo, empezado, menosMovimiento, nivel])
 
   const retrato = RETRATOS[capitulo.id]
 
@@ -382,24 +276,7 @@ export function Luna() {
         </p>
       ) : null}
 
-      {/* ── Los poderes ganados ───────────────────────────────────── */}
-      {empezado && jugando && conPoder && !llegada ? (
-        <MarcadorDePoderes
-          poderes={[
-            {
-              id: capitulo.poder.id,
-              nombre: capitulo.poder.nombre,
-              // El tanque de aire, contado en tercios. El día que haya
-              // más poderes, esta lista crece.
-              cargas: 3,
-              sinGastar: aire,
-              usando: planeando,
-            },
-          ]}
-        />
-      ) : null}
-
-      {/* ── El cierre del capítulo, con el poder ganado ───────────── */}
+      {/* ── El cierre del capítulo ────────────────────────────────── */}
       {llegada ? (
         <div className="absolute inset-0 overflow-y-auto bg-[#0b1026]/88 px-6 py-10 backdrop-blur-[2px]">
           <div className="anima-aparecer mx-auto flex min-h-full max-w-md flex-col justify-center text-center">

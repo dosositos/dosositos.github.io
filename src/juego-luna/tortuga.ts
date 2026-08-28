@@ -188,28 +188,6 @@ export function poseDe(e: EscenaLuna): Pose {
     pose.squashX = mezclar(1, 0.92, sube) * mezclar(1, 1.04, cae)
   }
 
-  /* ── Planeando ──────────────────────────────────────────────
-     Abre las cuatro patas y se queda casi plana, como una hoja que
-     baja. Es una pose y no un efecto de partículas a propósito: el
-     poder tiene que verse en ella, que es lo que se está mirando. */
-  if (e.planeando) {
-    const meneo = Math.sin(e.reloj * 5.2)
-
-    pose.muslo = [-1.15, 1.15]
-    pose.rodilla = [0.12, 0.12]
-    pose.brazo = [-1.62 + meneo * 0.08, 1.62 - meneo * 0.08]
-    pose.codo = [0.05, 0.05]
-    pose.inclinacion = -0.1 + meneo * 0.05
-    pose.cabeza = 0.2
-    pose.cadera = CUERPO.cadera + 1
-    pose.bob = meneo * 1.1
-    pose.ojos = 1
-    pose.ceja = 0.3
-    pose.boca = 'abierta'
-    pose.squashY = 0.9
-    pose.squashX = 1.12
-  }
-
   /* ── El golpe del aterrizaje ────────────────────────────────
      Se aplasta y se estira de vuelta. Dura poco a propósito: es lo
      que hace que el suelo se sienta duro. */

@@ -381,11 +381,6 @@ export interface ProgresoLuna {
   pasitos: number
   /** Las veces que se cayó en total. */
   caidas: number
-  /**
-   * Los poderes ganados, por su id. Se gana uno al cerrar cada
-   * capítulo y se gastan de a uno por capítulo, sin recarga.
-   */
-  poderes: string[]
 }
 
 /** De qué está hecho el camino de un capítulo. Lo usa el pintor. */
@@ -422,8 +417,6 @@ export interface CapituloEscrito {
   numero: number
   material: MaterialDelMundo
   seDesvanece: boolean
-  /** El poder que se gana al cerrarlo. */
-  poder: PoderDeLaLuna
   presentacion: {
     titulo: string
     texto: string[]
@@ -437,14 +430,6 @@ export interface CapituloEscrito {
   plataformas: PlataformaEscrita[]
 }
 
-/** Un poder de los que se ganan al cerrar un capítulo. */
-export interface PoderDeLaLuna {
-  id: string
-  nombre: string
-  /** Cómo se usa, para el cartel. */
-  comoSeUsa: string
-}
-
 /** Lo que le pasa al jugador y hay que oír fuera del motor. */
 export type EventoLuna =
   | 'salto'
@@ -456,8 +441,6 @@ export type EventoLuna =
   | 'cima'
   /** Cayó en un tramo de impulso y salió disparada sin tocar nada. */
   | 'impulso'
-  /** Gastó el poder en pleno aire. */
-  | 'poder'
   /** Se acabó la cinemática de irse la luna: el capítulo terminó. */
   | 'fin'
 
@@ -516,11 +499,6 @@ export interface EscenaLuna {
   /** Por dónde va la cinemática, de 0 a 1. */
   cineAvance: number
 
-  /** Si en este momento está planeando con el dedo apoyado. */
-  planeando: boolean
-
-  /** El aire de planeo que le queda, de 1 a 0. */
-  aire: number
   /** Cuántos saltos lleva dados. Son los pasitos de la tortuga. */
   pasitos: number
   /** Cuántas veces se cayó. */

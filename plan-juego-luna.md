@@ -21,8 +21,7 @@ intentar**. El juego de las frases se contesta; este se aprende.
 | Gesto | Mantener y soltar. Una sola barra de fuerza |
 | Personaje | La tortuga, por la frase |
 | Capítulos | Tres, por peluche, en orden de llegada: **Boo → Ovi → Nico** |
-| Poderes | Uno por peluche ganado. **Se gastan**: un tanque por capítulo, sin recarga |
-| El de Boo | **El planeo**: mantener el dedo en el aire y bajar despacio (29 de agosto) |
+| Poderes | **No hay** (decidido el 29 de agosto). Un solo gesto en todo el juego |
 | Al caer | Vuelve al último hito. Intentos infinitos. Baja del hito y ya es caída, aunque quede parada más abajo |
 | Tamaño de un capítulo | 32 plataformas y 5 estrellas, una cada seis o siete (decidido el 28 de agosto) |
 | Los puntos de guardado | Una **estrellita de papel** de las del frasco, la misma en los tres capítulos |
@@ -144,10 +143,11 @@ cartel de presentación del capítulo puede jugar con el nombre.
   («nadie me tomó fotos»): lo que pisó, se borra.
 - **Ayuda del mundo:** algunos tramos son de impulso, y si cae ahí la lanzan
   sola. Sirven para enseñarle sin explicarle qué se siente un salto largo.
-- **Se gana:** *el planeo*. Con el dedo apoyado en el aire baja despacio y
-  sigue avanzando, así que un salto corto llega. Un tanque por capítulo.
-  Antes era *el empujón*, un impulso de un golpe, y se cambió el 29 de agosto:
-  un poder que hay que acertar en un instante no se llega a aprender nunca.
+- **Se gana:** a Boo, y nada más. Los poderes se quitaron del plan el 29 de
+  agosto: se probaron dos (el empujón y el planeo) y ninguno hacía falta. Lo
+  que sostiene el juego es un gesto y las trabas de cada mundo, y cada cosa que
+  se le agrega encima es una regla más que explicar en un regalo que se juega
+  una vez.
 - **Es el primero**, así que es el que enseña: los primeros diez saltos son casi
   regalados y no hay desvanecimiento hasta pasado el primer hito.
 
@@ -181,9 +181,10 @@ mientras dormía. Es el capítulo más importante y va al final.
 
 ### 4 · El último trecho
 
-Un tramo corto, de tres o cuatro minutos, con los **tres poderes disponibles,
-uno cada uno**. Sin material nuevo: es cielo abierto y la luna. Se juega con
-todo lo aprendido y ahí se ve si lo aprendió.
+Un tramo corto, de tres o cuatro minutos, con **las trabas de los tres mundos
+mezcladas**: pista que se borra, cajas que ceden y almohadas que se hunden. Sin
+material nuevo: es cielo abierto y la luna. Se juega con todo lo aprendido y ahí
+se ve si lo aprendió.
 
 Arriba está la carta.
 
@@ -241,7 +242,7 @@ capítulos, la carta.
 
 **El bucle vive fuera de React.** React monta el canvas, le pasa el capítulo y
 se aparta. Nada de estado de React dentro del bucle: `useRef` para el motor y un
-único `useState` para lo que cambia de veras (capítulo, hito, poderes gastados).
+único `useState` para lo que cambia de veras (capítulo, hito, cinemática).
 
 ### Archivos previstos
 
@@ -251,7 +252,7 @@ src/juego-luna/motor.ts           ← bucle, paso fijo, física, colisiones
 src/juego-luna/entrada.ts         ← pointer y teclado → cargar y soltar
 src/juego-luna/dibujo.ts          ← pintar el mundo, la cámara y la tortuga
 src/juego-luna/mundos.ts          ← las trabas de cada capítulo
-src/juego-luna/progreso.ts        ← localStorage: capítulo, récords, poderes
+src/juego-luna/progreso.ts        ← localStorage: capítulo, pasitos, caídas
 src/content/luna.ts               ← LO QUE TOCA ARMANDO: niveles, textos, récords
 ```
 
@@ -458,11 +459,11 @@ mientras baja.
 
 Pista naranja y bambú, el desvanecimiento de los tramos, los tramos de impulso,
 las estrellitas de papel en los hitos, el cartel de presentación con su retrato
-bordado, los primeros diez saltos regalados y **el empujón**, que se gana al
-cerrarlo.
+bordado y los primeros diez saltos regalados.
 
-El poder va dentro de su capítulo y no en una fase aparte: así el capítulo queda
-completo y se puede parar sin dejar un poder colgando.
+Aquí se probaron dos poderes, el empujón y el planeo, y **los dos se tiraron el
+29 de agosto**: ninguno hacía falta y cada uno era una regla más en un juego que
+se sostiene con un solo gesto.
 
 Esta es la plantilla. Es la fase más cara de las tres y las dos siguientes
 cuestan bastante menos porque ya son variaciones.
@@ -480,7 +481,7 @@ más.
 
 ### 6 · El último trecho, la carta y el marcador
 
-Cielo abierto con los tres poderes, uno cada uno. El conteo de pasitos por
+Cielo abierto con las trabas de los tres mundos. El conteo de pasitos por
 capítulo, guardado, y la comparación con el récord de él (vacío no muestra
 nada). Al llegar arriba, la carta descifrada.
 
@@ -504,7 +505,8 @@ Qué enseña, en este orden y una cosa por pantalla:
    necesitarlo. Se pisa una y se la deja caer a propósito.
 4. **Los tramos raros**, uno por pantalla: el que se borra, el de impulso, y los
    que traigan Ovi y Nico.
-5. **El poder en el aire**, cuando ya tenga alguno.
+5. **Caerse**, para que la primera caída de verdad no sea la primera vez que
+   ve la pantalla volver a una estrella.
 
 Y hace una cosa más, que es la que la pidió: **le saca el bulto al cartel de
 Boo**. Hoy el capítulo uno abre con la historia de Boo y encima con el cómo se
