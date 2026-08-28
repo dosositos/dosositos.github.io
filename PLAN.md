@@ -473,6 +473,51 @@ capítulo, así que la primera vez no lo tenés. La segunda sí, y aparece abajo
 la izquierda. Se gasta tocando en el aire **mientras caés**, y es uno solo por
 capítulo.
 
+### Lo que se afinó el 29, con tu segunda vuelta
+
+- **El bambú estaba sucio y saturado.** Era una mancha verde: seis cañas por
+  lado, todas del mismo color, planas y llenas de hojas. Ahora son tres por
+  lado, cada una a su distancia, y eso decide su color, su grosor y lo que se
+  ve. Cada caña lleva un degradado de lado a lado que la convierte en un
+  cilindro en vez de un palo, el verde se fue hacia el azul de la noche, y las
+  hojas quedaron solo en la caña de adelante y cada tres nudos.
+- **El parpadeo de la pista, arreglado.** El tiempo estaba bien y la animación
+  no: se apagaba hasta un 22% y de ahí desaparecía de golpe. Ahora parpadea
+  encendido y apagado, siete veces, **acelerando 2,6 veces** de las primeras a
+  las últimas, y el último trocito se apaga entero. El aviso empieza antes
+  (1200 ms en vez de 900) sin que el tramo dure más.
+  - El parpadeo sale de la vida del tramo y no del reloj: con el reloj,
+    acelerar la frecuencia salta de fase y sale un temblor sucio.
+  - Y quedó medido en `npm run luna:probar`, que cuenta los parpadeos, comprueba
+    que se aceleran y que termina en cero.
+- **La luna dejó de saturar y pasó a ser el cuento.** Ya no está pegada a la
+  pantalla todo el rato. Ahora:
+  - **Al empezar el capítulo hay una cinemática**: sale llena y grande en el
+    medio, respira, y se va para arriba hasta salirse de la pantalla. Con eso se
+    entiende sin una sola palabra que vamos detrás de ella.
+  - **Durante la subida no está.** El cielo se queda con las estrellas y ya.
+  - **Espera arriba del último tramo**, en el mundo, así que se la ve aparecer
+    cuando la cámara llega. Al pisar la cima **se va otra vez**, y el cartel del
+    final espera a que termine de irse.
+  - Un toque se salta la presentación. La primera vez vale la pena mirarla, a la
+    quinta no.
+- **El empujón se cambió por el planeo.** Tenías razón las dos veces: un poder
+  de un golpe hay que acertarlo, se gasta entero de una y nunca se llega a
+  aprender qué hace. El planeo es lo contrario: **mantené el dedo apretado
+  mientras caés y la tortuga abre las cuatro patas y baja despacio**, como una
+  hoja, avanzando de lado igual. Un salto que salía corto llega.
+  - Trae un tanque de aire de 1,5 segundos por capítulo, que se gasta solo
+    mientras lo mantengas y no se recarga.
+  - Medido: un salto flojo llega a 186 px, y planeando a 342, gastando algo más
+    de medio tanque.
+  - Tiene su pose: la tortuga se abre y se aplana, y se la ve todo el rato.
+  - El icono de abajo a la izquierda es un paracaídas y los tres puntitos son el
+    tanque. Se agranda mientras planeás.
+
+**Ojo con una cosa:** el poder cambió de nombre por dentro (`empujon` → `planeo`),
+así que el que tenías ganado no cuenta. Hay que cerrar el capítulo una vez más
+para que aparezca el paracaídas.
+
 ### Lo que se afinó el 28 de noche, con lo que jugaste
 
 Todo esto salió de tu lista, punto por punto.

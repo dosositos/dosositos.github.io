@@ -1,4 +1,4 @@
-import { CAIDA, CANSANCIO, EMPUJON, IMPULSO, MUNDO, PISTA, SALTO, TORTUGA } from '@/content/luna'
+import { CAIDA, CANSANCIO, IMPULSO, LUNA, MUNDO, PISTA, PLANEO, SALTO, TORTUGA } from '@/content/luna'
 import type { EscenaLuna, EventoLuna, Nivel, Plataforma } from '@/types'
 
 /**
@@ -63,8 +63,15 @@ interface Tortuga {
 
 export interface OpcionesMotor {
   nivel: Nivel
-  /** Si ya se ganó el empujón, se puede gastar una vez este capítulo. */
-  conEmpujon?: boolean
+  /** Si ya se ganó el poder del capítulo, viene con el aire cargado. */
+  conPoder?: boolean
+  /**
+   * Si el capítulo abre y cierra con la luna. Lo pide la página; el
+   * probador no, que si no cada una de las veintitantas mil partidas
+   * que corre empezaría esperando tres segundos y medio a que se
+   * despida una luna que nadie está mirando.
+   */
+  conCinematica?: boolean
   /** Se llama una vez por frame con la escena ya interpolada. */
   pintar: (escena: EscenaLuna) => void
   /** Vibración, sonido y demás cosas de afuera. */
@@ -90,7 +97,13 @@ export interface Motor {
 
 const gradosARadianes = (grados: number) => (grados * Math.PI) / 180
 
-export function crearMotor({ nivel, conEmpujon, pintar, alEvento }: OpcionesMotor): Motor {
+export function crearMotor({
+  nivel,
+  conPoder,
+  conCinematica,
+  pintar,
+  alEvento,
+}: OpcionesMotor): Motor {
   const { plataformas } = nivel
 
   /**
@@ -116,8 +129,25 @@ export function crearMotor({ nivel, conEmpujon, pintar, alEvento }: OpcionesMoto
   /** En qué tramo está parada. -1 es en el aire. */
   let ultimoPiso = 0
 
-  /** ¿Le queda el empujón por gastar en este capítulo? */
-  let empujon = conEmpujon === true
+  /**
+   * Los milisegundos de planeo que le quedan. Se gastan mientras
+   * mantiene el dedo en el aire y no se recargan en todo el capítulo.
+   */
+  let aire = conPoder ? PLANEO.msDeAire : 0
+
+  /** Si el dedo está apoyado ahora mismo. El planeo vive de esto. */
+  let dedoAbajo = false
+
+  /** Si en este paso está planeando de verdad. */
+  let planeando = false
+
+  /**
+   * En qué momento del capítulo va. Durante las dos cinemáticas el
+   * dedo no hace nada: la luna se está presentando o despidiendo, y
+   * saltar por encima de eso rompe el cuento.
+   */
+  let cine: 'entrada' | 'jugando' | 'salida' | 'fin' = conCinematica ? 'entrada' : 'jugando'
+  let cineMs = 0
 
   /** Un tramo se puede pisar mientras no se haya borrado del todo. */
   const sigueAhi = (p: Plataforma) => vida[p.indice] > 0
@@ -252,6 +282,25 @@ export function crearMotor({ nivel, conEmpujon, pintar, alEvento }: OpcionesMoto
   function paso() {
     reloj += PASO
 
+    if (cine === 'entrada' || cine === 'salida') {
+      cineMs += PASO * 1000
+      const dura = cine === 'entrada' ? LUNA.msDeEntrada : LUNA.msDeSalida
+      if (cineMs >= dura) {
+        if (cine === 'salida') {
+          cine = 'fin'
+          avisar('fin')
+        } else {
+          cine = 'jugando'
+        }
+        cineMs = 0
+      }
+      // La de entrada deja a la tortuga caminando por el suelo, que
+      // se ve viva. La de salida y el final la dejan quieta: ya
+      // llegó y lo que hay que mirar es la luna.
+      if (cine !== 'entrada') return
+    }
+    if (cine === 'fin') return
+
     if (cayendo > 0) {
       // Mientras se cae no manda nadie: sigue bajando y no choca con
       // nada. La cámara se queda quieta a propósito, para que se la
@@ -335,7 +384,22 @@ export function crearMotor({ nivel, conEmpujon, pintar, alEvento }: OpcionesMoto
 
     if (!t.enSuelo) {
       t.sinSuelo += PASO
-      t.vy += SALTO.gravedad * PASO
+
+      // El planeo: con el dedo apoyado y mientras baja, la tortuga
+      // abre las patas y se deja caer despacio. Es un poder que se
+      // siente porque dura lo que uno quiera y se ve todo el rato,
+      // no un golpe de un frame que hay que acertar.
+      const quierePlanear = dedoAbajo && aire > 0 && t.vy > 0
+      if (quierePlanear && !planeando) avisar('poder')
+      planeando = quierePlanear
+
+      if (planeando) {
+        aire = Math.max(0, aire - PASO * 1000)
+        t.vy += SALTO.gravedad * PLANEO.gravedad * PASO
+        t.vy = Math.min(t.vy, PLANEO.caidaMaxima)
+      } else {
+        t.vy += SALTO.gravedad * PASO
+      }
 
       const yAntes = t.y
       t.x += t.vx * PASO
@@ -410,6 +474,13 @@ export function crearMotor({ nivel, conEmpujon, pintar, alEvento }: OpcionesMoto
               if (p.indice === nivel.cima.indice && !terminado) {
                 terminado = true
                 avisar('cima')
+                if (conCinematica) {
+                  cine = 'salida'
+                  cineMs = 0
+                  dedoAbajo = false
+                } else {
+                  avisar('fin')
+                }
               }
             }
             // Los tramos de impulso la lanzan solos, sin dedo. Se
@@ -444,6 +515,7 @@ export function crearMotor({ nivel, conEmpujon, pintar, alEvento }: OpcionesMoto
     t.cargaMs = 0
     t.sinSuelo = 999
     t.desdeSalto = 0
+    planeando = false
 
     if (nivel.seDesvanece && ultimoPiso > primerLazo && ritmo[ultimoPiso] === 0) {
       ritmo[ultimoPiso] = (PASO * 1000) / loQueDuraLaPista()
@@ -452,6 +524,15 @@ export function crearMotor({ nivel, conEmpujon, pintar, alEvento }: OpcionesMoto
   }
 
   function presionar() {
+    // Un toque durante la presentación se la salta. La primera vez
+    // vale la pena mirarla entera, a la quinta no.
+    if (cine === 'entrada') {
+      cine = 'jugando'
+      cineMs = 0
+      return
+    }
+    if (cine !== 'jugando') return
+    dedoAbajo = true
     if (cayendo > 0 || tirada > 0 || t.cargando) return
 
     // El perdón del borde: si acaba de dejar la plataforma, se la
@@ -468,21 +549,9 @@ export function crearMotor({ nivel, conEmpujon, pintar, alEvento }: OpcionesMoto
       }
     }
 
-    if (!t.enSuelo) {
-      // El empujón: un toque más en el aire y sale otra vez
-      // disparada, casi rasante. Es un salto nuevo y no velocidad de
-      // lado sumada a la caída, que se sentía como que la empujaba de
-      // costado mientras se venía abajo.
-      if (empujon && t.desdeSalto >= EMPUJON.msDeGracia) {
-        empujon = false
-        const angulo = gradosARadianes(EMPUJON.angulo)
-        t.vx = Math.cos(angulo) * EMPUJON.fuerza * t.mirando
-        t.vy = -Math.sin(angulo) * EMPUJON.fuerza
-        t.desdeSalto = 0
-        avisar('empujon')
-      }
-      return
-    }
+    // En el aire, mantener el dedo es planear. De eso se encarga el
+    // paso de física, que es donde está la gravedad.
+    if (!t.enSuelo) return
 
     t.cargando = true
     t.carga = 0
@@ -490,6 +559,7 @@ export function crearMotor({ nivel, conEmpujon, pintar, alEvento }: OpcionesMoto
   }
 
   function soltar() {
+    dedoAbajo = false
     if (!t.cargando) return
 
     lanzar(SALTO.impulsoMinimo + (SALTO.impulsoMaximo - SALTO.impulsoMinimo) * t.carga)
@@ -529,7 +599,17 @@ export function crearMotor({ nivel, conEmpujon, pintar, alEvento }: OpcionesMoto
       // nadie.
       vidaDeLaPista: vida,
       avisoDeLaPista: cuandoAvisa(),
-      tieneEmpujon: empujon,
+      planeando,
+      aire: PLANEO.msDeAire > 0 ? aire / PLANEO.msDeAire : 0,
+      cine,
+      cineAvance:
+        cine === 'entrada'
+          ? Math.min(1, cineMs / LUNA.msDeEntrada)
+          : cine === 'salida'
+            ? Math.min(1, cineMs / LUNA.msDeSalida)
+            : cine === 'fin'
+              ? 1
+              : 0,
       pasitos,
       caidas,
       plataformas,

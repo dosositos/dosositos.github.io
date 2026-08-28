@@ -150,7 +150,7 @@ export const PISTA = {
   msMinimo: 1100,
 
   /** Cuánto antes de irse empieza a parpadear. */
-  msDeAviso: 900,
+  msDeAviso: 1200,
 }
 
 /**
@@ -166,30 +166,54 @@ export const IMPULSO = {
 }
 
 /**
- * El empujón, el poder que se gana con Boo.
+ * El planeo, el poder que se gana con Boo.
  *
- * Un toque en pleno aire y sale otra vez disparada hacia adelante, casi
- * rasante. **No es velocidad de lado que se suma a la caída**: es un
- * salto nuevo, con su propio ángulo, y por eso se siente como que la
- * salva en vez de como que la empuja de costado mientras se cae.
+ * En el aire, con el dedo apoyado, la tortuga abre las patas y baja
+ * despacio. Mientras plane sigue avanzando de lado igual, así que un
+ * salto que salía corto llega, y uno que salía largo se puede acortar
+ * soltando antes.
  *
- * Uno por capítulo y no se recarga. Se puede usar en cualquier momento
- * del vuelo menos en el primer suspiro después de despegar, para que
- * un toque de más al soltar no lo gaste sin querer.
+ * Trae un tanque de aire por capítulo, que no se recarga. Se gasta
+ * solo mientras baja: subiendo no hace nada, porque planear hacia
+ * arriba no es planear.
+ *
+ * Es el segundo intento de este poder. El primero era un empujón de un
+ * golpe, y no servía: había que acertarle a un instante, se gastaba
+ * entero de una y nunca se llegaba a aprender qué hacía. Un poder que
+ * dura lo que uno lo mantenga se entiende a la primera.
  */
-export const EMPUJON = {
-  /** La fuerza del segundo impulso. El salto a barra llena son 930. */
-  fuerza: 640,
+export const PLANEO = {
+  /** Cuánto aire trae por capítulo, en milisegundos de planeo. */
+  msDeAire: 1500,
 
-  /**
-   * Qué tan rasante sale, en grados. El salto normal va a 65, que sube
-   * y avanza parecido. Este va bajo a propósito: lo que hace falta
-   * cuando un salto sale corto es llegar más lejos, no más alto.
-   */
-  angulo: 32,
+  /** Qué parte de la gravedad la agarra mientras planea. */
+  gravedad: 0.18,
 
-  /** Lo que hay que esperar desde el despegue para poder gastarlo. */
-  msDeGracia: 170,
+  /** Y por rápido que venga bajando, no cae más que esto. */
+  caidaMaxima: 140,
+}
+
+/**
+ * La luna, que es a donde se va.
+ *
+ * No está pegada a la pantalla todo el rato: llena y grande arriba a
+ * un lado, se comía la pantalla y no dejaba mirar los saltos. Ahora
+ * sale en una cinemática al empezar el capítulo, se va para arriba, y
+ * está esperando de verdad arriba del último tramo. Al llegar se va
+ * otra vez, y esa es la excusa para el capítulo siguiente.
+ */
+export const LUNA = {
+  /** Su tamaño mientras espera arriba, en unidades del mundo. */
+  radio: 44,
+
+  /** Cuánto más arriba de la última plataforma está. */
+  sobreLaCima: 165,
+
+  /** Lo que dura la cinemática de entrada. Un toque se la salta. */
+  msDeEntrada: 3000,
+
+  /** Lo que dura la de irse, al llegar arriba. */
+  msDeSalida: 2600,
 }
 
 /**
@@ -228,9 +252,9 @@ const BOO: CapituloEscrito = {
   material: 'pista',
   seDesvanece: true,
   poder: {
-    id: 'empujon',
-    nombre: 'el empujón',
-    comoSeUsa: 'tocá en el aire mientras caés',
+    id: 'planeo',
+    nombre: 'el planeo',
+    comoSeUsa: 'mantené apretado en el aire',
   },
   presentacion: {
     titulo: 'Capítulo uno: Boo',
@@ -243,7 +267,7 @@ const BOO: CapituloEscrito = {
   cierre: {
     titulo: 'Ganaste a Boo',
     texto:
-      'Se te trepa al caparazón y ahí se queda. Desde ahora, en pleno aire y mientras caés, un toque más te da un empujón hacia adelante. Uno por capítulo, así que guardalo para cuando veás que el salto salió corto.',
+      'Se te trepa al caparazón y ahí se queda. Desde ahora, cuando estés cayendo, mantené el dedo apretado y la tortuga abre las patas y baja despacio, como una hoja. Sigue avanzando igual, así que un salto que salía corto llega. Trae un tanque de aire por capítulo y se gasta mientras lo mantengas, así que soltá en cuanto ya no te haga falta.',
   },
   plataformas: [
     // El suelo, ancho y tranquilo. Aquí se aprende a saltar.
@@ -358,8 +382,8 @@ export const TEXTOS = {
   llegada: 'llegaste',
   /** Lo acumulado de todas las veces, debajo de lo de esta subida. */
   enTotal: 'en total',
-  /** Justo después de gastar el empujón. */
-  empujonGastado: 'ahí se fue el empujón',
+  /** Cuando se le acaba el aire del planeo a mitad de vuelo. */
+  sinAire: 'se te acabó el aire',
   /** Al cerrar el capítulo, mientras los otros dos no existan. */
   siguiente: 'los otros dos capítulos todavía los estoy haciendo',
 }

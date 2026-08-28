@@ -11,7 +11,7 @@
 import { chromium } from 'playwright-core'
 
 const nav = await chromium.launch({ channel: 'chrome' })
-const pag = await nav.newPage({ viewport: { width: 1140, height: 560 }, deviceScaleFactor: 2 })
+const pag = await nav.newPage({ viewport: { width: 2260, height: 560 }, deviceScaleFactor: 2 })
 
 const fallos = []
 pag.on('console', (m) => {

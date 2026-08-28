@@ -456,8 +456,10 @@ export type EventoLuna =
   | 'cima'
   /** Cayó en un tramo de impulso y salió disparada sin tocar nada. */
   | 'impulso'
-  /** Gastó el empujón en pleno aire. */
-  | 'empujon'
+  /** Gastó el poder en pleno aire. */
+  | 'poder'
+  /** Se acabó la cinemática de irse la luna: el capítulo terminó. */
+  | 'fin'
 
 /**
  * La foto del mundo que recibe el pintor, ya interpolada entre dos
@@ -505,8 +507,20 @@ export interface EscenaLuna {
    * 0. Cambia con las estrellas pisadas, porque la pista se apura.
    */
   avisoDeLaPista: number
-  /** Si todavía le queda el empujón por gastar en este capítulo. */
-  tieneEmpujon: boolean
+  /**
+   * En qué momento del capítulo va: la luna entrando, el juego, o la
+   * luna yéndose al llegar arriba.
+   */
+  cine: 'entrada' | 'jugando' | 'salida' | 'fin'
+
+  /** Por dónde va la cinemática, de 0 a 1. */
+  cineAvance: number
+
+  /** Si en este momento está planeando con el dedo apoyado. */
+  planeando: boolean
+
+  /** El aire de planeo que le queda, de 1 a 0. */
+  aire: number
   /** Cuántos saltos lleva dados. Son los pasitos de la tortuga. */
   pasitos: number
   /** Cuántas veces se cayó. */

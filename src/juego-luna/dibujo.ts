@@ -1,4 +1,4 @@
-import { MUNDO, PISTA, TORTUGA } from '@/content/luna'
+import { LUNA, MUNDO, TORTUGA } from '@/content/luna'
 import { cabezaDe, dibujarTortuga } from '@/juego-luna/tortuga'
 import type { EscenaLuna, Nivel, Plataforma } from '@/types'
 
@@ -54,9 +54,13 @@ const COLOR = {
   pistaCanal: '#4a1c07',
   pistaSombra: '#7d3210',
   impulso: '#f5c451',
-  bambu: '#376243',
-  bambuNudo: '#5c8e64',
-  bambuHoja: '#3f6e49',
+  /* El bambú va en dos verdes según lo lejos que esté la caña, y los
+     dos tiran a azul: un verde de día sobre un cielo de noche sale
+     sucio, no verde. */
+  bambuLejos: '#1e3a2c',
+  bambuCerca: '#2f5741',
+  bambuNudo: '#4a7a5a',
+  bambuHoja: '#2b5039',
   /* Las cañas que sostienen la pista van más apagadas que las del
      fondo: están detrás del tramo y en su sombra, y con el mismo
      verde competían con la pista por la mirada. */
@@ -119,7 +123,15 @@ function sembrarBambu(desde: number, hasta: number) {
     x: number
     desde: number
     hasta: number
-    canas: { dx: number; grosor: number; inclinacion: number; hojaCada: number }[]
+    canas: {
+      dx: number
+      grosor: number
+      inclinacion: number
+      /** 0 es la de más atrás y 1 la de más adelante. */
+      profundidad: number
+      /** Solo la de adelante lleva hojas, y espaciadas. */
+      conHojas: boolean
+    }[]
   }[] = []
   let semilla = 20241223
   const siguiente = () => {
@@ -127,25 +139,26 @@ function sembrarBambu(desde: number, hasta: number) {
     return semilla / 2147483648
   }
 
+  // Una mata por lado y tres cañas por mata. Con más se hacía una
+  // mancha verde: lo que se veía no era bambú, era ruido.
   for (const orilla of [0, 1]) {
-    for (let i = 0; i < 2; i += 1) {
-      const cuantas = 3 + Math.floor(siguiente() * 3)
-      const canas = []
-      for (let c = 0; c < cuantas; c += 1) {
-        canas.push({
-          dx: (siguiente() - 0.5) * 26,
-          grosor: 4.5 + siguiente() * 4,
-          inclinacion: (siguiente() - 0.5) * 30,
-          hojaCada: 2 + Math.floor(siguiente() * 3),
-        })
-      }
-      matas.push({
-        x: orilla === 0 ? 10 + siguiente() * 22 : MUNDO.ancho - 10 - siguiente() * 22,
-        desde: desde - siguiente() * 200,
-        hasta: hasta + siguiente() * 200,
-        canas,
+    const canas = []
+    for (let c = 0; c < 3; c += 1) {
+      const profundidad = c / 2
+      canas.push({
+        dx: (c - 1) * 9 + (siguiente() - 0.5) * 6,
+        grosor: 4 + profundidad * 3.5,
+        inclinacion: (siguiente() - 0.5) * 22,
+        profundidad,
+        conHojas: c === 2,
       })
     }
+    matas.push({
+      x: orilla === 0 ? 14 : MUNDO.ancho - 14,
+      desde: desde - siguiente() * 200,
+      hasta: hasta + siguiente() * 200,
+      canas,
+    })
   }
   return matas
 }
@@ -190,8 +203,11 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('sin canvas 2d')
 
-  /** Cuánto hay que subir en este capítulo, de abajo del todo a arriba. */
-  const subidaTotal = Math.max(1, nivel.suelo - nivel.cima.y)
+  /** Donde espera la luna: justo arriba de la última plataforma. */
+  const dondeEspera = {
+    x: nivel.cima.x + nivel.cima.ancho / 2,
+    y: nivel.cima.y - LUNA.sobreLaCima,
+  }
 
   // Las estrellas se siembran en un sitio fijo del mundo y se dibujan
   // corridas: eso es lo que da la sensación de altura.
@@ -274,21 +290,17 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
       dibujarEstrellas(ctx, estrellas, escena.camara * arrastre, altoVista)
       ctx.restore()
 
-      // La luna se dibuja pegada a la pantalla y no al mundo, y va
-      // creciendo conforme se sube. Puesta en el mundo, a mil y pico
-      // de altura, no se veía hasta el último salto: justo la que
-      // tiene que estar ahí desde el principio, porque es a donde se
-      // va. Así se acerca de verdad.
-      const subido = Math.min(1, Math.max(0, (nivel.suelo - escena.camara) / subidaTotal))
-      ctx.save()
-      ctx.translate(margen, golpe)
-      ctx.scale(escala, escala)
-      dibujarLuna(ctx, {
-        x: MUNDO.ancho * 0.66,
-        y: 78 + subido * 34,
-        r: 20 + subido * 34,
-      })
-      ctx.restore()
+      // La luna en la cinemática de entrada va pegada a la pantalla,
+      // porque el capítulo todavía no empezó y lo único que hay que
+      // mirar es a ella. Después se va para arriba y no vuelve hasta
+      // el final, que es donde está esperando de verdad.
+      if (escena.cine === 'entrada') {
+        ctx.save()
+        ctx.translate(margen, golpe)
+        ctx.scale(escala, escala)
+        dibujarLunaEntrando(ctx, escena.cineAvance, altoVista, pintor.movimientoReducido)
+        ctx.restore()
+      }
 
       ctx.save()
       ctx.translate(margen, -escena.camara * escala + golpe)
@@ -296,6 +308,14 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
 
       const arriba = escena.camara - 40
       const abajo = escena.camara + altoVista + 40
+
+      // La luna esperando arriba del último tramo. Solo aparece
+      // cuando la cámara llega, que es todo el punto: sale en la
+      // cinemática, se va, y no se la vuelve a ver hasta que se la
+      // alcanza.
+      if (escena.cine !== 'entrada') {
+        dibujarLunaEsperando(ctx, dondeEspera, escena)
+      }
 
       // El decorado va detrás de la pista y no se toca: es lo que
       // dice de qué mundo estamos hablando cuando la pista ya se
@@ -320,7 +340,6 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
         ctx.globalAlpha = opacidadDeLaPista(
           vida,
           escena.avisoDeLaPista,
-          escena.reloj,
           pintor.movimientoReducido,
         )
         if (esDePista) dibujarPistaNaranja(ctx, p, escena.hitoAlcanzado, escena.reloj)
@@ -375,7 +394,68 @@ function dibujarEstrellas(
   ctx.globalAlpha = 1
 }
 
-/** La luna, esperando arriba. Es a donde se va. */
+/**
+ * La cinemática de entrada: la luna llena y grande, respirando en el
+ * medio de la pantalla, y después subiendo hasta salirse por arriba.
+ *
+ * Es la presentación del capítulo: sin esto, la tortuga empieza a
+ * saltar y nadie sabe hacia dónde ni por qué. Con esto, se entiende de
+ * una que estamos yendo detrás de ella.
+ */
+function dibujarLunaEntrando(
+  ctx: CanvasRenderingContext2D,
+  avance: number,
+  altoVista: number,
+  movimientoReducido: boolean,
+) {
+  /** Los primeros dos quintos se queda, y el resto se va subiendo. */
+  const seQueda = Math.min(1, avance / 0.4)
+  const seVa = Math.max(0, (avance - 0.4) / 0.6)
+
+  // La subida arranca despacio y termina rápida, como algo que se
+  // aleja de verdad.
+  const empuje = seVa * seVa * seVa
+  const centro = altoVista * 0.42
+  const respiro = movimientoReducido ? 0 : Math.sin(seQueda * Math.PI * 2) * 4
+
+  const y = centro + respiro - empuje * (centro + LUNA.radio * 4.4)
+  const r = LUNA.radio * (1.5 - 0.5 * seVa)
+
+  // Entra con un halo que se abre: es el «acá estoy» antes de irse.
+  ctx.save()
+  ctx.globalAlpha = Math.min(1, seQueda * 2) * (1 - seVa * 0.25)
+  dibujarLuna(ctx, { x: MUNDO.ancho / 2, y, r })
+  ctx.restore()
+}
+
+/**
+ * La luna esperando arriba del último tramo, y yéndose otra vez cuando
+ * la alcanza. Vive en el mundo, así que se acerca sola conforme sube.
+ */
+function dibujarLunaEsperando(
+  ctx: CanvasRenderingContext2D,
+  donde: { x: number; y: number },
+  escena: EscenaLuna,
+) {
+  const yendose = escena.cine === 'salida' || escena.cine === 'fin'
+  const seVa = yendose ? escena.cineAvance : 0
+  const empuje = seVa * seVa * seVa
+
+  // Quieta late apenas, para que se note que está viva y que es a
+  // donde hay que llegar.
+  const latido = 1 + Math.sin(escena.reloj * 1.3) * 0.02
+
+  ctx.save()
+  ctx.globalAlpha = 1 - seVa * 0.9
+  dibujarLuna(ctx, {
+    x: donde.x,
+    y: donde.y - empuje * 620,
+    r: LUNA.radio * latido * (1 - seVa * 0.35),
+  })
+  ctx.restore()
+}
+
+/** La luna, dibujada. Es a donde se va. */
 function dibujarLuna(ctx: CanvasRenderingContext2D, luna: { x: number; y: number; r: number }) {
   const halo = ctx.createRadialGradient(luna.x, luna.y, luna.r * 0.6, luna.x, luna.y, luna.r * 3.4)
   halo.addColorStop(0, COLOR.lunaHalo)
@@ -436,20 +516,30 @@ function dibujarPlataforma(
  * que desaparece sin decir nada no es una traba, es una trampa. Con
  * «menos movimiento» no parpadea y solo se apaga.
  */
-function opacidadDeLaPista(
-  vida: number,
-  aviso: number,
-  reloj: number,
-  movimientoReducido: boolean,
-) {
+/** Cuántas veces parpadea un tramo antes de irse. */
+const PARPADEOS = 9
+
+export function opacidadDeLaPista(vida: number, aviso: number, movimientoReducido: boolean) {
   if (vida >= aviso) return 1
 
+  /** 1 recién entrado en el aviso, 0 justo antes de desaparecer. */
   const resto = vida / aviso
-  if (movimientoReducido) return 0.2 + 0.8 * resto
 
-  const prisa = 14 + (1 - resto) * 30
-  const parpadeo = 0.5 + 0.5 * Math.sin(reloj * prisa)
-  return 0.22 + 0.78 * resto * (0.4 + 0.6 * parpadeo)
+  // Con «menos movimiento» no parpadea: se apaga y ya.
+  if (movimientoReducido) return resto
+
+  // El parpadeo sale de la vida del tramo y no del reloj. Con el
+  // reloj, acelerar la frecuencia salta de fase y sale un temblor
+  // sucio; con la vida, la fase va sola de menos a más y acelera
+  // parejo. Al cuadrado es lo que lo hace apurarse hacia el final.
+  const fase = (1 - resto) * (1 - resto) * PARPADEOS
+  const encendido = Math.sin(fase * Math.PI * 2) > 0
+
+  // Y el último trocito se apaga entero, para que el tramo no se
+  // esfume de golpe desde media opacidad.
+  const salida = Math.min(1, resto / 0.14)
+
+  return (encendido ? 1 : 0.1) * salida
 }
 
 /**
@@ -720,7 +810,13 @@ function dibujarMata(
     x: number
     desde: number
     hasta: number
-    canas: { dx: number; grosor: number; inclinacion: number; hojaCada: number }[]
+    canas: {
+      dx: number
+      grosor: number
+      inclinacion: number
+      profundidad: number
+      conHojas: boolean
+    }[]
   },
   arriba: number,
   abajo: number,
@@ -731,44 +827,60 @@ function dibujarMata(
     const base = mata.x + cana.dx
     const punta = base + cana.inclinacion
 
-    ctx.globalAlpha = 0.38
+    // Lo lejos que está decide el color, el grosor y lo que se ve.
+    // Sin eso, tres cañas encimadas son una sola mancha.
+    ctx.globalAlpha = 0.26 + cana.profundidad * 0.24
+    const claro = cana.profundidad > 0.5 ? COLOR.bambuCerca : COLOR.bambuLejos
 
-    // La caña, apenas inclinada. Se dibuja como un trapecio para que
-    // se afine hacia arriba, como el bambú de verdad.
-    ctx.fillStyle = COLOR.bambu
+    // Un degradado de lado a lado convierte el palo plano en un
+    // cilindro. Es lo que más hace, y cuesta una línea.
+    const vuelta = ctx.createLinearGradient(base - cana.grosor, 0, base + cana.grosor, 0)
+    vuelta.addColorStop(0, COLOR.bambuLejos)
+    vuelta.addColorStop(0.38, claro)
+    vuelta.addColorStop(1, COLOR.bambuLejos)
+
+    ctx.fillStyle = vuelta
     ctx.beginPath()
     ctx.moveTo(base - cana.grosor / 2, mata.hasta)
     ctx.lineTo(base + cana.grosor / 2, mata.hasta)
-    ctx.lineTo(punta + cana.grosor * 0.32, mata.desde)
-    ctx.lineTo(punta - cana.grosor * 0.32, mata.desde)
+    ctx.lineTo(punta + cana.grosor * 0.34, mata.desde)
+    ctx.lineTo(punta - cana.grosor * 0.34, mata.desde)
     ctx.closePath()
     ctx.fill()
 
     // Los nudos y las hojas, solo en el trozo que se ve.
-    const paso = 46
+    const paso = 58
     const primero = Math.ceil((arriba - mata.desde) / paso) * paso + mata.desde
-    for (let y = Math.max(mata.desde, primero - paso); y < Math.min(mata.hasta, abajo + paso); y += paso) {
+    for (
+      let y = Math.max(mata.desde, primero - paso);
+      y < Math.min(mata.hasta, abajo + paso);
+      y += paso
+    ) {
       const t = (y - mata.desde) / (mata.hasta - mata.desde)
       const x = punta + (base - punta) * t
-      const grosor = cana.grosor * (0.32 + 0.68 * t)
+      const grosor = cana.grosor * (0.34 + 0.66 * t)
 
       ctx.fillStyle = COLOR.bambuNudo
-      ctx.fillRect(x - grosor / 2 - 1, y, grosor + 2, 2.2)
+      ctx.globalAlpha = (0.26 + cana.profundidad * 0.24) * 0.8
+      ctx.fillRect(x - grosor / 2, y, grosor, 1.8)
+      ctx.globalAlpha = 0.26 + cana.profundidad * 0.24
 
-      if (Math.round(y / paso) % cana.hojaCada !== 0) continue
+      // Una hoja cada tres nudos y solo en la caña de adelante. El
+      // bambú de verdad tiene las hojas arriba, no por todo el tallo.
+      if (!cana.conHojas || Math.round(y / paso) % 3 !== 0) continue
 
-      // Las hojas salen hacia el medio del mundo, nunca hacia afuera:
-      // hacia afuera se salen de la pantalla y no se ven.
+      // Salen hacia el medio del mundo, nunca hacia afuera: hacia
+      // afuera se van de la pantalla y no se ven.
       const hacia = mata.x < MUNDO.ancho / 2 ? 1 : -1
       ctx.fillStyle = COLOR.bambuHoja
       for (const [largo, caida] of [
-        [23, -10],
-        [16, 4],
+        [19, -8],
+        [13, 4],
       ] as const) {
         ctx.beginPath()
         ctx.moveTo(x, y)
-        ctx.quadraticCurveTo(x + hacia * largo * 0.6, y + caida - 5, x + hacia * largo, y + caida)
-        ctx.quadraticCurveTo(x + hacia * largo * 0.55, y + caida + 3, x, y + 3)
+        ctx.quadraticCurveTo(x + hacia * largo * 0.6, y + caida - 4, x + hacia * largo, y + caida)
+        ctx.quadraticCurveTo(x + hacia * largo * 0.55, y + caida + 2.5, x, y + 2.5)
         ctx.closePath()
         ctx.fill()
       }
@@ -777,7 +889,6 @@ function dibujarMata(
 
   ctx.restore()
 }
-
 /**
  * Un looping de pista al fondo. Dos rieles y sus travesaños, con las
  * rampas de entrada y salida: con una sola raya parecía un aro suelto.

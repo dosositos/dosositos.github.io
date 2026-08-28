@@ -21,7 +21,8 @@ intentar**. El juego de las frases se contesta; este se aprende.
 | Gesto | Mantener y soltar. Una sola barra de fuerza |
 | Personaje | La tortuga, por la frase |
 | Capítulos | Tres, por peluche, en orden de llegada: **Boo → Ovi → Nico** |
-| Poderes | Uno por peluche ganado. **Se gastan**: un uso por capítulo, sin recarga |
+| Poderes | Uno por peluche ganado. **Se gastan**: un tanque por capítulo, sin recarga |
+| El de Boo | **El planeo**: mantener el dedo en el aire y bajar despacio (29 de agosto) |
 | Al caer | Vuelve al último hito. Intentos infinitos. Baja del hito y ya es caída, aunque quede parada más abajo |
 | Tamaño de un capítulo | 32 plataformas y 5 estrellas, una cada seis o siete (decidido el 28 de agosto) |
 | Los puntos de guardado | Una **estrellita de papel** de las del frasco, la misma en los tres capítulos |
@@ -30,6 +31,7 @@ intentar**. El juego de las frases se contesta; este se aprende.
 | Marcador | El récord de él, esperándola en cada capítulo |
 | Premio | Una carta suya, solo ahí. Se escribe con él en la sesión |
 | Entrada | Escondida: se toca la luna de la portada. La luna se hace notar |
+| La luna en el capítulo | Cinemática al abrir, se va para arriba, espera en la cima y se va al llegar |
 | Camino | Cada mundo con su material |
 | El colado | Se cuela y estorba |
 | Sonido | Vibración en Android, más sonidos cortos con interruptor |
@@ -142,8 +144,10 @@ cartel de presentación del capítulo puede jugar con el nombre.
   («nadie me tomó fotos»): lo que pisó, se borra.
 - **Ayuda del mundo:** algunos tramos son de impulso, y si cae ahí la lanzan
   sola. Sirven para enseñarle sin explicarle qué se siente un salto largo.
-- **Se gana:** *el empujón*. Un impulso horizontal en pleno aire, una vez por
-  capítulo, que salva un salto que salió corto.
+- **Se gana:** *el planeo*. Con el dedo apoyado en el aire baja despacio y
+  sigue avanzando, así que un salto corto llega. Un tanque por capítulo.
+  Antes era *el empujón*, un impulso de un golpe, y se cambió el 29 de agosto:
+  un poder que hay que acertar en un instante no se llega a aprender nunca.
 - **Es el primero**, así que es el que enseña: los primeros diez saltos son casi
   regalados y no hay desvanecimiento hasta pasado el primer hito.
 

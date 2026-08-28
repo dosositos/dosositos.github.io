@@ -34,6 +34,7 @@ globalThis.cancelAnimationFrame = () => {
 
 const { crearMotor } = await import('@/juego-luna/motor.ts')
 const { construirNivel } = await import('@/juego-luna/mundos.ts')
+const { opacidadDeLaPista } = await import('@/juego-luna/dibujo.ts')
 const { SALTO, TORTUGA, MUNDO, PISTA, CAPITULOS } = await import('@/content/luna.ts')
 
 /**
@@ -46,12 +47,12 @@ const capitulo = CAPITULOS.find((c) => c.numero === cual) ?? CAPITULOS[0]
 const nivel = construirNivel(capitulo)
 
 /** Arranca un motor en un nivel cualquiera y devuelve cómo pisarlo. */
-function banco(nivelDePrueba, conEmpujon) {
+function banco(nivelDePrueba, conPoder) {
   const ultima = { escena: null }
   const eventos = []
   const motor = crearMotor({
     nivel: nivelDePrueba,
-    conEmpujon,
+    conPoder,
     pintar: (escena) => {
       ultima.escena = escena
     },
@@ -719,74 +720,132 @@ function saltarCon(motor, frame, carga) {
 }
 console.log('')
 
-/* ── 7. El empujón ─────────────────────────────────────────────
-   El poder que se gana con Boo: un toque en el aire, mientras cae, y
-   llega más lejos. Se mide contra el mismo salto sin gastarlo. */
+/* ── 7. El planeo ──────────────────────────────────────────────
+   El poder que se gana con Boo: con el dedo apoyado en el aire, baja
+   despacio y llega más lejos. Se mide contra el mismo salto sin
+   planear. Es el segundo intento del poder: el primero era un empujón
+   de un golpe que había que acertar y no servía. */
 
-// Cuánto aguanta la pista según cuántas estrellas lleve pisadas: el
-// capítulo se va apurando solo, sin mover una plataforma.
-if (capitulo.seDesvanece) {
-  const cuantas = capitulo.plataformas.filter((p) => p.hito).length
-  const duras = []
-  for (let i = 0; i <= cuantas; i += 1) {
-    const ms = Math.max(PISTA.msMinimo, PISTA.msParaIrse - i * PISTA.msMenosPorEstrella)
-    duras.push((ms / 1000).toFixed(1) + 's')
-  }
-  console.log(`   la pista aguanta ${duras.join(' → ')} según las estrellas pisadas`)
-}
-console.log('')
-console.log('  El empujón')
+console.log('  El planeo')
 
-/** El mismo salto flojo, con y sin gastar el empujón en la bajada. */
-function saltoLargo(conEmpujon, gastarlo) {
+/**
+ * El mismo salto flojo, planeando o no. Planear es mantener el dedo
+ * apoyado en el aire, así que aquí es presionar y no soltar.
+ */
+function saltoPlaneado(conPoder, planear) {
   const anchoReal = MUNDO.ancho
   MUNDO.ancho = 9000
-  const { motor, frame, eventos } = banco(nivelLlano(), conEmpujon)
+  const { motor, frame, eventos } = banco(nivelLlano(), conPoder)
 
   frame()
   const x0 = frame().x
   saltarCon(motor, frame, 0.5)
 
   let e = frame()
-  let usado = false
-  for (let i = 0; i < 400; i += 1) {
+  let apoyado = false
+  let frames = 0
+  for (let i = 0; i < 600; i += 1) {
     e = frame()
-    // En cuanto empieza a bajar, el toque.
-    if (gastarlo && !usado && e.vy > 0) {
+    frames += 1
+    // En cuanto empieza a bajar, el dedo se apoya y se queda.
+    if (planear && !apoyado && e.vy > 0) {
       motor.presionar()
-      motor.soltar()
-      usado = true
+      apoyado = true
     }
     if (i > 3 && e.enSuelo) break
   }
   motor.detener()
   MUNDO.ancho = anchoReal
 
-  return { alcance: e.x - x0, gastado: eventos.includes('empujon') }
+  return {
+    alcance: e.x - x0,
+    segundos: frames / 60,
+    planeo: eventos.includes('poder'),
+    aire: e.aire,
+  }
 }
 
 {
-  const normal = saltoLargo(false, true)
-  const conPoder = saltoLargo(true, true)
-  const guardado = saltoLargo(true, false)
+  const normal = saltoPlaneado(false, true)
+  const conPoder = saltoPlaneado(true, true)
+  const guardado = saltoPlaneado(true, false)
 
   console.log(
-    `   sin el poder avanza ${Math.round(normal.alcance)} px, gastándolo ${Math.round(conPoder.alcance)} px`,
+    `   sin planear avanza ${Math.round(normal.alcance)} px en ${normal.segundos.toFixed(2)}s, planeando ${Math.round(conPoder.alcance)} px en ${conPoder.segundos.toFixed(2)}s`,
   )
   console.log(
-    conPoder.gastado && conPoder.alcance > normal.alcance + 20
-      ? `   ✓ el empujón suma ${Math.round(conPoder.alcance - normal.alcance)} px`
-      : '   ⚠ el empujón no hizo nada',
+    conPoder.planeo && conPoder.alcance > normal.alcance + 60
+      ? `   ✓ el planeo suma ${Math.round(conPoder.alcance - normal.alcance)} px`
+      : '   ⚠ el planeo no hizo nada',
   )
   console.log(
-    !normal.gastado
-      ? '   ✓ sin haberlo ganado, tocar en el aire no hace nada'
-      : '   ⚠ lo gastó sin haberlo ganado',
+    !normal.planeo
+      ? '   ✓ sin haberlo ganado, apoyar el dedo en el aire no hace nada'
+      : '   ⚠ planeó sin haberlo ganado',
   )
   console.log(
-    !guardado.gastado && Math.abs(guardado.alcance - normal.alcance) < 1
-      ? '   ✓ sin tocar, el salto sale igual que siempre'
-      : '   ⚠ el empujón se gastó solo',
+    !guardado.planeo && Math.abs(guardado.alcance - normal.alcance) < 1
+      ? '   ✓ sin apoyar el dedo, el salto sale igual que siempre'
+      : '   ⚠ el aire se gasta solo',
+  )
+  console.log(
+    conPoder.aire < 1
+      ? `   ✓ el aire se gasta: le quedó el ${Math.round(conPoder.aire * 100)}% del tanque`
+      : '   ⚠ el aire no se gasta',
+  )
+}
+console.log('')
+
+/* ── 8. El parpadeo de la pista ────────────────────────────────
+   Que el tramo se vaya en el tiempo que toca ya está probado. Lo que
+   se prueba aquí es cómo se va: tiene que parpadear cada vez más
+   rápido y apagarse del todo al final, no esfumarse de golpe desde
+   media opacidad. Es de las cosas que pasan en un segundo y a ojo no
+   se juzgan. */
+
+console.log('  Cómo se va un tramo')
+
+{
+  const aviso = PISTA.msDeAviso / PISTA.msParaIrse
+  const pasos = 400
+
+  // Se recorre la vida del tramo de entera a cero y se anota cada vez
+  // que cambia de encendido a apagado.
+  const cambios = []
+  let antes = null
+  let ultimo = 1
+  for (let i = 0; i <= pasos; i += 1) {
+    const vida = 1 - i / pasos
+    const alfa = opacidadDeLaPista(vida, aviso, false)
+    const encendido = alfa > 0.5
+    if (antes !== null && encendido !== antes) cambios.push(vida)
+    antes = encendido
+    ultimo = alfa
+  }
+
+  console.log(`   parpadea ${Math.floor(cambios.length / 2)} veces antes de irse`)
+
+  // Los huecos entre cambios tienen que ir achicándose: eso es
+  // «cada vez más rápido».
+  const huecos = cambios.slice(1).map((v, i) => cambios[i] - v)
+  const primeros = huecos.slice(0, 3).reduce((a, b) => a + b, 0) / 3
+  const ultimos = huecos.slice(-3).reduce((a, b) => a + b, 0) / 3
+  console.log(
+    huecos.length > 6 && ultimos < primeros * 0.6
+      ? `   ✓ se acelera: los primeros parpadeos duran ${(primeros / ultimos).toFixed(1)} veces lo que los últimos`
+      : '   ⚠ el parpadeo va parejo, no se acelera',
+  )
+
+  console.log(
+    ultimo < 0.02
+      ? '   ✓ termina apagado del todo, no se esfuma a media opacidad'
+      : `   ⚠ desaparece de golpe desde ${ultimo.toFixed(2)} de opacidad`,
+  )
+
+  console.log(
+    opacidadDeLaPista(aviso + 0.01, aviso, false) === 1
+      ? '   ✓ antes del aviso está entero y no parpadea'
+      : '   ⚠ parpadea antes de tiempo',
   )
 }
 console.log('')

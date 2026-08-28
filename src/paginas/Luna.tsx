@@ -19,12 +19,13 @@ import type { EventoLuna, ProgresoLuna } from '@/types'
  * lee. Cuando estén los tres poderes, esto es una fila de tres.
  */
 const DIBUJO_DEL_PODER: Record<string, ReactNode> = {
-  // El empujón: dos galones hacia adelante, los mismos de los tramos
-  // de impulso.
-  empujon: (
+  // El planeo: una cúpula con sus tirantes, que es lo que todo el
+  // mundo reconoce como «esto te hace bajar despacio».
+  planeo: (
     <>
-      <path d="M5 5l5 5-5 5" />
-      <path d="M11 5l5 5-5 5" />
+      <path d="M2.4 9.2a7.6 7.6 0 0 1 15.2 0" />
+      <path d="M2.4 9.2l6.4 4.4M17.6 9.2l-6.4 4.4M10 9.2v4.4" />
+      <path d="M8.6 13.6h2.8v3.2H8.6z" />
     </>
   ),
 }
@@ -32,7 +33,7 @@ const DIBUJO_DEL_PODER: Record<string, ReactNode> = {
 function MarcadorDePoderes({
   poderes,
 }: {
-  poderes: { id: string; nombre: string; cargas: number; sinGastar: number }[]
+  poderes: { id: string; nombre: string; cargas: number; sinGastar: number; usando?: boolean }[]
 }) {
   if (poderes.length === 0) return null
 
@@ -44,10 +45,12 @@ function MarcadorDePoderes({
           <div key={poder.id} className="flex flex-col items-center gap-1">
             <div
               aria-label={poder.nombre}
-              className={`grid h-9 w-9 place-items-center rounded-xl border transition-colors duration-500 ${
-                entero
-                  ? 'border-tulipan-amarillo/70 bg-tulipan-amarillo/15 text-tulipan-amarillo'
-                  : 'border-margarita/15 bg-margarita/5 text-margarita/25'
+              className={`grid h-9 w-9 place-items-center rounded-xl border transition-all duration-300 ${
+                poder.usando
+                  ? 'scale-110 border-tulipan-amarillo bg-tulipan-amarillo/35 text-tulipan-amarillo'
+                  : entero
+                    ? 'border-tulipan-amarillo/70 bg-tulipan-amarillo/15 text-tulipan-amarillo'
+                    : 'border-margarita/15 bg-margarita/5 text-margarita/25'
               }`}
             >
               <svg
@@ -109,12 +112,12 @@ export function Luna() {
   const capitulo = useMemo(() => capituloNumero(1), [])
   const nivel = useMemo(() => construirNivel(capitulo), [capitulo])
 
-  /**
-   * El empujón se gana cerrando a Boo, así que la primera vez no lo
-   * tiene y en las siguientes sí. Se lee una sola vez al montar: que
-   * aparezca a media subida sería raro.
+/**
+   * El poder se gana cerrando el capítulo, así que la primera vez no
+   * lo tiene y en las siguientes sí. Se lee una sola vez al montar:
+   * que aparezca a media subida sería raro.
    */
-  const conEmpujon = useMemo(() => tienePoder(capitulo.poder.id), [capitulo])
+  const conPoder = useMemo(() => tienePoder(capitulo.poder.id), [capitulo])
 
   /** Mientras está en falso se ve el cartel y el dedo no hace nada. */
   const [empezado, setEmpezado] = useState(false)
@@ -131,8 +134,21 @@ export function Luna() {
   /** El aviso de haber pisado un lazo. Dura un par de segundos. */
   const [aviso, setAviso] = useState<{ texto: string; yendose: boolean } | null>(null)
 
-  /** Si le queda el empujón. Solo cambia una vez por capítulo. */
-  const [empujonEntero, setEmpujonEntero] = useState(conEmpujon)
+/**
+   * El aire de planeo que le queda, de 1 a 0, y si está planeando
+   * ahora mismo. Es lo único de adentro del bucle que sube a React, y
+   * sube redondeado a tercios: así cambia tres veces por capítulo en
+   * vez de sesenta por segundo.
+   */
+  const [aire, setAire] = useState(conPoder ? 3 : 0)
+  const [planeando, setPlaneando] = useState(false)
+
+  /**
+   * Falso mientras la luna se presenta y mientras se despide. En esos
+   * segundos no hay letras ni marcadores encima: lo único que hay que
+   * mirar es ella.
+   */
+  const [jugando, setJugando] = useState(false)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -199,29 +215,56 @@ export function Luna() {
       else if (evento === 'agotada') vibrar([0, 14, 60, 14, 60, 26])
       // El tramo de impulso la manda sola: un empujón largo en la mano.
       else if (evento === 'impulso') vibrar(34)
-      else if (evento === 'empujon') {
-        vibrar([0, 20, 40, 20])
-        setEmpujonEntero(false)
-        mostrarAviso(TEXTOS.empujonGastado)
-      } else if (evento === 'hito') {
+      else if (evento === 'poder') vibrar(10)
+      else if (evento === 'hito') {
         vibrar([0, 18, 70, 22])
         // El lazo se enciende y late, pero eso solo se pasa por alto
         // jugando. Hay que decirlo con letras.
         mostrarAviso(TEXTOS.hito)
       } else if (evento === 'cima') {
         const cuenta = motor.cuenta()
-        // Se guarda al llegar arriba y no antes: es el único momento
-        // en que hay algo que valga la pena acordarse. El poder del
-        // capítulo se gana aquí.
+        // Se guarda al pisar la cima y no al final de la cinemática:
+        // si cierra la página mientras la luna se va, el capítulo
+        // igual quedó ganado.
         setTotales(anotarCapitulo(capitulo.numero, cuenta.pasitos, cuenta.caidas, capitulo.poder.id))
-        setLlegada(cuenta)
+      } else if (evento === 'fin') {
+        // El cartel espera a que la luna termine de irse. Taparla con
+        // un cuadro de texto sería tirar la mejor parte.
+        setLlegada(motor.cuenta())
       }
     }
 
+    /** El último tercio de aire que se le enseñó a React. */
+    let tercioPintado = conPoder ? 3 : 0
+    let planeabaAntes = false
+    let jugandoAntes = false
+
     const motor = crearMotor({
       nivel,
-      conEmpujon,
-      pintar: (escena) => pintor.pintar(escena),
+      conPoder,
+      conCinematica: true,
+      pintar: (escena) => {
+        pintor.pintar(escena)
+
+        // El marcador se entera desde aquí, y solo cuando de verdad
+        // cambia: un setState por frame haría re-renderizar React
+        // sesenta veces por segundo, que es justo lo que este juego
+        // no hace.
+        const tercio = Math.ceil(escena.aire * 3)
+        if (tercio !== tercioPintado) {
+          tercioPintado = tercio
+          setAire(tercio)
+          if (tercio === 0) mostrarAviso(TEXTOS.sinAire)
+        }
+        if (escena.planeando !== planeabaAntes) {
+          planeabaAntes = escena.planeando
+          setPlaneando(escena.planeando)
+        }
+        if ((escena.cine === 'jugando') !== jugandoAntes) {
+          jugandoAntes = escena.cine === 'jugando'
+          setJugando(jugandoAntes)
+        }
+      },
       alEvento,
     })
 
@@ -267,7 +310,7 @@ export function Luna() {
       window.visualViewport?.removeEventListener('scroll', medir)
       window.removeEventListener('orientationchange', medir)
     }
-  }, [capitulo, conEmpujon, empezado, menosMovimiento, nivel])
+  }, [capitulo, conPoder, empezado, menosMovimiento, nivel])
 
   const retrato = RETRATOS[capitulo.id]
 
@@ -340,16 +383,17 @@ export function Luna() {
       ) : null}
 
       {/* ── Los poderes ganados ───────────────────────────────────── */}
-      {empezado && conEmpujon && !llegada ? (
+      {empezado && jugando && conPoder && !llegada ? (
         <MarcadorDePoderes
           poderes={[
             {
               id: capitulo.poder.id,
               nombre: capitulo.poder.nombre,
-              // Un uso por capítulo y sin recarga. El día que algún
-              // poder tenga dos, este número sale de su ficha.
-              cargas: 1,
-              sinGastar: empujonEntero ? 1 : 0,
+              // El tanque de aire, contado en tercios. El día que haya
+              // más poderes, esta lista crece.
+              cargas: 3,
+              sinGastar: aire,
+              usando: planeando,
             },
           ]}
         />
@@ -391,7 +435,7 @@ export function Luna() {
       ) : (
         <p
           className={`pointer-events-none absolute inset-x-0 bottom-6 text-center text-xs text-margarita/50 transition-opacity duration-700 ${
-            empezado && ayudaVisible ? 'opacity-100' : 'opacity-0'
+            empezado && jugando && ayudaVisible ? 'opacity-100' : 'opacity-0'
           }`}
         >
           {TEXTOS.ayudaTocar}

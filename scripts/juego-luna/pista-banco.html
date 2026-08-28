@@ -53,7 +53,12 @@
           camara: plataforma.y - MUNDO.alto * 0.62,
           hitoAlcanzado: -1,
           vidaDeLaPista: enteras,
-          tieneEmpujon: true,
+          avisoDeLaPista: aviso,
+          planeando: false,
+          aire: 1,
+          cine: 'jugando',
+          cineAvance: 0,
+
           pasitos: 0,
           caidas: 0,
           plataformas: nivel.plataformas,
@@ -75,6 +80,12 @@
         })
       }
 
+      /** Las cinco fases del parpadeo de un tramo que se va. */
+      function tirasDelParpadeo() {
+        const pasos = [1, 0.72, 0.46, 0.24, 0.08]
+        return pasos.map((p) => aviso * p)
+      }
+
       const paneles = [
         ['la salida y el bambú', escenaEn(nivel.plataformas[1])],
         ['el primer lazo', escenaEn(nivel.plataformas[10], { hitoAlcanzado: 10 })],
@@ -92,6 +103,17 @@
         ],
         ['la cima', escenaEn(nivel.plataformas[31], { hitoAlcanzado: 27 })],
       ]
+
+      // Y aparte, un tramo suelto en las cinco fases del parpadeo,
+      // que es lo que no se puede juzgar jugando: pasa en un segundo.
+      for (const [i, vida] of tirasDelParpadeo().entries()) {
+        const p = nivel.plataformas[20]
+        const vidas = nivel.plataformas.map((otra) => (otra.indice === 20 ? vida : 1))
+        paneles.push([
+          'parpadeo ' + (i + 1) + '/5',
+          escenaEn(p, { hitoAlcanzado: 16, vidaDeLaPista: vidas }),
+        ])
+      }
 
       const tira = document.getElementById('tira')
       for (const [nombre, escena] of paneles) {
