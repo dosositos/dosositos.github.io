@@ -36,6 +36,13 @@ const MS_CAIDA = 500
 /** Cuántos píxeles del mundo camina entre una patica y la otra. */
 const PASITO = 11
 
+/**
+ * Lo que se le perdona al aterrizar justo en la punta. Sin este
+ * margen, rozar la orilla es caerse, y desde el teléfono se siente
+ * robado.
+ */
+const ORILLA = 2
+
 interface Tortuga {
   x: number
   y: number
@@ -155,7 +162,8 @@ export function crearMotor({ nivel, pintar, alEvento }: OpcionesMotor): Motor {
   /** La plataforma que está pisando, si es que pisa alguna. */
   function sueloDebajo(): Plataforma | undefined {
     return plataformas.find(
-      (p) => Math.abs(t.y - p.y) < 0.5 && t.x >= p.x && t.x <= p.x + p.ancho,
+      (p) =>
+        Math.abs(t.y - p.y) < 0.5 && t.x >= p.x - ORILLA && t.x <= p.x + p.ancho + ORILLA,
     )
   }
 
@@ -297,9 +305,19 @@ export function crearMotor({ nivel, pintar, alEvento }: OpcionesMotor): Motor {
       // después es lo que evita atravesarla en un salto rápido.
       if (t.vy > 0) {
         for (const p of plataformas) {
-          const dentro = t.x >= p.x - 2 && t.x <= p.x + p.ancho + 2
+          const dentro = t.x >= p.x - ORILLA && t.x <= p.x + p.ancho + ORILLA
           if (dentro && yAntes <= p.y && t.y >= p.y) {
             t.y = p.y
+
+            // Se la mete adentro de la plataforma en el mismo frame
+            // del golpe, que es donde no se nota. Aterrizando en la
+            // punta se quedaba con el centro fuera del suelo: al paso
+            // siguiente no había plataforma debajo para caminar, se
+            // dejaba caer, el perdón de la orilla la volvía a subir y
+            // ahí se quedaba, aplastada y parpadeando, hasta saltar.
+            const orilla = Math.min(TORTUGA.ancho / 2, p.ancho / 2)
+            t.x = Math.min(Math.max(t.x, p.x + orilla), p.x + p.ancho - orilla)
+
             t.vx = 0
             t.vy = 0
             t.enSuelo = true

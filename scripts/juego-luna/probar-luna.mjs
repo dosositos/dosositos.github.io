@@ -471,6 +471,75 @@ if (!caida || !caida.hito) {
 }
 console.log('')
 
+/* ── 5. Aterrizar en la punta ──────────────────────────────────
+   Aterrizar con el centro justo fuera de la orilla es un sitio malo:
+   la comprobación del aterrizaje perdona unos píxeles de más, y si la
+   de «¿tengo suelo debajo para caminar?» no perdona lo mismo, la
+   tortuga queda en tierra de nadie. No camina, se deja caer, el
+   aterrizaje la vuelve a subir, y así sesenta veces por segundo,
+   plantada en la pose del golpe hasta que salte.
+
+   Barre la punta de una plataforma por todo el sitio donde puede
+   caer, medio píxel a la vez, y comprueba que en ninguno se planta.
+   Ahí es donde hay que mirar: el rango bueno son tres o cuatro
+   píxeles y a ojo no se encuentra. */
+
+console.log('  Aterrizando en la punta de una plataforma')
+
+/** Un salto desde el sitio, sin caminar antes: sale siempre igual. */
+function saltoQuieto(anchoDeLaSegunda) {
+  const nivelPunta = construirNivel([
+    { x: 150, ancho: 100, altura: 0 },
+    { x: 300, ancho: anchoDeLaSegunda, altura: 0 },
+  ])
+  const { motor, frame, eventos } = banco(nivelPunta)
+  const cuantos = (cual) => eventos.filter((e) => e === cual).length
+
+  frame()
+  motor.presionar()
+  for (let i = 0; i < Math.round((SALTO.msDeCarga * 0.6) / FRAME); i += 1) frame()
+  motor.soltar()
+
+  let e = frame()
+  for (let i = 0; i < 400 && cuantos('aterrizaje') === 0 && cuantos('caida') === 0; i += 1) {
+    e = frame()
+  }
+  const xAlCaer = e.x
+  const caminadoAlCaer = e.caminado
+  for (let i = 0; i < 90; i += 1) e = frame()
+  motor.detener()
+
+  return {
+    cayo: cuantos('caida') > 0,
+    // La x del aterrizaje, no la de después: con la de después el
+    // barrido se corre unos píxeles y pasa de largo por el sitio malo.
+    x: xAlCaer,
+    // Aterrizar una vez es lo normal. Noventa es el atasco.
+    aterrizajes: cuantos('aterrizaje'),
+    // En unidades de patica, no en píxeles: caminando 1,5 segundos
+    // da algo más de 7 y plantada da 0.
+    camino: e.caminado - caminadoAlCaer,
+  }
+}
+
+/** Con la plataforma infinita se ve dónde cae de verdad. */
+const dondeCae = saltoQuieto(5000).x
+const plantadas = []
+
+for (let d = -3; d <= 5; d += 0.5) {
+  const punta = Math.round(dondeCae) + d
+  const r = saltoQuieto(punta - 300)
+  if (!r.cayo && r.camino < 0.5) plantadas.push({ punta, aterrizajes: r.aterrizajes })
+}
+
+console.log(`   cae cerca de x=${dondeCae.toFixed(1)}, y se probaron 17 puntas alrededor`)
+console.log(
+  plantadas.length === 0
+    ? '   ✓ en ninguna se quedó plantada'
+    : `   ⚠ se planta con la punta en ${plantadas.map((p) => p.punta.toFixed(1)).join(', ')}`,
+)
+console.log('')
+
 console.log(
   `  El salto más largo avanza ${Math.round(masLargo.alcance)} px y sube ${Math.round(masLargo.altura)}.`,
 )

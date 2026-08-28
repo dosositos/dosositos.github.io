@@ -188,7 +188,7 @@ export const NIVEL_DE_PRUEBA: PlataformaEscrita[] = [
   // La cima: aquí, en el juego de verdad, está la carta. Va ancha a
   // propósito: el último salto antes del premio no es el sitio para
   // pedir puntería.
-  { x: 110, ancho: 145, altura: 1840, hito: true },
+  { x: 150, ancho: 145, altura: 1840, hito: true },
 ]
 
 /**

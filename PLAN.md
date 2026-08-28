@@ -453,18 +453,16 @@ amarillo en los hitos, el cartel de presentación con su retrato bordado, los
 primeros diez saltos regalados y **el empujón**, que es el poder que se gana al
 cerrarlo. Es la fase más cara de las tres y la plantilla de las otras dos.
 
-### Lo primero de la sesión: dos cosas cortas
+### Lo primero de la sesión: nada, se arranca con Boo
 
-1. **Comprobar en el teléfono que el progreso se guarda.** Es lo único que no
-   pude probar yo, y ahora se puede sin abrir nada raro: al llegar arriba,
-   debajo de «llegaste», sale lo de esa subida y una línea más chiquita con lo
-   de **todas** las veces. Levantá el servidor con `npm run dev:telefono`, abrí
-   en el teléfono la dirección de red que imprime (la del `192.168…`) con
-   `/#/luna` al final, subí hasta arriba, cerrá la pestaña, volvé a entrar y
-   subí de nuevo. Si el total creció, el `localStorage` anda.
-2. **Jugalo otra vez con lo de anoche puesto** y contame de dificultad. Ahora
-   caerse cuesta de verdad, así que el nivel de prueba se siente distinto sin
-   haberle movido una sola plataforma.
+Las dos comprobaciones que había aquí ya están hechas y salieron bien: el
+progreso se guarda en el teléfono y los lazos se entienden. Lo que queda de
+ellas está más abajo, junto con lo que salió de jugarlo.
+
+**Cómo se prueba en el teléfono ahora:** el sitio se publica solo al empujar a
+`main`, y la dirección es `https://dosositos.github.io/#/luna`. Sigue sin estar
+enlazada desde ningún lado y sigue detrás del candado. Para probar en la red de
+la casa, sin publicar, está `npm run dev:telefono`.
 
 ### Lo que se hizo la noche del 28, con lo que jugaste
 
@@ -488,6 +486,64 @@ cerrarlo. Es la fase más cara de las tres y la plantilla de las otras dos.
   nivel?), `npm run luna:mapa` (a qué distancias se puede aterrizar),
   `npm run luna:ver` (fotos del juego andando) y `npm run luna:tortuga` (el
   banco de poses). Las fotos que sacan siguen cayendo en `private/notas/`.
+
+### Lo del 28 por la noche, después de que lo jugaras publicado
+
+- **El `localStorage` anda en tu iPhone.** Comprobado por vos: el total se
+  guarda al llegar arriba y sigue ahí al volver a entrar.
+- **Los lazos quedaron bien.** No se tocan más.
+- **Arreglado el atasco de la orilla.** La tortuga se quedaba plantada,
+  aplastada y parpadeando, y se soltaba al saltar. Era mío, de la noche
+  anterior: la comprobación del aterrizaje perdona dos píxeles por fuera de la
+  punta y la de «¿tengo suelo debajo para caminar?» no perdonaba ninguno, así
+  que aterrizando justo en esos dos píxeles quedaba en tierra de nadie. Cada
+  frame se dejaba caer, el aterrizaje la volvía a subir y le reiniciaba la pose
+  del golpe: sesenta aterrizajes por segundo. Ahora las dos usan el mismo margen
+  (`ORILLA`) y al aterrizar se la mete adentro de la plataforma en el mismo
+  frame del golpe, que es donde no se nota.
+- **El probador lo caza solo de ahora en adelante.** `npm run luna:probar` barre
+  la punta de una plataforma por los diecisiete sitios donde puede caer, medio
+  píxel a la vez, y avisa si en alguno se planta. Con el error puesto de vuelta
+  lo encuentra: se plantaba en dos de los diecisiete. El rango malo eran dos
+  píxeles y a ojo no se encuentra nunca.
+- **El último salto ya no es el más difícil.** Era el más apretado de todos
+  (7,1% de los intentos buenos, el probador ya lo llamaba «justo») y el plan
+  dice que el salto antes del premio no es el sitio para pedir puntería. La cima
+  se corrió de `x: 110` a `x: 150` y quedó en 14,5%, como el resto.
+
+### Sigue estando fácil, y por qué no lo arreglo achicando plataformas
+
+Lo subiste en 19 pasitos sin caerte, que es exactamente lo que hace el robot.
+El nivel de prueba es fácil porque es **regular**: todos los tramos suben lo
+mismo y alternan de lado, así que una sola carga aprendida sirve para los veinte
+saltos. No hay nada que leer.
+
+La salida no es achicar las plataformas. En un teléfono, achicar el blanco es
+dificultad de pulso, y contra esa no se aprende, solo se falla más. Y el juego
+es para ella, no para vos.
+
+Lo que sí lo pone difícil está en el plan y llega en la fase 3:
+
+1. **El desvanecimiento de Boo.** La pista se borra detrás. No se puede bajar a
+   rehacer un tramo, y eso convierte cada caída en volver al lazo de verdad.
+2. **La irregularidad.** Cuando escriba las 32 plataformas de Boo, los tramos no
+   van a subir todos lo mismo ni alternar siempre de lado. Dos seguidas del
+   mismo lado obligan a esperar a que la tortuga se dé la vuelta, y eso ya es
+   una decisión.
+3. **El largo.** 32 en vez de 20, con los lazos cada seis o siete.
+4. **El colado**, que se para justo en la plataforma a la que ibas.
+
+### Una que quedó abierta
+
+**¿Se guarda el lazo dentro del capítulo?** Hoy no: al recargar la página se
+empieza el capítulo desde abajo, y lo único que se guarda es el capítulo ganado.
+Está así a propósito y está escrito en `progreso.ts`, pero esa decisión se tomó
+cuando un capítulo duraba 50 segundos. Con 32 plataformas son tres o cuatro
+minutos, y en el Android de ella el navegador mata las pestañas de atrás cuando
+le entra una llamada. *Mi voto: guardar también el último lazo del capítulo en
+curso, en la fase 3. El motivo que había en contra era que cerrar la página se
+volviera una manera de guardar partida, y no aplica: las caídas ya son infinitas
+y gratis, no hay nada que hacer trampa.*
 
 ### Las decisiones que me dejaste
 
