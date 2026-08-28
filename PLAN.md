@@ -455,6 +455,13 @@ antes de escribir la primera línea.
 Lo primero de esa sesión no es código: **la carta de la luna**, que se escribe
 entre los dos y es el premio por llegar arriba.
 
+**El plan está partido en diez fases** (sección «Las fases» del mismo archivo),
+pensadas para que quedarse sin créditos a media sesión no duela: cada una
+compila, pasa `npm run revisar` y se sube sola. La carta es la fase 0 y la
+entrada por la luna de la portada es la 9, la única que hace visible el juego
+para ella. Mientras esa no se haga, todo lo demás puede quedar a medias sin que
+se note.
+
 **La web se entregó el 24 de agosto de 2026**, con el regalo de la portada: la
 caja que se abre, la luz y el video. Ese mismo día se arregló la carta para que
 se lea bien en Safari. De aquí en adelante todo lo que se haga es para una web

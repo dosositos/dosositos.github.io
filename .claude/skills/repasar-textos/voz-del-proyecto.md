@@ -41,6 +41,12 @@ prosa):
   jamás», «el destino quiso». Nada de moraleja al final del relato: contá lo que
   pasó y callate.
 - **Frase corta.** Si una oración necesita dos comas para respirar, partila.
+- **Puntuación simple.** Armando escribe con punto y con coma. **Nada de punto
+  y coma**: no lo usa nunca y en un texto suyo se ve postizo. Los dos puntos sí,
+  pero uno por texto y cuando de verdad anuncian algo. La raya larga se queda
+  para la firma («— tu osito») y para nada más. Esto vale para lo redactado en
+  su voz. En los mensajes de verdad ella sí escribe con punto y coma alguna
+  vez, y ahí no se toca nada.
 
 ## Delatores en español, además de los del skill
 

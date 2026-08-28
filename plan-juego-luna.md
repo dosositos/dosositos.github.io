@@ -278,44 +278,132 @@ el contexto de audio se crea ahí y no antes.
 
 ---
 
-## El orden de mañana
+## Las fases
 
-1. **La carta.** Primero, mientras hay cabeza fresca: él cuenta qué le quiere
-   decir, se redacta con su voz, se guarda en `private/publicable/` y el hook la
-   cifra. Sin la carta, el juego no tiene para qué.
-2. **El motor pelado** (60-90 min): canvas, paso fijo, gravedad, una plataforma,
-   la tortuga caminando, cargar y saltar. Sin arte y sin mundos. **No se sigue
-   hasta que saltar se sienta bien**; si el gesto no es rico, lo demás no lo
-   salva.
-3. **Plataformas, cámara, hitos y caída.**
-4. **Capítulo de Boo entero**, con su material y su traba. Es la plantilla de
-   los otros dos.
-5. **Ovi y Nico**, que ya son variaciones.
-6. **Los poderes**, los tres, con su gasto.
-7. **El último trecho y la carta.**
-8. **La entrada por la luna de la portada** y el guardado del progreso.
-9. **El colado**, que es adorno y va al final aposta: si el tiempo aprieta, es
-   lo primero que se cae sin que nadie lo note.
-10. **Prueba en el teléfono de verdad**, y ajuste de números.
+Se parte en fases porque los créditos se pueden acabar en cualquier momento, y
+quedarse a medias de un capítulo es peor que no haberlo empezado. Cada fase de
+aquí cierra sola: compila, pasa `npm run revisar` y se puede subir sin que la
+web quede rara.
 
-Cabe en una sesión larga si el arte se mantiene simple. Si hay que partirlo, el
-corte natural es después del punto 5.
+**La regla que lo hace posible:** mientras la luna de la portada no sea tocable,
+el juego no existe para ella. La ruta `/luna` nace en la fase 1 sin enlace desde
+ningún lado y así se queda hasta la fase 9. Todo lo de en medio puede quedar a
+la mitad sin que nadie lo note. **La fase 9 es la única que publica**, y no se
+empieza hasta que lo demás esté cerrado.
 
-### Cómo se prueba
+| # | Fase | Deja jugable | Se puede parar |
+|---|---|---|---|
+| 0 | La carta | — | Sí |
+| 1 | El motor pelado | El salto, en una plataforma | Sí |
+| 2 | Mundo, cámara, hitos y probador | Un nivel de prueba, de punta a punta | Sí |
+| 3 | Boo entero | Un capítulo de verdad | Sí, y es buen sitio |
+| 4 | Ovi | Dos capítulos | Sí |
+| 5 | Nico | Los tres capítulos | Sí |
+| 6 | El último trecho y la carta | El juego completo | Sí |
+| 7 | Teléfono y números | El juego, pero que se sienta bien | Sí |
+| 8 | El colado | Igual, con chiste | Sí |
+| 9 | **La entrada por la luna** | El juego, para ella | Fin |
 
-Como el libro del diccionario: un `private/notas/probar-luna.mjs` que corra el
-motor sin dibujar, con una secuencia de saltos grabada, y compruebe que cada
-capítulo se puede terminar y que ningún salto exigido es imposible con carga
-máxima. Que la dificultad la decida el diseño y no un descuido de números.
+Al cerrar cada fase: `npm run typecheck`, `npm run revisar`, commit propio, y
+dejar apuntada la siguiente en «La próxima sesión» de `PLAN.md`.
 
----
+### 0 · La carta
 
-## Lo que queda abierto
+Sin código. Él cuenta qué le quiere decir, se redacta con su voz, se pasa por
+`/repasar-textos` y se guarda en `private/publicable/carta-luna.json`, que el
+hook cifra a `public/cifrado/`.
 
-- **El día que Boo llega a la línea del tiempo**: la fecha ya está —23 de
-  diciembre de 2024— y hay que escribir el momento y sacarle a Boo la frase
-  comodín. No bloquea el juego, pero conviene hacerlo el mismo día para que las
-  dos cosas cuenten la misma historia.
-- **Si el capítulo de Nico da para dos hitos más**: se decide jugándolo.
-- **Los récords de él**: hay que recordarle que juegue los tres capítulos antes
-  de enseñárselo, o el rival no existe.
+Va primero porque es lo único que necesita cabeza fresca y no depende de nada, y
+porque sin ella el juego no tiene para qué. No toca `src/`: el commit es la
+carta cifrada y nada más.
+
+### 1 · El motor pelado
+
+- Ruta `/luna` fuera del menú y sin enlazar.
+- Canvas medido con `visualViewport` y `devicePixelRatio`, sin scroll,
+  `touch-action: none`.
+- Paso fijo a 60 Hz con acumulador y dibujo interpolado. Esto va aquí y no
+  después: montarlo encima de un bucle improvisado es rehacerlo.
+- Gravedad, una plataforma, la tortuga caminando y dando la vuelta.
+- Cargar y soltar con el dedo y con la barra espaciadora. Vibración corta y
+  fogonazo al soltar.
+- `src/content/luna.ts` desde el primer día con los números (gravedad, impulsos,
+  ángulo, caminata, carga), aunque todavía no haya niveles. Ajustar el salto no
+  puede costar tocar código.
+
+**No se pasa a la 2 hasta que saltar se sienta bien.** Es la única fase donde
+vale la pena gastar créditos repitiendo lo mismo.
+
+### 2 · El mundo: plataformas, cámara, hitos, caída y el probador
+
+Un nivel de prueba armado desde `luna.ts`, cámara que sigue, hitos que se pisan,
+caída fuera de pantalla y reaparición en el último hito. `progreso.ts` con el
+`localStorage`: capítulo alcanzado sí, progreso entre hitos no.
+
+**El probador se adelanta hasta aquí**, no al final como decía el orden viejo:
+`private/notas/probar-luna.mjs` corre el motor sin dibujar, con una secuencia de
+saltos grabada, y contesta si un salto es imposible a carga máxima. Cada
+comprobación que haga ese script es una que no hay que hacer abriendo el
+navegador, y ahí es donde se van los créditos.
+
+### 3 · Boo entero
+
+Pista naranja y bambú, el desvanecimiento de los tramos, los tramos de impulso,
+los lazos amarillos en los hitos, el cartel de presentación con su retrato
+bordado, los primeros diez saltos regalados y **el empujón**, que se gana al
+cerrarlo.
+
+El poder va dentro de su capítulo y no en una fase aparte: así el capítulo queda
+completo y se puede parar sin dejar un poder colgando.
+
+Esta es la plantilla. Es la fase más cara de las tres y las dos siguientes
+cuestan bastante menos porque ya son variaciones.
+
+### 4 · Ovi
+
+Cajas apiladas que ceden hacia el lado con más peso, los huecos que solo se
+pasan con la barra al tope, y **el salto de gimnasio**.
+
+### 5 · Nico
+
+Almohadas que se hunden mientras está parada encima, luz de madrugada, la luna
+ya grande, y **Nico te agarra**. Aquí se decide, jugándolo, si da para dos hitos
+más.
+
+### 6 · El último trecho, la carta y el marcador
+
+Cielo abierto con los tres poderes, uno cada uno. El conteo de pasitos por
+capítulo, guardado, y la comparación con el récord de él (vacío no muestra
+nada). Al llegar arriba, la carta descifrada.
+
+**Cerrando esta fase el juego está entero y sigue escondido.** Si los créditos
+se acaban justo aquí, se acaban en el mejor lugar posible.
+
+### 7 · Teléfono y números
+
+Se prueba en el Android de ella, entrando a `/luna` escribiendo la ruta a mano,
+y se ajustan los números en `luna.ts`. También `prefers-reduced-motion` y los
+sonidos con su interruptor, apagados de fábrica.
+
+### 8 · El colado
+
+El pato con peluca. Es adorno y va acá aposta: si el tiempo o los créditos
+aprietan, se salta entero sin tocar nada más.
+
+### 9 · La entrada por la luna
+
+La luna de la portada tocable, con su brillo lento cada quince o veinte
+segundos; la transición de cámara desde la portada; la luna más llena si ya
+terminó, para releer la carta sin volver a jugar.
+
+Es la fase que hace visible todo lo anterior, y por eso es la última. Antes de
+empezarla hay que **recordarle que juegue los tres capítulos** para llenar los
+récords: sin eso el rival no existe.
+
+### Aparte, cuando haya un hueco
+
+**El momento de Boo en la línea del tiempo** (23 de diciembre de 2024, el
+arreglo de Hot Wheels, el lazo amarillo) y sacarle su frase comodín. No bloquea
+ninguna fase y no toca el juego: es solo contenido, así que cabe en una sesión
+corta o con pocos créditos. Sigue abierto cómo entra una fecha tan anterior a
+todo lo demás en la línea.
