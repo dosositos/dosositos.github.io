@@ -453,43 +453,59 @@ amarillo en los hitos, el cartel de presentación con su retrato bordado, los
 primeros diez saltos regalados y **el empujón**, que es el poder que se gana al
 cerrarlo. Es la fase más cara de las tres y la plantilla de las otras dos.
 
-### Lo primero de la sesión: tres cosas cortas
+### Lo primero de la sesión: dos cosas cortas
 
-1. **El cartel de la primera pantalla.** Hay que contar el mantener y soltar, y
-   sobre todo **lo del cansancio**: que se desmaye sin haber avisado nunca de
-   que eso podía pasar es tramposo. Va en el mismo espíritu que la pantalla del
-   juego de frases, que explica que las frases están normalizadas.
-2. **Comprobar en el teléfono que el progreso se guarda.** Es lo único de la
-   fase 2 que no pude probar yo: hay que terminar el capítulo para que se
-   escriba en el `localStorage`. Subí el nivel de prueba hasta arriba, cerrá la
-   página, volvé a entrar y contame si el contador de pasitos siguió sumando.
-3. **Jugalo entero y decime de dificultad.** El robot lo sube en 19 pasitos sin
-   caerse, pero el robot calcula cada salto con una fórmula y vos no. Lo que
-   quiero saber: si el primer tramo es lo bastante fácil para aprender, si el
-   último tramo pide demasiada puntería, y si aburre esperar a que la tortuga
-   camine hasta el borde.
+1. **Comprobar en el teléfono que el progreso se guarda.** Es lo único que no
+   pude probar yo, y ahora se puede sin abrir nada raro: al llegar arriba,
+   debajo de «llegaste», sale lo de esa subida y una línea más chiquita con lo
+   de **todas** las veces. Levantá el servidor con `npm run dev:telefono`, abrí
+   en el teléfono la dirección de red que imprime (la del `192.168…`) con
+   `/#/luna` al final, subí hasta arriba, cerrá la pestaña, volvé a entrar y
+   subí de nuevo. Si el total creció, el `localStorage` anda.
+2. **Jugalo otra vez con lo de anoche puesto** y contame de dificultad. Ahora
+   caerse cuesta de verdad, así que el nivel de prueba se siente distinto sin
+   haberle movido una sola plataforma.
 
-### Lo que necesito que decidas
+### Lo que se hizo la noche del 28, con lo que jugaste
 
-Ninguna me bloquea: si no decís nada, tomo la opción que dejo marcada.
+- **El cartel de antes de empezar.** Cuenta el mantener y soltar, el cansancio
+  (que era lo importante: desmayarse sin aviso previo parece un error del
+  juego) y para qué sirven los lazos. Está en `CARTEL`, en
+  `src/content/luna.ts`. Detrás del texto el juego ya corre, con la tortuga
+  caminando por el suelo, pero el dedo no hace nada hasta que le da al botón.
+- **Los lazos avisan.** Al pisar uno sale «guardado aquí» arriba, dos segundos
+  y se va solo. El lazo encendido y latiendo se pasaba por alto jugando.
+- **Caerse cuesta.** Ahora se cae al bajar del último lazo, no al salir de la
+  pantalla. Eso era lo que hacía que casi nunca te cayeras: errar un salto te
+  dejaba dos escalones más abajo y volvías a subir como si nada, así que los
+  lazos no llegaban a usarse jamás. Y se la ve caerse entera hasta que sale por
+  abajo de la pantalla, con la cámara quieta. El margen es un número,
+  `CAIDA.margenBajoElLazo`.
+- **La ayuda de abajo se va sola** después del tercer salto, y vuelve si pasa
+  medio minuto sin saltar. Los dos números están en `AYUDA`.
+- **El arnés de pruebas se mudó a `scripts/juego-luna/`** y viaja con el
+  repositorio. Con nombres de siempre: `npm run luna:probar` (¿se puede pasar el
+  nivel?), `npm run luna:mapa` (a qué distancias se puede aterrizar),
+  `npm run luna:ver` (fotos del juego andando) y `npm run luna:tortuga` (el
+  banco de poses). Las fotos que sacan siguen cayendo en `private/notas/`.
 
-- **¿El arnés de pruebas se versiona?** Todo lo que hace `private/notas/`
-  (`probar-luna.mjs`, `mapa-saltos.mjs`, `tortuga-banco.html`, `ver-luna.mjs`,
-  `ver-tortuga.mjs`, `alias-luna.mjs`) está ignorado por git, así que si un día
-  se pierde esa carpeta se pierde entero. **No tiene nada privado adentro**: es
-  código de prueba del juego. *Mi voto: moverlo a `scripts/juego-luna/` y que
-  viaje con el repositorio, como el resto de las herramientas.*
-- **¿La ayuda de abajo se va?** Hoy «mantené apretado y soltá» se queda toda la
-  partida. *Mi voto: que se desvanezca después del tercer salto y vuelva a
-  aparecer si pasa medio minuto sin que salte, por si se quedó trabada.*
-- **¿La tortuga tiene nombre?** Es el personaje del regalo entero y ahora mismo
-  se llama «la tortuga». Si tiene nombre, el cartel del final puede decirlo y
-  el chiste crece. *Mi voto: que se lo pongas vos, o que se lo ponga ella la
-  primera vez que juegue.*
-- **¿Cuántas plataformas por capítulo?** El de prueba tiene 20 y se sube en 50
-  segundos jugando perfecto. Con las caídas de verdad, tres capítulos así darían
-  algo cercano a los 15-25 minutos que dice el plan. *Mi voto: dejar 18-22 por
-  capítulo y ajustar después de verte jugar.*
+### Las decisiones que me dejaste
+
+- **El arnés se versiona.** Hecho.
+- **La ayuda de abajo se va.** Hecha, con los números a la vista en `AYUDA`.
+- **El nombre de la tortuga sigue abierto.** Mi voto sigue siendo que se lo
+  pongás vos, o que se lo ponga ella la primera vez que juegue. Mientras tanto
+  es «la tortuga» y el cartel del final no la nombra.
+- **Cuántas plataformas: 32 por capítulo y 5 lazos.** Me dijiste que lo pensara
+  yo con lo que hablamos, y esto es lo que sale de los números. El de prueba
+  tiene 20 y el robot lo sube en 50 segundos jugando perfecto, o sea unos 2,6
+  segundos por salto contando la caminata hasta la orilla. Tres capítulos así
+  son tres minutos, no los 15-25 que dice el plan. Con 32 plataformas cada
+  capítulo son unos 85 segundos limpios, y jugando de verdad (con caídas, y en
+  Boo con la pista desvaneciéndose detrás) se va a los tres o cuatro minutos.
+  Los tres capítulos más el último trecho quedan entre 12 y 15 minutos, que es
+  adonde creo que hay que apuntar: los 15-25 del plan son mucho rato de pulso
+  fino en un teléfono. Los lazos van cada seis o siete plataformas.
 
 ### Ideas que se me ocurrieron y no están en el plan
 
@@ -520,10 +536,6 @@ Ninguna es urgente y todas se pueden tirar a la basura.
 El plan completo —mecánica, los tres mundos, valores de la física y orden de
 trabajo— vive en **`plan-juego-luna.md`**, en la raíz. Se lee antes de escribir
 la primera línea.
-
-**Antes de empezar la fase 2, abrí `/luna` y saltá un rato.** La fase 1 no se
-cierra hasta que el salto se sienta bien, y eso no lo puedo medir yo. Si algo
-está pesado, lento o corto, son seis números en `src/content/luna.ts`.
 
 **Lo del 28 de agosto (fase 2):**
 

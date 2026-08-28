@@ -1,4 +1,4 @@
-import { CANSANCIO, MUNDO, SALTO, TORTUGA } from '@/content/luna'
+import { CAIDA, CANSANCIO, MUNDO, SALTO, TORTUGA } from '@/content/luna'
 import type { EscenaLuna, EventoLuna, Nivel, Plataforma } from '@/types'
 
 /**
@@ -181,17 +181,24 @@ export function crearMotor({ nivel, pintar, alEvento }: OpcionesMotor): Motor {
   function paso() {
     reloj += PASO
 
+    if (cayendo > 0) {
+      // Mientras se cae no manda nadie: sigue bajando y no choca con
+      // nada. La cámara se queda quieta a propósito, para que se la
+      // vea salir por abajo de la pantalla. Que desapareciera en pleno
+      // aire parecería un error del juego.
+      cayendo -= PASO
+      t.vy += SALTO.gravedad * PASO
+      t.x += t.vx * PASO
+      t.y += t.vy * PASO
+      if (cayendo <= 0) volverAlHito()
+      return
+    }
+
     // La cámara persigue a la tortuga sin alcanzarla del todo: se
     // acerca un octavo de la distancia en cada paso, y eso solo ya da
     // el suavizado. Al ir a paso fijo, sale igual en cualquier
     // teléfono.
     camara += (camaraObjetivo() - camara) * 0.12
-
-    if (cayendo > 0) {
-      cayendo -= PASO
-      if (cayendo <= 0) volverAlHito()
-      return
-    }
 
     t.desdeSalto += PASO * 1000
     t.desdeAterrizaje += PASO * 1000
@@ -269,6 +276,22 @@ export function crearMotor({ nivel, pintar, alEvento }: OpcionesMotor): Motor {
         t.mirando = -1
       }
 
+      // Se cae si baja del último lazo, aunque quede parada en una
+      // plataforma buena. Se decide antes de mirar las plataformas
+      // justo para eso, para que aterrizar ahí abajo no la salve.
+      // Sin esta regla los lazos no se usaban nunca: errar un salto
+      // la dejaba dos escalones más abajo y volvía a subir como si
+      // nada. Salir de la pantalla se queda de red, por si acaso.
+      if (t.y > reaparicion.y + CAIDA.margenBajoElLazo || t.y > camara + altoVista + 120) {
+        caidas += 1
+        cayendo = MS_CAIDA / 1000
+        t.cargando = false
+        t.carga = 0
+        t.cargaMs = 0
+        avisar('caida')
+        return
+      }
+
       // Solo se aterriza cayendo, y solo si en este paso se cruzó la
       // línea de arriba de la plataforma. Comparar el antes con el
       // después es lo que evita atravesarla en un salto rápido.
@@ -299,15 +322,6 @@ export function crearMotor({ nivel, pintar, alEvento }: OpcionesMotor): Motor {
             break
           }
         }
-      }
-
-      if (t.y > camara + altoVista + 120) {
-        caidas += 1
-        cayendo = MS_CAIDA / 1000
-        t.cargando = false
-        t.carga = 0
-        t.cargaMs = 0
-        avisar('caida')
       }
     }
   }

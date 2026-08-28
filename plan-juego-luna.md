@@ -22,9 +22,10 @@ intentar**. El juego de las frases se contesta; este se aprende.
 | Personaje | La tortuga, por la frase |
 | Capítulos | Tres, por peluche, en orden de llegada: **Boo → Ovi → Nico** |
 | Poderes | Uno por peluche ganado. **Se gastan**: un uso por capítulo, sin recarga |
-| Al caer | Vuelve al último hito. Intentos infinitos |
+| Al caer | Vuelve al último hito. Intentos infinitos. Baja del hito y ya es caída, aunque quede parada más abajo |
+| Tamaño de un capítulo | 32 plataformas y 5 lazos, uno cada seis o siete (decidido el 28 de agosto) |
 | Aguantar de más | Se agota y se desmaya. Pierde el salto y hay que esperarla |
-| Duración | 15-25 minutos la primera vez |
+| Duración | 12-15 minutos la primera vez |
 | Marcador | El récord de él, esperándola en cada capítulo |
 | Premio | Una carta suya, solo ahí. Se escribe con él en la sesión |
 | Entrada | Escondida: se toca la luna de la portada. La luna se hace notar |

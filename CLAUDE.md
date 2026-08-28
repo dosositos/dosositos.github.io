@@ -121,6 +121,7 @@ textos de pantalla, que son la voz de Armando contando.
 
 ```bash
 npm run dev              # servidor local
+npm run dev:telefono     # igual, pero abierto a la red (para probar en el teléfono)
 npm run build            # compilar
 npm run typecheck        # revisar tipos
 
@@ -137,6 +138,10 @@ npm run fotos:optimizar  # fotos-originales/ → private/media/ en AVIF, y las c
 npm run fotos:cifrar     # solo el cifrado (private/media/ → public/cifrado/media/)
 npm run peluches:preparar # los retratos bordados → src/assets/peluches/ (en claro)
 npm run peluches:hoy     # ¿dónde está escondido cada uno hoy? (-- --semana, -- 2026-08-24)
+npm run luna:probar      # ¿se puede pasar el nivel del juego de la luna?
+npm run luna:mapa        # a qué distancias se puede aterrizar según lo que haya que subir
+npm run luna:ver         # fotos del juego andando (necesita npm run dev en otra terminal)
+npm run luna:tortuga     # el banco de poses de la tortuga
 npm run secretos:cifrar  # private/publicable/ → public/cifrado/ (corre solo por hook)
 npm run revisar          # ¿está todo cifrado y al día? (también antes de build)
 ```

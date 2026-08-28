@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>La tortuga, pose por pose</title>
+    <style>
+      body { margin: 0; background: #0b1026; font-family: system-ui; }
+      canvas { display: block; }
+    </style>
+  </head>
+  <body>
+    <!--
+      Banco de pruebas del personaje. No es parte de la web: sirve para
+      ver todas las poses de un vistazo mientras se le ajusta el dibujo,
+      sin tener que jugar hasta que la tortuga se caiga.
+
+      Se mira con el servidor de siempre andando:
+        npm run dev
+        http://localhost:5173/scripts/juego-luna/tortuga-banco.html
+    -->
+    <canvas id="lienzo"></canvas>
+    <script type="module">
+      import { dibujarTortuga } from '/src/juego-luna/tortuga.ts'
+
+      const POSES = [
+        ['camina 1', { caminado: 0.0 }],
+        ['camina 2', { caminado: 0.5 }],
+        ['camina 3', { caminado: 1.0 }],
+        ['camina 4', { caminado: 1.5 }],
+        ['carga 15%', { cargando: true, carga: 0.15 }],
+        ['carga 55%', { cargando: true, carga: 0.55 }],
+        ['carga llena', { cargando: true, carga: 1 }],
+        ['despega', { enSuelo: false, vy: -420 }],
+        ['sube', { enSuelo: false, vy: -160 }],
+        ['punto alto', { enSuelo: false, vy: -10 }],
+        ['cae', { enSuelo: false, vy: 320 }],
+        ['cae fuerte', { enSuelo: false, vy: 620 }],
+        ['aterriza', { desdeAterrizaje: 15 }],
+        ['parpadea', { caminado: 0.25, reloj: 0.01 }],
+        ['por agotarse', { cargando: true, carga: 1, agobio: 0.8 }],
+        ['se desmaya', { cansancio: 0.9 }],
+        ['tirada', { cansancio: 0.5 }],
+        ['se levanta', { cansancio: 0.12 }],
+      ]
+
+      const ESCALA = 3.0
+      const CELDA = { ancho: 78, alto: 88 }
+      const COLUMNAS = 5
+
+      const lienzo = document.getElementById('lienzo')
+      const ctx = lienzo.getContext('2d')
+      const filas = Math.ceil(POSES.length / COLUMNAS)
+
+      // debajo de las poses: el ciclo de caminata entero y una tira a
+      // tamaño de teléfono, que es como se va a ver de verdad
+      const ALTO_TIRA = 76
+      const ALTO_REAL = 46
+
+      const densidad = 2
+      const anchoTotal = COLUMNAS * CELDA.ancho * ESCALA
+      const altoTotal = (filas * CELDA.alto + ALTO_TIRA + ALTO_REAL) * ESCALA
+      lienzo.width = anchoTotal * densidad
+      lienzo.height = altoTotal * densidad
+      lienzo.style.width = `${anchoTotal}px`
+      lienzo.style.height = `${altoTotal}px`
+      ctx.scale(densidad * ESCALA, densidad * ESCALA)
+
+      const escenaBase = (cambios) => ({
+        x: 0, y: 0, mirando: 1, carga: 0, cargando: false, enSuelo: true,
+        caminado: 0, vy: 0, reloj: 1.2, desdeSalto: 9999, desdeAterrizaje: 9999,
+        cayendo: false, agobio: 0, cansancio: 0, plataformas: [], ...cambios,
+      })
+
+      POSES.forEach(([nombre, cambios], i) => {
+        const col = i % COLUMNAS
+        const fila = Math.floor(i / COLUMNAS)
+        ctx.save()
+        ctx.translate(col * CELDA.ancho, fila * CELDA.alto)
+
+        ctx.fillStyle = '#2a3157'
+        ctx.fillRect(4, CELDA.alto - 14, CELDA.ancho - 8, 5)
+        ctx.fillStyle = 'rgba(248,244,232,0.45)'
+        ctx.font = '5px system-ui'
+        ctx.fillText(nombre, 6, 10)
+
+        dibujarTortuga(ctx, escenaBase({ x: CELDA.ancho / 2, y: CELDA.alto - 14, ...cambios }))
+        ctx.restore()
+      })
+
+      // ── el ciclo de caminata, ocho fotogramas seguidos ──
+      ctx.save()
+      ctx.translate(0, filas * CELDA.alto)
+      ctx.fillStyle = 'rgba(248,244,232,0.45)'
+      ctx.font = '5px system-ui'
+      ctx.fillText('el ciclo de caminata, paso a paso', 6, 10)
+      ctx.fillStyle = '#2a3157'
+      ctx.fillRect(4, ALTO_TIRA - 14, anchoTotal / ESCALA - 8, 5)
+      for (let i = 0; i < 8; i += 1) {
+        dibujarTortuga(ctx, escenaBase({
+          x: 26 + i * 42,
+          y: ALTO_TIRA - 14,
+          caminado: (i / 8) * 2,
+        }))
+      }
+      ctx.restore()
+
+      // ── a tamaño de teléfono ──
+      ctx.save()
+      ctx.translate(0, filas * CELDA.alto + ALTO_TIRA)
+      ctx.fillStyle = 'rgba(248,244,232,0.45)'
+      ctx.font = '5px system-ui'
+      ctx.fillText('así de grande se ve en el teléfono (1 a 1)', 6, 10)
+      ctx.fillStyle = '#2a3157'
+      ctx.fillRect(4, ALTO_REAL - 12, anchoTotal / ESCALA - 8, 4)
+      const chicas = [{}, { cargando: true, carga: 1 }, { enSuelo: false, vy: -300 }, { enSuelo: false, vy: 500 }]
+      chicas.forEach((c, i) => {
+        ctx.save()
+        ctx.translate(30 + i * 44, ALTO_REAL - 12)
+        ctx.scale(1 / ESCALA, 1 / ESCALA)
+        dibujarTortuga(ctx, escenaBase({ x: 0, y: 0, caminado: 0.4, ...c }))
+        ctx.restore()
+      })
+      ctx.restore()
+
+      document.title = 'listo'
+    </script>
+  </body>
+</html>

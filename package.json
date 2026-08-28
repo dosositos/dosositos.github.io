@@ -6,6 +6,7 @@
   "description": "Osito y Osita — nuestra madriguera en internet",
   "scripts": {
     "dev": "vite",
+    "dev:telefono": "vite --host",
     "prebuild": "node scripts/revisar-publicacion.mjs",
     "build": "vite build",
     "revisar": "node scripts/revisar-publicacion.mjs",
@@ -22,6 +23,10 @@
     "peluches:preparar": "node scripts/preparar-peluches.mjs",
     "peluches:hoy": "node scripts/peluches-hoy.mjs",
     "secretos:cifrar": "node scripts/cifrar-contenido.mjs",
+    "luna:probar": "node --import ./scripts/juego-luna/alias-luna.mjs scripts/juego-luna/probar-luna.mjs",
+    "luna:mapa": "node --import ./scripts/juego-luna/alias-luna.mjs scripts/juego-luna/mapa-saltos.mjs",
+    "luna:ver": "node scripts/juego-luna/ver-luna.mjs",
+    "luna:tortuga": "node scripts/juego-luna/ver-tortuga.mjs",
     "diccionario:preparar": "node scripts/preparar-diccionario.mjs && node scripts/cifrar-contenido.mjs"
   },
   "dependencies": {

@@ -183,7 +183,10 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
         dibujarPlataforma(ctx, p, escena.hitoAlcanzado, escena.reloj)
       }
 
-      if (!escena.cayendo) {
+      // Se dibuja siempre que entre en pantalla, cayéndose incluida:
+      // la caída se ve entera hasta que sale por abajo. Desaparecer en
+      // pleno aire parecería un error del juego.
+      if (escena.y < escena.camara + altoVista + 60) {
         dibujarSombra(ctx, escena)
         dibujarTortuga(ctx, escena)
         if (escena.cargando) dibujarBarra(ctx, escena)

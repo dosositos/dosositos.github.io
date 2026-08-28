@@ -40,10 +40,10 @@ export const SALTO = {
    * Fuerza del salto a barra llena.
    *
    * El plan traía 700 y 1400, tanteados a ojo. Midiéndolo con
-   * `private/notas/probar-luna.mjs` resultó que con 1400 el salto
-   * largo avanza 671 px de lado, y el mundo mide 360 de ancho: se
-   * pasaba de pared a pared. Con 930 el salto más largo avanza unos
-   * 300 y sube unos 160, que entra bien en la pantalla.
+   * `npm run luna:probar` resultó que con 1400 el salto largo avanza
+   * 671 px de lado, y el mundo mide 360 de ancho: se pasaba de pared
+   * a pared. Con 930 el salto más largo avanza unos 300 y sube unos
+   * 160, que entra bien en la pantalla.
    */
   impulsoMaximo: 930,
 
@@ -90,6 +90,20 @@ export const CANSANCIO = {
   msTirada: 1300,
 }
 
+/**
+ * Caerse.
+ *
+ * Bajar del último lazo que pisó cuenta como caída, aunque haya
+ * quedado parada en una plataforma de más abajo. Es lo que hace que
+ * los lazos sirvan de algo: como la pista de abajo sigue estando ahí,
+ * si no fuera por esta regla errar un salto costaría nada más volver
+ * a subir dos escalones.
+ */
+export const CAIDA = {
+  /** Cuánto puede bajar del último lazo antes de que cuente. */
+  margenBajoElLazo: 24,
+}
+
 /** La tortuga: cómo camina y cuánto ocupa. */
 export const TORTUGA = {
   /** Velocidad de la caminata. Es el reloj del juego. */
@@ -129,7 +143,7 @@ export const TORTUGA = {
  *
  * Antes de dar por bueno un cambio, comprobalo sin abrir el navegador:
  *
- *   node --import ./private/notas/alias-luna.mjs private/notas/probar-luna.mjs
+ *   npm run luna:probar
  *
  * Ese comando prueba cada salto del nivel con todas las fuerzas de la
  * barra y avisa si algún tramo no se puede pasar.
@@ -177,9 +191,48 @@ export const NIVEL_DE_PRUEBA: PlataformaEscrita[] = [
   { x: 110, ancho: 145, altura: 1840, hito: true },
 ]
 
+/**
+ * La ayuda de abajo.
+ *
+ * «Mantené apretado y soltá» hace falta los primeros segundos y
+ * después estorba: es una línea de texto encima del juego. Se va sola
+ * cuando ya está claro que entendió, y vuelve a asomarse si pasa un
+ * rato largo sin saltar, por si se quedó trabada.
+ */
+export const AYUDA = {
+  /** Después de cuántos saltos se va sola. */
+  saltosParaIrse: 3,
+
+  /** Si pasa este rato sin saltar, vuelve. */
+  msDeOlvido: 30000,
+}
+
+/**
+ * El cartel de antes de empezar.
+ *
+ * Va porque el cansancio no se puede aprender cayéndose: si se desmaya
+ * sin haber avisado nunca de que aguantar la barra tenía un límite,
+ * parece que el juego se rompió. Es el mismo trato que la primera
+ * pantalla del juego de las frases.
+ */
+export const CARTEL = {
+  titulo: 'Antes de subir, osita',
+  parrafos: [
+    'La tortuga camina sola de un lado al otro y no se para nunca. Apretá la pantalla y ahí sí se para, se agacha y la barra se le va llenando. Cuando soltás, sale disparada hacia donde venía mirando. Un solo dedo, y dos cosas que decidir: cuándo y con cuánta fuerza.',
+    'Aguantar la barra cansa. Si te quedás apretando de más se marea, se cae de espaldas con las estrellitas dando vueltas y pierde ese salto. Antes de que pase, la barra se pone roja. No perdés nada más, solo hay que esperar a que se levante.',
+    'Los lazos amarillos guardan por dónde ibas. Si te caés volvés al último que pisaste, nunca hasta abajo del todo.',
+  ],
+  boton: 'a la luna',
+  pie: 'Se sube a pasitos. No hay apuro.',
+}
+
 /** Los textos de pantalla del juego. */
 export const TEXTOS = {
   ayudaTocar: 'mantené apretado y soltá',
   ayudaTeclado: 'o la barra espaciadora',
+  /** Al pisar un lazo. Discreto y corto: se lee de reojo. */
+  hito: 'guardado aquí',
   llegada: 'llegaste',
+  /** Lo acumulado de todas las veces, debajo de lo de esta subida. */
+  enTotal: 'en total',
 }
