@@ -500,6 +500,11 @@ export interface EscenaLuna {
    * (entero) a 0 (ya no está). Va por el índice de la plataforma.
    */
   vidaDeLaPista: number[]
+  /**
+   * Desde qué punto de su vida un tramo empieza a parpadear, de 1 a
+   * 0. Cambia con las estrellas pisadas, porque la pista se apura.
+   */
+  avisoDeLaPista: number
   /** Si todavía le queda el empujón por gastar en este capítulo. */
   tieneEmpujon: boolean
   /** Cuántos saltos lleva dados. Son los pasitos de la tortuga. */

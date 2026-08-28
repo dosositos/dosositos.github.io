@@ -1,5 +1,6 @@
 import { useReducedMotion } from 'motion/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { AYUDA, CARTEL, TEXTOS } from '@/content/luna'
 import { crearPintor } from '@/juego-luna/dibujo'
 import { conectarEntrada } from '@/juego-luna/entrada'
@@ -8,6 +9,77 @@ import { capituloNumero, construirNivel } from '@/juego-luna/mundos'
 import { anotarCapitulo, tienePoder } from '@/juego-luna/progreso'
 import { RETRATOS } from '@/lib/retratos'
 import type { EventoLuna, ProgresoLuna } from '@/types'
+
+/**
+ * El marcador de poderes, abajo a la izquierda.
+ *
+ * Un icono por poder ganado y un puntito por carga: lleno mientras le
+ * quede, hueco cuando ya lo gastó. Con letras («te queda un empujón»)
+ * había que leer en medio de un salto, y en medio de un salto nadie
+ * lee. Cuando estén los tres poderes, esto es una fila de tres.
+ */
+const DIBUJO_DEL_PODER: Record<string, ReactNode> = {
+  // El empujón: dos galones hacia adelante, los mismos de los tramos
+  // de impulso.
+  empujon: (
+    <>
+      <path d="M5 5l5 5-5 5" />
+      <path d="M11 5l5 5-5 5" />
+    </>
+  ),
+}
+
+function MarcadorDePoderes({
+  poderes,
+}: {
+  poderes: { id: string; nombre: string; cargas: number; sinGastar: number }[]
+}) {
+  if (poderes.length === 0) return null
+
+  return (
+    <div className="pointer-events-none absolute bottom-5 left-4 flex gap-3">
+      {poderes.map((poder) => {
+        const entero = poder.sinGastar > 0
+        return (
+          <div key={poder.id} className="flex flex-col items-center gap-1">
+            <div
+              aria-label={poder.nombre}
+              className={`grid h-9 w-9 place-items-center rounded-xl border transition-colors duration-500 ${
+                entero
+                  ? 'border-tulipan-amarillo/70 bg-tulipan-amarillo/15 text-tulipan-amarillo'
+                  : 'border-margarita/15 bg-margarita/5 text-margarita/25'
+              }`}
+            >
+              <svg
+                viewBox="0 0 20 20"
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                {DIBUJO_DEL_PODER[poder.id]}
+              </svg>
+            </div>
+
+            <div className="flex gap-1">
+              {Array.from({ length: poder.cargas }, (_, i) => (
+                <span
+                  key={i}
+                  className={`h-1.5 w-1.5 rounded-full transition-colors duration-500 ${
+                    i < poder.sinGastar ? 'bg-tulipan-amarillo/80' : 'bg-margarita/20'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
 
 /**
  * A la luna, a pasitos de tortuga.
@@ -267,11 +339,20 @@ export function Luna() {
         </p>
       ) : null}
 
-      {/* ── El empujón, mientras le quede ─────────────────────────── */}
-      {empezado && empujonEntero && !llegada ? (
-        <p className="pointer-events-none absolute bottom-6 left-5 text-xs text-tulipan-amarillo/55">
-          {TEXTOS.empujonListo}
-        </p>
+      {/* ── Los poderes ganados ───────────────────────────────────── */}
+      {empezado && conEmpujon && !llegada ? (
+        <MarcadorDePoderes
+          poderes={[
+            {
+              id: capitulo.poder.id,
+              nombre: capitulo.poder.nombre,
+              // Un uso por capítulo y sin recarga. El día que algún
+              // poder tenga dos, este número sale de su ficha.
+              cargas: 1,
+              sinGastar: empujonEntero ? 1 : 0,
+            },
+          ]}
+        />
       ) : null}
 
       {/* ── El cierre del capítulo, con el poder ganado ───────────── */}

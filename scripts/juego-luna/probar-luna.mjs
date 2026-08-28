@@ -723,6 +723,18 @@ console.log('')
    El poder que se gana con Boo: un toque en el aire, mientras cae, y
    llega más lejos. Se mide contra el mismo salto sin gastarlo. */
 
+// Cuánto aguanta la pista según cuántas estrellas lleve pisadas: el
+// capítulo se va apurando solo, sin mover una plataforma.
+if (capitulo.seDesvanece) {
+  const cuantas = capitulo.plataformas.filter((p) => p.hito).length
+  const duras = []
+  for (let i = 0; i <= cuantas; i += 1) {
+    const ms = Math.max(PISTA.msMinimo, PISTA.msParaIrse - i * PISTA.msMenosPorEstrella)
+    duras.push((ms / 1000).toFixed(1) + 's')
+  }
+  console.log(`   la pista aguanta ${duras.join(' → ')} según las estrellas pisadas`)
+}
+console.log('')
 console.log('  El empujón')
 
 /** El mismo salto flojo, con y sin gastar el empujón en la bajada. */

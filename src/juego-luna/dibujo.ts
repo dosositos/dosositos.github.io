@@ -34,14 +34,34 @@ const COLOR = {
   barraFondo: 'rgba(11, 16, 38, 0.55)',
   sombra: 'rgba(11, 16, 38, 0.35)',
 
+  /* Las estrellitas de papel de los puntos de guardado. Son las
+     mismas del frasco: papel doblado a mano, con un pliegue de cada
+     dos en sombra. Van en los tres capítulos, por eso no son de
+     ningún peluche. */
+  estrellaPapel: '#f8f4e8',
+  estrellaPliegue: '#cfc7b4',
+  estrellaPapelApagada: '#5d6488',
+  estrellaPliegueApagado: '#4a5070',
+
   /* El capítulo de Boo: la pista naranja del arreglo de Hot Wheels y
-     las cañas de bambú, que es de donde le viene el nombre. */
+     el bambú, que es de donde le viene el nombre. La pista de verdad
+     es un canal, así que lleva tres naranjas: la pared de adelante,
+     su filo iluminado y el hueco en sombra por donde correría el
+     carro. */
   pista: '#c2521c',
-  pistaLuz: '#f5822b',
-  pistaSoporte: '#8f3b13',
-  bambu: '#3c6b4a',
-  bambuClaro: '#5c9163',
-  carrito: '#7a8fd6',
+  pistaLuz: '#f79340',
+  pistaFondo: '#9c400f',
+  pistaCanal: '#4a1c07',
+  pistaSombra: '#7d3210',
+  impulso: '#f5c451',
+  bambu: '#376243',
+  bambuNudo: '#5c8e64',
+  bambuHoja: '#3f6e49',
+  /* Las cañas que sostienen la pista van más apagadas que las del
+     fondo: están detrás del tramo y en su sombra, y con el mismo
+     verde competían con la pista por la mirada. */
+  bambuSoporte: '#25422e',
+  bambuSoporteNudo: '#3c6444',
 }
 
 /** Cuánto dura el fogonazo del despegue, en milisegundos. */
@@ -85,31 +105,70 @@ function sembrarEstrellas(cantidad: number, desde: number, hasta: number) {
 }
 
 /**
- * Las cañas de bambú del capítulo de Boo, sembradas de una vez con la
+ * Las matas de bambú del capítulo de Boo, sembradas de una vez con la
  * misma cuenta que las estrellas: el bambú no puede cambiar de sitio
  * entre un frame y el siguiente.
  *
- * Crecen del borde de la pantalla hacia adentro, detrás de la pista,
- * y nunca en el medio: ahí estorbarían para ver dónde cae.
+ * Van pegadas a los dos bordes y **de punta a punta del capítulo**, de
+ * más abajo del suelo hasta más arriba de la cima. Una caña que
+ * empieza y termina a la vista parece un palo colgado del aire: estas
+ * entran y salen de la pantalla, como un bambusal de verdad.
  */
 function sembrarBambu(desde: number, hasta: number) {
-  const canas: { x: number; y: number; alto: number; grosor: number; hojas: number }[] = []
+  const matas: {
+    x: number
+    desde: number
+    hasta: number
+    canas: { dx: number; grosor: number; inclinacion: number; hojaCada: number }[]
+  }[] = []
   let semilla = 20241223
   const siguiente = () => {
     semilla = (semilla * 1103515245 + 12345) % 2147483648
     return semilla / 2147483648
   }
-  for (let y = hasta; y > desde; y -= 120 + siguiente() * 90) {
-    const pegadoAlBorde = siguiente() < 0.5
-    canas.push({
-      x: pegadoAlBorde ? 4 + siguiente() * 26 : MUNDO.ancho - 4 - siguiente() * 26,
-      y,
-      alto: 120 + siguiente() * 150,
-      grosor: 4 + siguiente() * 4,
-      hojas: 2 + Math.floor(siguiente() * 3),
+
+  for (const orilla of [0, 1]) {
+    for (let i = 0; i < 2; i += 1) {
+      const cuantas = 3 + Math.floor(siguiente() * 3)
+      const canas = []
+      for (let c = 0; c < cuantas; c += 1) {
+        canas.push({
+          dx: (siguiente() - 0.5) * 26,
+          grosor: 4.5 + siguiente() * 4,
+          inclinacion: (siguiente() - 0.5) * 30,
+          hojaCada: 2 + Math.floor(siguiente() * 3),
+        })
+      }
+      matas.push({
+        x: orilla === 0 ? 10 + siguiente() * 22 : MUNDO.ancho - 10 - siguiente() * 22,
+        desde: desde - siguiente() * 200,
+        hasta: hasta + siguiente() * 200,
+        canas,
+      })
+    }
+  }
+  return matas
+}
+
+/**
+ * En qué tramos hay un carrito parqueado y de qué color. Cada tres o
+ * cuatro, y nunca en los de impulso ni en los de estrella, que ya
+ * tienen algo encima.
+ */
+function sembrarCarritos(nivel: Nivel) {
+  const colores = ['#c9455a', '#3f7fc4', '#e0a63a', '#5aa86a', '#8a6bc4']
+  const donde = new Map<number, { x: number; color: string }>()
+  for (const p of nivel.plataformas) {
+    if (p.hito || p.impulso || p.indice === 0) continue
+    if (p.indice % 3 !== 1) continue
+    donde.set(p.indice, {
+      // Parqueado hacia una punta, no en el medio, que es donde
+      // aterriza la tortuga.
+      x: p.indice % 2 === 0 ? p.x + 18 : p.x + p.ancho - 18,
+      color: colores[p.indice % colores.length],
     })
   }
-  return canas
+  return donde
 }
 
 /** Un par de loopings de pista al fondo, de adorno. */
@@ -141,11 +200,9 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
   // El decorado del capítulo. En los mundos que no son de pista se
   // queda vacío y no se dibuja nada.
   const esDePista = nivel.material === 'pista'
-  const canas = esDePista ? sembrarBambu(nivel.cima.y - 120, nivel.suelo + 60) : []
+  const matas = esDePista ? sembrarBambu(nivel.cima.y - 200, nivel.suelo + 200) : []
   const loopings = esDePista ? sembrarLoopings(nivel.cima.y, nivel.suelo) : []
-
-  /** Cuánto de la vida de un tramo es el aviso de que se va. */
-  const avisoDePista = PISTA.msDeAviso / PISTA.msParaIrse
+  const carritos = esDePista ? sembrarCarritos(nivel) : new Map()
 
   let anchoCss = 0
   let altoCss = 0
@@ -247,9 +304,9 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
         if (l.y + l.r < arriba || l.y - l.r > abajo) continue
         dibujarLooping(ctx, l)
       }
-      for (const c of canas) {
-        if (c.y - c.alto > abajo || c.y < arriba) continue
-        dibujarCana(ctx, c)
+      for (const m of matas) {
+        if (m.desde > abajo || m.hasta < arriba) continue
+        dibujarMata(ctx, m, arriba, abajo)
       }
 
       for (const p of escena.plataformas) {
@@ -262,12 +319,16 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
 
         ctx.globalAlpha = opacidadDeLaPista(
           vida,
-          avisoDePista,
+          escena.avisoDeLaPista,
           escena.reloj,
           pintor.movimientoReducido,
         )
         if (esDePista) dibujarPistaNaranja(ctx, p, escena.hitoAlcanzado, escena.reloj)
         else dibujarPlataforma(ctx, p, escena.hitoAlcanzado, escena.reloj)
+
+        const carrito = carritos.get(p.indice)
+        if (carrito) dibujarCarrito(ctx, carrito.x, p.y, carrito.color)
+
         ctx.globalAlpha = 1
       }
 
@@ -355,70 +416,14 @@ function dibujarPlataforma(
 
   // La línea de arriba es la que se pisa: se marca clara para que no
   // haya duda de dónde está el suelo.
-  ctx.strokeStyle = p.hito ? COLOR.hito : COLOR.plataformaLuz
+  ctx.strokeStyle = p.hito ? COLOR.estrellaPapel : COLOR.plataformaLuz
   ctx.lineWidth = 2
   ctx.beginPath()
   ctx.moveTo(p.x + 2, p.y + 1)
   ctx.lineTo(p.x + p.ancho - 2, p.y + 1)
   ctx.stroke()
 
-  if (p.hito) dibujarLazo(ctx, p, hitoAlcanzado >= p.indice, reloj)
-}
-
-/**
- * El lazo del hito. Apagado hasta que lo pisa y encendido después,
- * con un latido lento: sin eso no se entiende que se ganó algo.
- *
- * En el capítulo de Boo va a ser el lazo amarillo del arreglo de Hot
- * Wheels. Por ahora es la forma, sin la historia.
- */
-function dibujarLazo(ctx: CanvasRenderingContext2D, p: Plataforma, ganado: boolean, reloj: number) {
-  const x = p.x + p.ancho / 2
-  const y = p.y - 12
-  const latido = ganado ? 1 + Math.sin(reloj * 2.2) * 0.06 : 1
-
-  ctx.save()
-  ctx.translate(x, y)
-
-  if (ganado) {
-    ctx.globalAlpha = 0.22
-    ctx.fillStyle = COLOR.hito
-    ctx.beginPath()
-    ctx.arc(0, 0, 13, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.globalAlpha = 1
-  }
-
-  ctx.scale(latido, latido)
-  ctx.fillStyle = ganado ? COLOR.hito : COLOR.hitoApagado
-
-  // Las dos colas, que son las que hacen que se lea como un lazo y no
-  // como un bigote.
-  ctx.beginPath()
-  ctx.moveTo(-1.4, 1.2)
-  ctx.quadraticCurveTo(-5, 5, -7.5, 8.4)
-  ctx.lineTo(-3.6, 6.6)
-  ctx.closePath()
-  ctx.fill()
-  ctx.beginPath()
-  ctx.moveTo(1.4, 1.2)
-  ctx.quadraticCurveTo(5, 5, 7.5, 8.4)
-  ctx.lineTo(3.6, 6.6)
-  ctx.closePath()
-  ctx.fill()
-
-  // Las dos gasas y el nudo.
-  ctx.beginPath()
-  ctx.ellipse(-4.8, -1.4, 4.6, 3.4, -0.42, 0, Math.PI * 2)
-  ctx.fill()
-  ctx.beginPath()
-  ctx.ellipse(4.8, -1.4, 4.6, 3.4, 0.42, 0, Math.PI * 2)
-  ctx.fill()
-  ctx.beginPath()
-  ctx.arc(0, -1.4, 2.3, 0, Math.PI * 2)
-  ctx.fill()
-
-  ctx.restore()
+  if (p.hito) dibujarEstrellaDePapel(ctx, p, hitoAlcanzado >= p.indice, reloj)
 }
 
 /* ── El capítulo de Boo ──────────────────────────────────────────── */
@@ -448,12 +453,17 @@ function opacidadDeLaPista(
 }
 
 /**
- * Un tramo de pista naranja de Hot Wheels, visto de canto: el riel con
- * sus dos bordes levantados, las costillas de abajo y dos soportes que
- * se pierden hacia abajo.
+ * Un tramo de pista naranja de Hot Wheels.
  *
- * Los tramos de impulso llevan galones apuntando hacia donde lanzan, y
- * el borde de arriba de los lazos va dorado en vez de naranja.
+ * La pista de verdad es un canal: un piso plano por donde corre el
+ * carro y dos paredes levantadas a los lados. De perfil se ven las
+ * dos, la de atrás asomando por encima del canal y la de adelante
+ * tapándolo, y es esa doble línea lo que la hace leerse como pista y
+ * no como una tabla. Encima van las costillas del refuerzo y en las
+ * puntas las lengüetas con las que se enganchan los tramos.
+ *
+ * Se sostiene en cañas de bambú que bajan y se pierden en lo oscuro,
+ * que es el otro material del capítulo.
  */
 function dibujarPistaNaranja(
   ctx: CanvasRenderingContext2D,
@@ -462,37 +472,151 @@ function dibujarPistaNaranja(
   reloj: number,
 ) {
   const alto = 15
+  const izq = p.x
+  const der = p.x + p.ancho
 
-  // Los soportes, primero, que van detrás de todo.
-  ctx.fillStyle = COLOR.pistaSoporte
-  for (const donde of [0.24, 0.76]) {
-    const x = p.x + p.ancho * donde
-    ctx.fillRect(x - 2, p.y + alto - 2, 4, 22)
-    ctx.fillRect(x - 7, p.y + alto + 18, 14, 3)
-  }
+  dibujarSoportesDeBambu(ctx, p, alto)
 
-  // El canal de la pista.
+  // La pared de atrás, que asoma por encima del canal.
+  ctx.fillStyle = COLOR.pistaFondo
+  ctx.beginPath()
+  ctx.roundRect(izq + 2, p.y - 4, p.ancho - 4, 7, 2)
+  ctx.fill()
+
+  // El canal, en sombra: es el hueco por donde correría el carro.
+  ctx.fillStyle = COLOR.pistaCanal
+  ctx.fillRect(izq + 3, p.y - 1, p.ancho - 6, 4)
+
+  // La pared de adelante, que es la que ocupa casi todo.
   ctx.fillStyle = COLOR.pista
   ctx.beginPath()
-  ctx.roundRect(p.x, p.y, p.ancho, alto, 4)
+  ctx.roundRect(izq, p.y + 1, p.ancho, alto - 1, 3)
   ctx.fill()
 
-  // Las costillas de abajo, que es lo que hace que se lea como pista
-  // de juguete y no como un ladrillo.
-  ctx.fillStyle = COLOR.pistaSoporte
-  for (let x = p.x + 6; x < p.x + p.ancho - 4; x += 11) {
-    ctx.fillRect(x, p.y + alto - 4, 5, 3)
-  }
-
-  // El borde de arriba: es la línea que se pisa y tiene que leerse sin
-  // dudar. Dorado en los lazos, naranja claro en el resto.
-  ctx.fillStyle = p.hito ? COLOR.hito : COLOR.pistaLuz
+  // El filo de arriba de esa pared: la línea que se pisa. Va clara
+  // para que no haya duda de dónde está el suelo.
+  ctx.fillStyle = COLOR.pistaLuz
   ctx.beginPath()
-  ctx.roundRect(p.x, p.y, p.ancho, 3.5, 2)
+  ctx.roundRect(izq, p.y + 1, p.ancho, 2.5, 1.5)
   ctx.fill()
+
+  // Las costillas del refuerzo, por debajo.
+  ctx.fillStyle = COLOR.pistaSombra
+  for (let x = izq + 7; x < der - 5; x += 12) {
+    ctx.fillRect(x, p.y + alto - 5, 6, 3.5)
+  }
+  ctx.fillRect(izq, p.y + alto - 1.5, p.ancho, 1.5)
+
+  // Las lengüetas de enganche de las puntas, que es el detalle que
+  // termina de decir «esto es un tramo de pista de juguete».
+  ctx.fillStyle = COLOR.pista
+  ctx.fillRect(izq - 3, p.y + 4, 3, 6)
+  ctx.fillRect(der, p.y + 4, 3, 6)
 
   if (p.impulso) dibujarGalones(ctx, p, reloj)
-  if (p.hito) dibujarLazo(ctx, p, hitoAlcanzado >= p.indice, reloj)
+  if (p.hito) dibujarEstrellaDePapel(ctx, p, hitoAlcanzado >= p.indice, reloj)
+}
+
+/**
+ * Las cañas que sostienen un tramo. Bajan y se van apagando en lo
+ * oscuro en vez de terminar en el aire, que es lo que hacía que la
+ * pista pareciera flotar.
+ */
+function dibujarSoportesDeBambu(ctx: CanvasRenderingContext2D, p: Plataforma, alto: number) {
+  const largo = 74
+  const arriba = p.y + alto - 2
+
+  for (const donde of [0.26, 0.74]) {
+    const x = p.x + p.ancho * donde
+    const desvanecido = ctx.createLinearGradient(0, arriba, 0, arriba + largo)
+    desvanecido.addColorStop(0, COLOR.bambuSoporte)
+    desvanecido.addColorStop(0.55, COLOR.bambuSoporte)
+    desvanecido.addColorStop(1, 'rgba(37, 66, 46, 0)')
+
+    ctx.fillStyle = desvanecido
+    ctx.fillRect(x - 2.6, arriba, 5.2, largo)
+
+    // Los nudos, que son lo que la hace caña y no palo.
+    ctx.fillStyle = COLOR.bambuSoporteNudo
+    for (let y = arriba + 16; y < arriba + largo * 0.7; y += 22) {
+      ctx.globalAlpha = 1 - (y - arriba) / largo
+      ctx.fillRect(x - 3.4, y, 6.8, 2)
+    }
+    ctx.globalAlpha = 1
+
+    // La abrazadera con la que la caña agarra la pista.
+    ctx.fillStyle = COLOR.pistaSombra
+    ctx.fillRect(x - 4.4, arriba - 2, 8.8, 3)
+  }
+}
+
+/**
+ * La estrellita de papel que marca un punto de guardado.
+ *
+ * Es la misma que se dobla a mano y se guarda en el frasco, con sus
+ * pliegues alternos oscurecidos. Va aquí y no un lazo porque el lazo
+ * amarillo es de Boo y estos puntos son de los tres capítulos: la
+ * estrellita ya es de ellos dos y no de ninguno de los peluches.
+ *
+ * Apagada hasta que la pisa, encendida y latiendo después.
+ */
+function dibujarEstrellaDePapel(
+  ctx: CanvasRenderingContext2D,
+  p: Plataforma,
+  ganada: boolean,
+  reloj: number,
+) {
+  const x = p.x + p.ancho / 2
+  const y = p.y - 14
+  const r = 10
+  const latido = ganada ? 1 + Math.sin(reloj * 2.2) * 0.07 : 1
+
+  ctx.save()
+  ctx.translate(x, y)
+  ctx.scale(latido, latido)
+
+  if (ganada) {
+    const halo = ctx.createRadialGradient(0, 0, r * 0.5, 0, 0, r * 3)
+    halo.addColorStop(0, 'rgba(248, 244, 232, 0.3)')
+    halo.addColorStop(1, 'rgba(248, 244, 232, 0)')
+    ctx.fillStyle = halo
+    ctx.beginPath()
+    ctx.arc(0, 0, r * 3, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  // La silueta gordita de cinco puntas: el valle a poco más de la
+  // mitad del radio es lo que la hace de papel doblado y no de dibujo
+  // animado.
+  const punta = (i: number, radio: number) => {
+    const a = ((i * 36 - 90) * Math.PI) / 180
+    return [Math.cos(a) * radio, Math.sin(a) * radio] as const
+  }
+
+  ctx.fillStyle = ganada ? COLOR.estrellaPapel : COLOR.estrellaPapelApagada
+  ctx.beginPath()
+  for (let i = 0; i < 10; i += 1) {
+    const [px, py] = punta(i, i % 2 === 0 ? r : r * 0.55)
+    if (i === 0) ctx.moveTo(px, py)
+    else ctx.lineTo(px, py)
+  }
+  ctx.closePath()
+  ctx.fill()
+
+  // Los pliegues: uno de cada dos triángulos, sombreado.
+  ctx.fillStyle = ganada ? COLOR.estrellaPliegue : COLOR.estrellaPliegueApagado
+  for (let i = 0; i < 5; i += 1) {
+    const [vx, vy] = punta(i * 2 + 1, r * 0.55)
+    const [px, py] = punta(i * 2 + 2, r)
+    ctx.beginPath()
+    ctx.moveTo(0, 0)
+    ctx.lineTo(vx, vy)
+    ctx.lineTo(px, py)
+    ctx.closePath()
+    ctx.fill()
+  }
+
+  ctx.restore()
 }
 
 /**
@@ -506,7 +630,7 @@ function dibujarGalones(ctx: CanvasRenderingContext2D, p: Plataforma, reloj: num
   const medio = p.y + 8.5
 
   ctx.save()
-  ctx.strokeStyle = COLOR.hito
+  ctx.strokeStyle = COLOR.impulso
   ctx.lineWidth = 2.4
   ctx.lineCap = 'round'
   ctx.lineJoin = 'round'
@@ -519,7 +643,7 @@ function dibujarGalones(ctx: CanvasRenderingContext2D, p: Plataforma, reloj: num
     // Los de los extremos entran y salen apagándose, para que no
     // aparezcan de la nada en la orilla del tramo.
     const alOrilla = Math.min(x - p.x, p.x + p.ancho - x) / 18
-    ctx.globalAlpha = Math.min(1, alOrilla) * 0.85
+    ctx.globalAlpha = Math.min(1, alOrilla) * 0.9
 
     ctx.beginPath()
     ctx.moveTo(x - 4 * hacia, medio - 4)
@@ -531,61 +655,181 @@ function dibujarGalones(ctx: CanvasRenderingContext2D, p: Plataforma, reloj: num
   ctx.restore()
 }
 
-/** Una caña de bambú del fondo, con sus nudos y sus hojas. */
-function dibujarCana(
-  ctx: CanvasRenderingContext2D,
-  cana: { x: number; y: number; alto: number; grosor: number; hojas: number },
-) {
-  ctx.save()
-  ctx.globalAlpha = 0.5
+/**
+ * Un carrito parqueado de adorno, del arreglo del que salió Boo.
+ *
+ * No hace nada y no estorba: está para que el mundo se parezca a una
+ * pista de Hot Wheels de verdad y no a unas barras naranjas.
+ */
+function dibujarCarrito(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
+  const largo = 22
+  const izq = x - largo / 2
 
-  ctx.fillStyle = COLOR.bambu
+  ctx.save()
+
+  // La carrocería, con el morro más bajo que la cola.
+  ctx.fillStyle = color
   ctx.beginPath()
-  ctx.roundRect(cana.x - cana.grosor / 2, cana.y - cana.alto, cana.grosor, cana.alto, 2)
+  ctx.moveTo(izq, y - 3)
+  ctx.lineTo(izq + 4, y - 7)
+  ctx.lineTo(izq + 13, y - 8)
+  ctx.lineTo(izq + largo, y - 4)
+  ctx.lineTo(izq + largo, y)
+  ctx.lineTo(izq, y)
+  ctx.closePath()
   ctx.fill()
 
-  // Los nudos, cada tanto, que es lo que la hace bambú y no un palo.
-  ctx.fillStyle = COLOR.bambuClaro
-  for (let y = cana.y - 22; y > cana.y - cana.alto; y -= 34) {
-    ctx.fillRect(cana.x - cana.grosor / 2 - 1, y, cana.grosor + 2, 2.5)
-  }
+  // El parabrisas.
+  ctx.fillStyle = 'rgba(220, 235, 255, 0.75)'
+  ctx.beginPath()
+  ctx.moveTo(izq + 5.5, y - 6.6)
+  ctx.lineTo(izq + 12, y - 7.4)
+  ctx.lineTo(izq + 12, y - 4)
+  ctx.lineTo(izq + 5, y - 4)
+  ctx.closePath()
+  ctx.fill()
 
-  // Las hojas salen del lado de adentro, hacia el medio del mundo.
-  const hacia = cana.x < MUNDO.ancho / 2 ? 1 : -1
-  for (let i = 0; i < cana.hojas; i += 1) {
-    const y = cana.y - cana.alto + 18 + i * 30
+  // Las ruedas.
+  ctx.fillStyle = '#171a24'
+  for (const rx of [izq + 5.5, izq + largo - 5.5]) {
     ctx.beginPath()
-    ctx.moveTo(cana.x, y)
-    ctx.quadraticCurveTo(cana.x + hacia * 20, y - 10, cana.x + hacia * 34, y - 2)
-    ctx.quadraticCurveTo(cana.x + hacia * 20, y + 2, cana.x, y + 3)
-    ctx.closePath()
+    ctx.arc(rx, y - 0.4, 3.2, 0, Math.PI * 2)
+    ctx.fill()
+  }
+  ctx.fillStyle = '#c9c9c9'
+  for (const rx of [izq + 5.5, izq + largo - 5.5]) {
+    ctx.beginPath()
+    ctx.arc(rx, y - 0.4, 1.3, 0, Math.PI * 2)
     ctx.fill()
   }
 
   ctx.restore()
 }
 
-/** Un looping de pista al fondo, de adorno y bien apagado. */
+/**
+ * Una mata de bambú: varias cañas saliendo de la misma base, de
+ * distinto alto y grosor.
+ *
+ * Van de punta a punta del capítulo, de abajo del todo hasta arriba,
+ * y por eso no se ve dónde empiezan ni dónde acaban: un bambú con las
+ * dos puntas a la vista parece un palo flotando.
+ */
+function dibujarMata(
+  ctx: CanvasRenderingContext2D,
+  mata: {
+    x: number
+    desde: number
+    hasta: number
+    canas: { dx: number; grosor: number; inclinacion: number; hojaCada: number }[]
+  },
+  arriba: number,
+  abajo: number,
+) {
+  ctx.save()
+
+  for (const cana of mata.canas) {
+    const base = mata.x + cana.dx
+    const punta = base + cana.inclinacion
+
+    ctx.globalAlpha = 0.38
+
+    // La caña, apenas inclinada. Se dibuja como un trapecio para que
+    // se afine hacia arriba, como el bambú de verdad.
+    ctx.fillStyle = COLOR.bambu
+    ctx.beginPath()
+    ctx.moveTo(base - cana.grosor / 2, mata.hasta)
+    ctx.lineTo(base + cana.grosor / 2, mata.hasta)
+    ctx.lineTo(punta + cana.grosor * 0.32, mata.desde)
+    ctx.lineTo(punta - cana.grosor * 0.32, mata.desde)
+    ctx.closePath()
+    ctx.fill()
+
+    // Los nudos y las hojas, solo en el trozo que se ve.
+    const paso = 46
+    const primero = Math.ceil((arriba - mata.desde) / paso) * paso + mata.desde
+    for (let y = Math.max(mata.desde, primero - paso); y < Math.min(mata.hasta, abajo + paso); y += paso) {
+      const t = (y - mata.desde) / (mata.hasta - mata.desde)
+      const x = punta + (base - punta) * t
+      const grosor = cana.grosor * (0.32 + 0.68 * t)
+
+      ctx.fillStyle = COLOR.bambuNudo
+      ctx.fillRect(x - grosor / 2 - 1, y, grosor + 2, 2.2)
+
+      if (Math.round(y / paso) % cana.hojaCada !== 0) continue
+
+      // Las hojas salen hacia el medio del mundo, nunca hacia afuera:
+      // hacia afuera se salen de la pantalla y no se ven.
+      const hacia = mata.x < MUNDO.ancho / 2 ? 1 : -1
+      ctx.fillStyle = COLOR.bambuHoja
+      for (const [largo, caida] of [
+        [23, -10],
+        [16, 4],
+      ] as const) {
+        ctx.beginPath()
+        ctx.moveTo(x, y)
+        ctx.quadraticCurveTo(x + hacia * largo * 0.6, y + caida - 5, x + hacia * largo, y + caida)
+        ctx.quadraticCurveTo(x + hacia * largo * 0.55, y + caida + 3, x, y + 3)
+        ctx.closePath()
+        ctx.fill()
+      }
+    }
+  }
+
+  ctx.restore()
+}
+
+/**
+ * Un looping de pista al fondo. Dos rieles y sus travesaños, con las
+ * rampas de entrada y salida: con una sola raya parecía un aro suelto.
+ */
 function dibujarLooping(ctx: CanvasRenderingContext2D, l: { x: number; y: number; r: number }) {
   ctx.save()
-  ctx.globalAlpha = 0.13
+  ctx.globalAlpha = 0.2
   ctx.strokeStyle = COLOR.pistaLuz
-  ctx.lineWidth = 7
-  ctx.beginPath()
-  ctx.arc(l.x, l.y, l.r, 0, Math.PI * 2)
-  ctx.stroke()
+  ctx.lineCap = 'round'
 
-  // Las dos rampas de entrada y salida, que es lo que lo convierte en
-  // looping y no en un aro suelto.
-  ctx.lineWidth = 5
-  ctx.beginPath()
-  ctx.moveTo(l.x - l.r - 34, l.y + l.r + 16)
-  ctx.quadraticCurveTo(l.x - l.r, l.y + l.r + 6, l.x - l.r + 2, l.y + l.r * 0.4)
-  ctx.stroke()
-  ctx.beginPath()
-  ctx.moveTo(l.x + l.r + 34, l.y + l.r + 16)
-  ctx.quadraticCurveTo(l.x + l.r, l.y + l.r + 6, l.x + l.r - 2, l.y + l.r * 0.4)
-  ctx.stroke()
+  // Los travesaños, primero, que van por debajo de los rieles.
+  ctx.lineWidth = 1.6
+  for (let i = 0; i < 26; i += 1) {
+    const a = (i / 26) * Math.PI * 2
+    const cx = Math.cos(a)
+    const cy = Math.sin(a)
+    ctx.beginPath()
+    ctx.moveTo(l.x + cx * (l.r - 5), l.y + cy * (l.r - 5))
+    ctx.lineTo(l.x + cx * (l.r + 5), l.y + cy * (l.r + 5))
+    ctx.stroke()
+  }
+
+  ctx.lineWidth = 3
+  for (const radio of [l.r - 5, l.r + 5]) {
+    ctx.beginPath()
+    ctx.arc(l.x, l.y, radio, 0, Math.PI * 2)
+    ctx.stroke()
+  }
+
+  // Las rampas, que es lo que lo convierte en looping y no en aro.
+  // Se van apagando en la punta: cortadas en seco parecían un trazo
+  // olvidado a media pantalla.
+  ctx.lineWidth = 4
+  for (const lado of [-1, 1]) {
+    const puntaX = l.x + lado * (l.r + 62)
+    const rampa = ctx.createLinearGradient(puntaX, 0, l.x + lado * (l.r - 2), 0)
+    rampa.addColorStop(0, 'rgba(247, 147, 64, 0)')
+    rampa.addColorStop(0.45, COLOR.pistaLuz)
+    rampa.addColorStop(1, COLOR.pistaLuz)
+    ctx.strokeStyle = rampa
+
+    ctx.beginPath()
+    ctx.moveTo(puntaX, l.y + l.r + 26)
+    ctx.quadraticCurveTo(
+      l.x + lado * (l.r + 8),
+      l.y + l.r + 18,
+      l.x + lado * (l.r - 2),
+      l.y + l.r * 0.45,
+    )
+    ctx.stroke()
+  }
+
   ctx.restore()
 }
 

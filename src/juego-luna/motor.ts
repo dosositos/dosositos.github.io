@@ -100,8 +100,12 @@ export function crearMotor({ nivel, conEmpujon, pintar, alEvento }: OpcionesMoto
    */
   const vida: number[] = plataformas.map(() => 1)
 
-  /** Los tramos que ya empezaron a irse. */
-  const yendose: boolean[] = plataformas.map(() => false)
+  /**
+   * Cuánto pierde de vida por paso cada tramo que ya se está yendo.
+   * Se guarda al empezar a irse y no se recalcula: un tramo se borra
+   * al ritmo que tenía cuando lo dejó, no al de ahora.
+   */
+  const ritmo: number[] = plataformas.map(() => 0)
 
   /**
    * Hasta el primer lazo no se borra nada. Los primeros saltos son
@@ -117,6 +121,26 @@ export function crearMotor({ nivel, conEmpujon, pintar, alEvento }: OpcionesMoto
 
   /** Un tramo se puede pisar mientras no se haya borrado del todo. */
   const sigueAhi = (p: Plataforma) => vida[p.indice] > 0
+
+  /**
+   * Cuánto aguanta hoy un tramo antes de borrarse. Cada estrella
+   * pisada le quita un poco, así que el capítulo se va apurando solo
+   * sin cambiar una sola plataforma.
+   */
+  function loQueDuraLaPista() {
+    const estrellas = nivel.hitos.filter((h) => h.indice <= hitoAlcanzado).length
+    return Math.max(PISTA.msMinimo, PISTA.msParaIrse - estrellas * PISTA.msMenosPorEstrella)
+  }
+
+  /**
+   * Desde qué punto de su vida un tramo empieza a parpadear, de 1 a 0.
+   * Cuando la pista se pone apurada, el aviso fijo se comería casi
+   * toda la vida del tramo, así que se le pone tope.
+   */
+  function cuandoAvisa() {
+    const dura = loQueDuraLaPista()
+    return Math.min(PISTA.msDeAviso, dura * 0.6) / dura
+  }
 
   /** Dónde reaparece: la salida, o el último hito que haya pisado. */
   const reaparicion = { ...nivel.salida }
@@ -203,7 +227,7 @@ export function crearMotor({ nivel, conEmpujon, pintar, alEvento }: OpcionesMoto
     // hay que rehacer es justo el que ella acaba de borrar.
     for (let i = Math.max(hitoAlcanzado, 0); i < plataformas.length; i += 1) {
       vida[i] = 1
-      yendose[i] = false
+      ritmo[i] = 0
     }
 
     t.x = reaparicion.x
@@ -254,9 +278,7 @@ export function crearMotor({ nivel, conEmpujon, pintar, alEvento }: OpcionesMoto
     // dejan de existir para todo: no se pisan y no se dibujan.
     if (nivel.seDesvanece) {
       for (let i = 0; i < vida.length; i += 1) {
-        if (yendose[i] && vida[i] > 0) {
-          vida[i] = Math.max(0, vida[i] - (PASO * 1000) / PISTA.msParaIrse)
-        }
+        if (ritmo[i] > 0 && vida[i] > 0) vida[i] = Math.max(0, vida[i] - ritmo[i])
       }
     }
 
@@ -423,7 +445,9 @@ export function crearMotor({ nivel, conEmpujon, pintar, alEvento }: OpcionesMoto
     t.sinSuelo = 999
     t.desdeSalto = 0
 
-    if (nivel.seDesvanece && ultimoPiso > primerLazo) yendose[ultimoPiso] = true
+    if (nivel.seDesvanece && ultimoPiso > primerLazo && ritmo[ultimoPiso] === 0) {
+      ritmo[ultimoPiso] = (PASO * 1000) / loQueDuraLaPista()
+    }
     ultimoPiso = -1
   }
 
@@ -445,13 +469,16 @@ export function crearMotor({ nivel, conEmpujon, pintar, alEvento }: OpcionesMoto
     }
 
     if (!t.enSuelo) {
-      // El empujón: un toque más en el aire y sale un poco más para
-      // adelante. Solo mientras cae, que es cuando se ve venir que el
-      // salto salió corto, y así tampoco se gasta sin querer tocando
-      // de más al despegar.
-      if (empujon && t.vy > 0) {
+      // El empujón: un toque más en el aire y sale otra vez
+      // disparada, casi rasante. Es un salto nuevo y no velocidad de
+      // lado sumada a la caída, que se sentía como que la empujaba de
+      // costado mientras se venía abajo.
+      if (empujon && t.desdeSalto >= EMPUJON.msDeGracia) {
         empujon = false
-        t.vx += t.mirando * EMPUJON.fuerza
+        const angulo = gradosARadianes(EMPUJON.angulo)
+        t.vx = Math.cos(angulo) * EMPUJON.fuerza * t.mirando
+        t.vy = -Math.sin(angulo) * EMPUJON.fuerza
+        t.desdeSalto = 0
         avisar('empujon')
       }
       return
@@ -501,6 +528,7 @@ export function crearMotor({ nivel, conEmpujon, pintar, alEvento }: OpcionesMoto
       // copiarlo treinta y dos veces por segundo no le hace falta a
       // nadie.
       vidaDeLaPista: vida,
+      avisoDeLaPista: cuandoAvisa(),
       tieneEmpujon: empujon,
       pasitos,
       caidas,

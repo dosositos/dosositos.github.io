@@ -18,6 +18,13 @@ const nav = await chromium.launch({ channel: 'chrome' })
 // un teléfono parecido al de ella
 const pag = await nav.newPage({ viewport: { width: 412, height: 892 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true })
 
+// Se le hace creer al teléfono que ya ganó a Boo, para que el
+// marcador de poderes salga en la foto. Sin esto el empujón no se
+// ve hasta la segunda partida y no hay manera de mirarlo.
+await pag.addInitScript(() => {
+  localStorage.setItem('dosositos:luna', JSON.stringify({ capitulo: 1, pasitos: 29, caidas: 4, poderes: ['empujon'] }))
+})
+
 const fallos = []
 pag.on('pageerror', (e) => fallos.push(String(e)))
 

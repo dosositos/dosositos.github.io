@@ -130,17 +130,27 @@ export const TORTUGA = {
  * vuelta atrás: lo que pisó, se borra. Es su frase de la esquina
  * hecha mecánica.
  *
- * No se borra nada hasta pasado el primer lazo. Los primeros saltos
- * son para aprender y aprender con el suelo desapareciendo no se
- * puede. Y al volver a un lazo después de caerse, la pista de arriba
- * vuelve entera: si no, la caída sería el final de la partida.
+ * No se borra nada hasta pasada la primera estrella. Los primeros
+ * saltos son para aprender y aprender con el suelo desapareciendo no
+ * se puede. Y al volver a una estrella después de caerse, la pista de
+ * arriba vuelve entera: si no, la caída sería el final de la partida.
+ *
+ * Y se va poniendo más difícil: cada estrella que pisa le quita tiempo
+ * a la pista, así que el último tramo del capítulo se borra a menos de
+ * la mitad de lo que tardaba el primero.
  */
 export const PISTA = {
-  /** Desde que despega hasta que ese tramo ya no está. */
-  msParaIrse: 2400,
+  /** Desde que despega hasta que ese tramo ya no está, al principio. */
+  msParaIrse: 2600,
+
+  /** Cuánto tiempo menos dura la pista con cada estrella pisada. */
+  msMenosPorEstrella: 380,
+
+  /** Por apurada que se ponga, nunca se va más rápido que esto. */
+  msMinimo: 1100,
 
   /** Cuánto antes de irse empieza a parpadear. */
-  msDeAviso: 1000,
+  msDeAviso: 900,
 }
 
 /**
@@ -158,14 +168,28 @@ export const IMPULSO = {
 /**
  * El empujón, el poder que se gana con Boo.
  *
- * Un toque en pleno aire, **mientras cae**, y sale un poco más para
- * adelante. Uno por capítulo y no se recarga. Solo mientras cae, a
- * propósito: así no se gasta sin querer al tocar de más al despegar,
- * y es justo el momento en que se ve venir que el salto salió corto.
+ * Un toque en pleno aire y sale otra vez disparada hacia adelante, casi
+ * rasante. **No es velocidad de lado que se suma a la caída**: es un
+ * salto nuevo, con su propio ángulo, y por eso se siente como que la
+ * salva en vez de como que la empuja de costado mientras se cae.
+ *
+ * Uno por capítulo y no se recarga. Se puede usar en cualquier momento
+ * del vuelo menos en el primer suspiro después de despegar, para que
+ * un toque de más al soltar no lo gaste sin querer.
  */
 export const EMPUJON = {
-  /** Cuánta velocidad de lado se le suma. */
-  fuerza: 300,
+  /** La fuerza del segundo impulso. El salto a barra llena son 930. */
+  fuerza: 640,
+
+  /**
+   * Qué tan rasante sale, en grados. El salto normal va a 65, que sube
+   * y avanza parecido. Este va bajo a propósito: lo que hace falta
+   * cuando un salto sale corto es llegar más lejos, no más alto.
+   */
+  angulo: 32,
+
+  /** Lo que hay que esperar desde el despegue para poder gastarlo. */
+  msDeGracia: 170,
 }
 
 /**
@@ -211,9 +235,8 @@ const BOO: CapituloEscrito = {
   presentacion: {
     titulo: 'Capítulo uno: Boo',
     texto: [
-      'Boo llegó en diciembre, en el arreglo de Hot Wheels que me regalaste. El resto del arreglo lo escogió otra persona. Al panda lo escogiste vos, y esa misma noche te dije que me iba a dormir con él. Diez días después todavía olía a vos.',
-      'Su mundo es de pista naranja y bambú, que de bamBOO le viene el nombre. Y la pista se borra detrás porque él dice que estuvo en casi todas nuestras fechas y que nadie le tomó fotos. Lo que pisás acá, se va.',
-      'Los lazos amarillos que vas a ver son los de su moño.',
+      'Boo llegó en diciembre, en el arreglo de Hot Wheels que me regalaste. Esa misma noche te dije que me iba a dormir con él, y diez días después todavía olía a vos.',
+      'Su mundo es de pista naranja y de bambú, que de ahí le viene el nombre. Y la pista se borra detrás porque él dice que estuvo en casi todas nuestras fechas y que nadie le tomó fotos. Lo que pisás acá, se va.',
     ],
     boton: 'subir con Boo',
   },
@@ -320,7 +343,7 @@ export const CARTEL = {
   parrafos: [
     'La tortuga camina sola de un lado al otro y no se para nunca. Apretá la pantalla y ahí sí se para, se agacha y la barra se le va llenando. Cuando soltás, sale disparada hacia donde venía mirando. Un solo dedo, y dos cosas que decidir: cuándo y con cuánta fuerza.',
     'Aguantar la barra cansa. Si te quedás apretando de más se marea, se cae de espaldas con las estrellitas dando vueltas y pierde ese salto. Antes de que pase, la barra se pone roja. No perdés nada más, solo hay que esperar a que se levante.',
-    'Los lazos amarillos guardan por dónde ibas. Si te caés volvés al último que pisaste, nunca hasta abajo del todo.',
+    'Las estrellitas de papel guardan por dónde ibas, como las del frasco. Si te caés volvés a la última que pisaste, nunca hasta abajo del todo.',
   ],
   boton: 'a la luna',
   pie: 'Se sube a pasitos. No hay apuro.',
@@ -330,14 +353,12 @@ export const CARTEL = {
 export const TEXTOS = {
   ayudaTocar: 'mantené apretado y soltá',
   ayudaTeclado: 'o la barra espaciadora',
-  /** Al pisar un lazo. Discreto y corto: se lee de reojo. */
+  /** Al pisar una estrella. Discreto y corto: se lee de reojo. */
   hito: 'guardado aquí',
   llegada: 'llegaste',
   /** Lo acumulado de todas las veces, debajo de lo de esta subida. */
   enTotal: 'en total',
-  /** Abajo a la izquierda, mientras le quede el empujón sin gastar. */
-  empujonListo: 'te queda un empujón',
-  /** Justo después de gastarlo. */
+  /** Justo después de gastar el empujón. */
   empujonGastado: 'ahí se fue el empujón',
   /** Al cerrar el capítulo, mientras los otros dos no existan. */
   siguiente: 'los otros dos capítulos todavía los estoy haciendo',

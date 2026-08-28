@@ -458,7 +458,7 @@ Está publicado en `https://dosositos.github.io/#/luna` y ahora sí es un capít
 de verdad. Lo que quiero saber:
 
 1. **Si ahora sí cuesta.** Son 32 plataformas en vez de 20 y la pista se borra
-   detrás desde el primer lazo, así que caerse ya no se arregla volviendo a
+   detrás desde la primera estrella, así que caerse ya no se arregla volviendo a
    subir dos escalones.
 2. **Si el desvanecimiento se entiende sin que nadie lo explique.** El tramo
    parpadea cada vez más rápido antes de irse. Si te agarró por sorpresa, hay
@@ -472,6 +472,61 @@ Y una que solo se ve jugando dos veces: **el empujón**. Se gana al cerrar el
 capítulo, así que la primera vez no lo tenés. La segunda sí, y aparece abajo a
 la izquierda. Se gasta tocando en el aire **mientras caés**, y es uno solo por
 capítulo.
+
+### Lo que se afinó el 28 de noche, con lo que jugaste
+
+Todo esto salió de tu lista, punto por punto.
+
+- **El texto de Boo.** Fuera lo de que el resto del arreglo lo escogió otra
+  persona: tenías razón, eso achica el regalo en vez de contarlo. Y el nombre ya
+  no viene de «bamBOO» con el chiste subrayado, viene del bambú y se acabó.
+- **Los puntos de guardado dejaron de ser el lazo de Boo.** Ahora son
+  **estrellitas de papel**, las mismas del frasco: dobladas a mano, con un
+  pliegue de cada dos en sombra, apagadas hasta que las pisás y encendidas
+  después. Sirven para los tres capítulos porque no son de ningún peluche, son
+  de ustedes dos.
+- **El mundo dejó de parecer un prototipo.** Cuatro cosas:
+  - La pista es un canal y no una tabla. De perfil se ven las dos paredes, el
+    hueco en sombra por donde correría el carro, las costillas del refuerzo y
+    las lengüetas de enganche de las puntas.
+  - Los soportes ya no flotan: son cañas de bambú que bajan y se pierden en lo
+    oscuro, y van más apagadas que las del fondo porque están en la sombra del
+    tramo.
+  - El bambú va en **matas** de tres a cinco cañas, inclinadas y de distinto
+    grosor, y **de punta a punta del capítulo**. Una caña con las dos puntas a
+    la vista parece un palo colgado del aire.
+  - Hay **carritos parqueados** cada tres tramos, siempre hacia una punta y
+    nunca donde aterriza la tortuga. Y los loopings tienen dos rieles con sus
+    travesaños, y las rampas se apagan en vez de cortarse en seco.
+- **Los poderes se ven con un icono.** Abajo a la izquierda, un cuadrito con los
+  dos galones del empujón y un puntito por carga: lleno mientras le quede, hueco
+  cuando lo gastó. Con letras había que leer en medio de un salto, y en medio de
+  un salto nadie lee.
+- **La pista se borra cada vez más rápido.** Cada estrella que pisa le quita
+  380 ms, con un piso de 1,1 segundos. En el capítulo de Boo eso es
+  2,6s → 2,2s → 1,8s → 1,5s → 1,1s: el último tramo se borra en menos de la
+  mitad de lo que tardaba el primero, sin haber movido una plataforma.
+- **El empujón se rehízo entero.** Antes sumaba velocidad de lado a una caída, y
+  por eso se sentía como que te empujaba de costado mientras te venías abajo.
+  Ahora es **un salto nuevo en pleno aire**, con su propio ángulo y bien
+  rasante (32° contra los 65° del salto normal). Medido: un salto flojo llega a
+  186 px y con el empujón a 361, o sea que salva de sobra un salto corto. Y se
+  puede usar en cualquier momento del vuelo, no solo cayendo, salvo en el primer
+  suspiro después de despegar para que un toque de más no lo gaste.
+
+### El prólogo, apuntado como fase 7
+
+Lo de que hay mucha información de golpe en el cartel de Boo tiene razón, y la
+solución que pediste es un **prólogo antes del capítulo uno**: una escuelita
+donde se aprende a jugar y nada cuesta nada. Queda escrito en
+`plan-juego-luna.md` como la **fase 7**, después de los tres mundos y del último
+trecho, que es donde vos dijiste. Enseña una cosa por pantalla: mantener y
+soltar, el cansancio, la estrellita, los tramos que se borran y los de impulso,
+los que traigan Ovi y Nico, y el poder en el aire.
+
+Mientras esa fase no exista, el cómo se juega sigue debajo de la historia de
+Boo, porque quitarlo ahora dejaría el capítulo sin explicar a nadie. El día que
+esté el prólogo, el cartel de Boo se queda solo con Boo.
 
 ### Lo que quedó hecho en la fase 3
 

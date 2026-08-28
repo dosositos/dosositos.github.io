@@ -23,7 +23,8 @@ intentar**. El juego de las frases se contesta; este se aprende.
 | Capítulos | Tres, por peluche, en orden de llegada: **Boo → Ovi → Nico** |
 | Poderes | Uno por peluche ganado. **Se gastan**: un uso por capítulo, sin recarga |
 | Al caer | Vuelve al último hito. Intentos infinitos. Baja del hito y ya es caída, aunque quede parada más abajo |
-| Tamaño de un capítulo | 32 plataformas y 5 lazos, uno cada seis o siete (decidido el 28 de agosto) |
+| Tamaño de un capítulo | 32 plataformas y 5 estrellas, una cada seis o siete (decidido el 28 de agosto) |
+| Los puntos de guardado | Una **estrellita de papel** de las del frasco, la misma en los tres capítulos |
 | Aguantar de más | Se agota y se desmaya. Pierde el salto y hay que esperarla |
 | Duración | 12-15 minutos la primera vez |
 | Marcador | El récord de él, esperándola en cada capítulo |
@@ -134,8 +135,8 @@ material: cañas de bambú creciendo entre los tramos de pista naranja, y el
 cartel de presentación del capítulo puede jugar con el nombre.
 
 - **Material:** tramos de pista naranja de Hot Wheels, con sus soportes, curvas
-  y algún looping de fondo. Carritos parqueados de adorno. Un lazo amarillo
-  marca cada hito.
+  y algún looping de fondo. Carritos parqueados de adorno, y todo apoyado en
+  cañas de bambú que bajan y se pierden en lo oscuro.
 - **La traba:** la pista **se desvanece** unos segundos después de que despega
   de ella. No hay vuelta atrás. Es la traducción de su frase de la esquina
   («nadie me tomó fotos»): lo que pisó, se borra.
@@ -350,8 +351,8 @@ web quede rara.
 
 **La regla que lo hace posible:** mientras la luna de la portada no sea tocable,
 el juego no existe para ella. La ruta `/luna` nace en la fase 1 sin enlace desde
-ningún lado y así se queda hasta la fase 9. Todo lo de en medio puede quedar a
-la mitad sin que nadie lo note. **La fase 9 es la única que publica**, y no se
+ningún lado y así se queda hasta la última. Todo lo de en medio puede quedar a
+la mitad sin que nadie lo note. **La fase 10 es la única que publica**, y no se
 empieza hasta que lo demás esté cerrado.
 
 | # | Fase | Deja jugable | Se puede parar |
@@ -363,9 +364,10 @@ empieza hasta que lo demás esté cerrado.
 | 4 | Ovi | Dos capítulos | Sí |
 | 5 | Nico | Los tres capítulos | Sí |
 | 6 | El último trecho y la carta | El juego completo | Sí |
-| 7 | Teléfono y números | El juego, pero que se sienta bien | Sí |
-| 8 | El colado | Igual, con chiste | Sí |
-| 9 | **La entrada por la luna** | El juego, para ella | Fin |
+| 7 | El prólogo | El juego con su escuelita delante | Sí |
+| 8 | Teléfono y números | El juego, pero que se sienta bien | Sí |
+| 9 | El colado | Igual, con chiste | Sí |
+| 10 | **La entrada por la luna** | El juego, para ella | Fin |
 
 Al cerrar cada fase: `npm run typecheck`, `npm run revisar`, commit propio, y
 dejar apuntada la siguiente en «La próxima sesión» de `PLAN.md`.
@@ -451,7 +453,7 @@ mientras baja.
 ### 3 · Boo entero
 
 Pista naranja y bambú, el desvanecimiento de los tramos, los tramos de impulso,
-los lazos amarillos en los hitos, el cartel de presentación con su retrato
+las estrellitas de papel en los hitos, el cartel de presentación con su retrato
 bordado, los primeros diez saltos regalados y **el empujón**, que se gana al
 cerrarlo.
 
@@ -481,18 +483,42 @@ nada). Al llegar arriba, la carta descifrada.
 **Cerrando esta fase el juego está entero y sigue escondido.** Si los créditos
 se acaban justo aquí, se acaban en el mejor lugar posible.
 
-### 7 · Teléfono y números
+### 7 · El prólogo
+
+Una escuelita antes del capítulo uno, donde se aprende a jugar y nada cuesta
+nada. Va **después de los tres mundos y del último trecho** a propósito: hasta
+entonces no se sabe del todo qué hay que enseñar, porque las clases de tramo se
+terminan de inventar haciendo los capítulos.
+
+Qué enseña, en este orden y una cosa por pantalla:
+
+1. **Mantener y soltar**, en una plataforma ancha y con la de al lado tan cerca
+   que no se puede fallar.
+2. **El cansancio**, dejándola aguantar hasta que se desmaya. Aprenderlo aquí,
+   donde da risa, y no a mitad del capítulo dos.
+3. **La estrellita de papel**, para que el guardado se entienda antes de
+   necesitarlo. Se pisa una y se la deja caer a propósito.
+4. **Los tramos raros**, uno por pantalla: el que se borra, el de impulso, y los
+   que traigan Ovi y Nico.
+5. **El poder en el aire**, cuando ya tenga alguno.
+
+Y hace una cosa más, que es la que la pidió: **le saca el bulto al cartel de
+Boo**. Hoy el capítulo uno abre con la historia de Boo y encima con el cómo se
+juega, y son dos cosas distintas apiladas una sobre otra. Con el prólogo hecho,
+el cartel de Boo se queda solo con Boo.
+
+### 8 · Teléfono y números
 
 Se prueba en el Android de ella, entrando a `/luna` escribiendo la ruta a mano,
 y se ajustan los números en `luna.ts`. También `prefers-reduced-motion` y los
 sonidos con su interruptor, apagados de fábrica.
 
-### 8 · El colado
+### 9 · El colado
 
 El pato con peluca. Es adorno y va acá aposta: si el tiempo o los créditos
 aprietan, se salta entero sin tocar nada más.
 
-### 9 · La entrada por la luna y cosméticos extras
+### 10 · La entrada por la luna y cosméticos extras
 
 La luna de la portada tocable, con su brillo lento cada quince o veinte
 segundos; la transición de cámara desde la portada; la luna más llena si ya
@@ -501,6 +527,8 @@ terminó, para releer la carta sin volver a jugar.
 Es la fase que hace visible todo lo anterior, y por eso es la última. Antes de
 empezarla hay que **recordarle que juegue los tres capítulos** para llenar los
 récords: sin eso el rival no existe.
+
+Debes añadir una condición para que la luna funcione como entrada, primero debe encontrar a los 3 peluches (sin el colado o con el colado, eso no importa) para que esta lleve a osita al juego de la tortuga, si trata de entrar sin la condición debes advertirle que le falta hacer algo para entrar o algo así.
 
 Añade un espacio para modificar al personaje, accesorios customizables para el personaje de la tortuga, entre otras cosas que se podrán desbloquear tras ciertos hitos. Puedes entrevistarme más sobre este tema cuando lleguemos a esta fase.
 
