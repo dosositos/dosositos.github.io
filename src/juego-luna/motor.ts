@@ -1,4 +1,4 @@
-import { CAIDA, CANSANCIO, MUNDO, SALTO, TORTUGA } from '@/content/luna'
+import { CAIDA, CANSANCIO, EMPUJON, IMPULSO, MUNDO, PISTA, SALTO, TORTUGA } from '@/content/luna'
 import type { EscenaLuna, EventoLuna, Nivel, Plataforma } from '@/types'
 
 /**
@@ -63,6 +63,8 @@ interface Tortuga {
 
 export interface OpcionesMotor {
   nivel: Nivel
+  /** Si ya se ganó el empujón, se puede gastar una vez este capítulo. */
+  conEmpujon?: boolean
   /** Se llama una vez por frame con la escena ya interpolada. */
   pintar: (escena: EscenaLuna) => void
   /** Vibración, sonido y demás cosas de afuera. */
@@ -88,8 +90,33 @@ export interface Motor {
 
 const gradosARadianes = (grados: number) => (grados * Math.PI) / 180
 
-export function crearMotor({ nivel, pintar, alEvento }: OpcionesMotor): Motor {
+export function crearMotor({ nivel, conEmpujon, pintar, alEvento }: OpcionesMotor): Motor {
   const { plataformas } = nivel
+
+  /**
+   * Lo que le queda a cada tramo antes de borrarse, de 1 a 0. En los
+   * capítulos donde la pista no se desvanece se queda todo en 1 y no
+   * pasa nada.
+   */
+  const vida: number[] = plataformas.map(() => 1)
+
+  /** Los tramos que ya empezaron a irse. */
+  const yendose: boolean[] = plataformas.map(() => false)
+
+  /**
+   * Hasta el primer lazo no se borra nada. Los primeros saltos son
+   * para aprender, y aprender con el suelo desapareciendo no se puede.
+   */
+  const primerLazo = nivel.hitos[0]?.indice ?? plataformas.length
+
+  /** En qué tramo está parada. -1 es en el aire. */
+  let ultimoPiso = 0
+
+  /** ¿Le queda el empujón por gastar en este capítulo? */
+  let empujon = conEmpujon === true
+
+  /** Un tramo se puede pisar mientras no se haya borrado del todo. */
+  const sigueAhi = (p: Plataforma) => vida[p.indice] > 0
 
   /** Dónde reaparece: la salida, o el último hito que haya pisado. */
   const reaparicion = { ...nivel.salida }
@@ -163,11 +190,22 @@ export function crearMotor({ nivel, pintar, alEvento }: OpcionesMotor): Motor {
   function sueloDebajo(): Plataforma | undefined {
     return plataformas.find(
       (p) =>
-        Math.abs(t.y - p.y) < 0.5 && t.x >= p.x - ORILLA && t.x <= p.x + p.ancho + ORILLA,
+        sigueAhi(p) &&
+        Math.abs(t.y - p.y) < 0.5 &&
+        t.x >= p.x - ORILLA &&
+        t.x <= p.x + p.ancho + ORILLA,
     )
   }
 
   function volverAlHito() {
+    // La pista de arriba del lazo vuelve entera. Sin esto, caerse en
+    // el capítulo de Boo sería el final de la partida: el camino que
+    // hay que rehacer es justo el que ella acaba de borrar.
+    for (let i = Math.max(hitoAlcanzado, 0); i < plataformas.length; i += 1) {
+      vida[i] = 1
+      yendose[i] = false
+    }
+
     t.x = reaparicion.x
     t.y = reaparicion.y
     // La cámara va de un salto y no viajando: mirar el paisaje bajar
@@ -182,6 +220,7 @@ export function crearMotor({ nivel, pintar, alEvento }: OpcionesMotor): Motor {
     t.cargaMs = 0
     t.sinSuelo = 0
     tirada = 0
+    ultimoPiso = Math.max(hitoAlcanzado, 0)
     previo = { ...t }
     avisar('reaparicion')
   }
@@ -210,6 +249,16 @@ export function crearMotor({ nivel, pintar, alEvento }: OpcionesMotor): Motor {
 
     t.desdeSalto += PASO * 1000
     t.desdeAterrizaje += PASO * 1000
+
+    // Los tramos que ya despegó se van borrando. Al llegar a cero
+    // dejan de existir para todo: no se pisan y no se dibujan.
+    if (nivel.seDesvanece) {
+      for (let i = 0; i < vida.length; i += 1) {
+        if (yendose[i] && vida[i] > 0) {
+          vida[i] = Math.max(0, vida[i] - (PASO * 1000) / PISTA.msParaIrse)
+        }
+      }
+    }
 
     if (tirada > 0) {
       // Desmayada. No camina, no salta y no oye el dedo hasta que se
@@ -244,6 +293,8 @@ export function crearMotor({ nivel, pintar, alEvento }: OpcionesMotor): Motor {
         t.enSuelo = false
         t.sinSuelo = 0
       } else if (!t.cargando) {
+        ultimoPiso = piso.indice
+
         // Camina sola de un extremo al otro. Ese ir y venir es el
         // reloj del juego: marca hacia dónde va a salir.
         t.x += t.mirando * TORTUGA.velocidad * PASO
@@ -305,6 +356,7 @@ export function crearMotor({ nivel, pintar, alEvento }: OpcionesMotor): Motor {
       // después es lo que evita atravesarla en un salto rápido.
       if (t.vy > 0) {
         for (const p of plataformas) {
+          if (!sigueAhi(p)) continue
           const dentro = t.x >= p.x - ORILLA && t.x <= p.x + p.ancho + ORILLA
           if (dentro && yAntes <= p.y && t.y >= p.y) {
             t.y = p.y
@@ -323,6 +375,7 @@ export function crearMotor({ nivel, pintar, alEvento }: OpcionesMotor): Motor {
             t.enSuelo = true
             t.sinSuelo = 0
             t.desdeAterrizaje = 0
+            ultimoPiso = p.indice
             avisar('aterrizaje')
 
             // Pisar un hito guarda el avance. Solo cuenta hacia
@@ -337,11 +390,41 @@ export function crearMotor({ nivel, pintar, alEvento }: OpcionesMotor): Motor {
                 avisar('cima')
               }
             }
+            // Los tramos de impulso la lanzan solos, sin dedo. Se
+            // centra antes de salir, así que el salto es siempre el
+            // mismo y el destino se puede poner con precisión.
+            if (p.impulso) {
+              t.x = p.x + p.ancho / 2
+              t.mirando = p.impulso
+              lanzar(IMPULSO.fuerza)
+              avisar('impulso')
+            }
+
             break
           }
         }
       }
     }
+  }
+
+  /**
+   * Salir volando. Lo usan el dedo y los tramos de impulso, y por eso
+   * está aparte: el tramo que deja atrás empieza a borrarse aquí, sea
+   * cual sea el motivo de la salida.
+   */
+  function lanzar(impulso: number) {
+    const angulo = gradosARadianes(SALTO.angulo)
+    t.vx = Math.cos(angulo) * impulso * t.mirando
+    t.vy = -Math.sin(angulo) * impulso
+    t.enSuelo = false
+    t.cargando = false
+    t.carga = 0
+    t.cargaMs = 0
+    t.sinSuelo = 999
+    t.desdeSalto = 0
+
+    if (nivel.seDesvanece && ultimoPiso > primerLazo) yendose[ultimoPiso] = true
+    ultimoPiso = -1
   }
 
   function presionar() {
@@ -351,7 +434,8 @@ export function crearMotor({ nivel, pintar, alEvento }: OpcionesMotor): Motor {
     // devuelve al suelo para que pueda cargar el salto.
     if (!t.enSuelo && t.sinSuelo * 1000 <= SALTO.msDePerdon) {
       const piso = plataformas.find(
-        (p) => t.x >= p.x && t.x <= p.x + p.ancho && t.y <= p.y + 40 && t.y >= p.y - 40,
+        (p) =>
+          sigueAhi(p) && t.x >= p.x && t.x <= p.x + p.ancho && t.y <= p.y + 40 && t.y >= p.y - 40,
       )
       if (piso) {
         t.y = piso.y
@@ -360,7 +444,18 @@ export function crearMotor({ nivel, pintar, alEvento }: OpcionesMotor): Motor {
       }
     }
 
-    if (!t.enSuelo) return
+    if (!t.enSuelo) {
+      // El empujón: un toque más en el aire y sale un poco más para
+      // adelante. Solo mientras cae, que es cuando se ve venir que el
+      // salto salió corto, y así tampoco se gasta sin querer tocando
+      // de más al despegar.
+      if (empujon && t.vy > 0) {
+        empujon = false
+        t.vx += t.mirando * EMPUJON.fuerza
+        avisar('empujon')
+      }
+      return
+    }
 
     t.cargando = true
     t.carga = 0
@@ -370,17 +465,9 @@ export function crearMotor({ nivel, pintar, alEvento }: OpcionesMotor): Motor {
   function soltar() {
     if (!t.cargando) return
 
-    const impulso = SALTO.impulsoMinimo + (SALTO.impulsoMaximo - SALTO.impulsoMinimo) * t.carga
-    const angulo = gradosARadianes(SALTO.angulo)
-
-    t.vx = Math.cos(angulo) * impulso * t.mirando
-    t.vy = -Math.sin(angulo) * impulso
-    t.enSuelo = false
-    t.cargando = false
-    t.carga = 0
-    t.cargaMs = 0
-    t.sinSuelo = 999
-    t.desdeSalto = 0
+    lanzar(SALTO.impulsoMinimo + (SALTO.impulsoMaximo - SALTO.impulsoMinimo) * t.carga)
+    // Los pasitos son los saltos suyos. Los de los tramos de impulso
+    // son de regalo y no cuentan.
     if (!terminado) pasitos += 1
     avisar('salto')
   }
@@ -410,6 +497,11 @@ export function crearMotor({ nivel, pintar, alEvento }: OpcionesMotor): Motor {
       cansancio: Math.max(0, (tirada * 1000) / CANSANCIO.msTirada),
       camara,
       hitoAlcanzado,
+      // Se pasa el mismo arreglo, sin copiar: el pintor solo lee, y
+      // copiarlo treinta y dos veces por segundo no le hace falta a
+      // nadie.
+      vidaDeLaPista: vida,
+      tieneEmpujon: empujon,
       pasitos,
       caidas,
       plataformas,

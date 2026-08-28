@@ -142,6 +142,7 @@ npm run luna:probar      # ¿se puede pasar el nivel del juego de la luna?
 npm run luna:mapa        # a qué distancias se puede aterrizar según lo que haya que subir
 npm run luna:ver         # fotos del juego andando (necesita npm run dev en otra terminal)
 npm run luna:tortuga     # el banco de poses de la tortuga
+npm run luna:pista       # el banco del mundo: pista, bambú, lazos, impulso, desvanecido
 npm run secretos:cifrar  # private/publicable/ → public/cifrado/ (corre solo por hook)
 npm run revisar          # ¿está todo cifrado y al día? (también antes de build)
 ```

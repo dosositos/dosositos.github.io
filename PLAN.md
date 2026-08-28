@@ -441,28 +441,86 @@ y chats, y el sobre de apertura. Eso es el regalo.
 
 ---
 
-## La próxima sesión — el juego de la luna, fase 3
+## La próxima sesión — el juego de la luna, fase 4
 
 **Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
 arrancamos por donde diga, sin que tengás que acordarte de nada.
 
-**Lo que toca:** la **fase 3** de *A la luna, a pasitos de tortuga*: el
-capítulo de Boo entero. Pista naranja de Hot Wheels y cañas de bambú, los
-tramos que se desvanecen al despegar de ellos, los tramos de impulso, el lazo
-amarillo en los hitos, el cartel de presentación con su retrato bordado, los
-primeros diez saltos regalados y **el empujón**, que es el poder que se gana al
-cerrarlo. Es la fase más cara de las tres y la plantilla de las otras dos.
+**Lo que toca:** la **fase 4**, el capítulo de **Ovi**. Cajas apiladas que ceden
+hacia el lado con más peso, los huecos que solo se cruzan de una manera, y el
+poder que se gana al cerrarlo. Cuesta bastante menos que el de Boo: la fase 3
+dejó el molde hecho y Ovi es una variación. Lo que hay que escribir es su traba,
+su material en `dibujo.ts` y sus 32 plataformas.
 
-### Lo primero de la sesión: nada, se arranca con Boo
+### Lo primero de la sesión: jugá el capítulo de Boo entero
 
-Las dos comprobaciones que había aquí ya están hechas y salieron bien: el
-progreso se guarda en el teléfono y los lazos se entienden. Lo que queda de
-ellas está más abajo, junto con lo que salió de jugarlo.
+Está publicado en `https://dosositos.github.io/#/luna` y ahora sí es un capítulo
+de verdad. Lo que quiero saber:
 
-**Cómo se prueba en el teléfono ahora:** el sitio se publica solo al empujar a
-`main`, y la dirección es `https://dosositos.github.io/#/luna`. Sigue sin estar
-enlazada desde ningún lado y sigue detrás del candado. Para probar en la red de
-la casa, sin publicar, está `npm run dev:telefono`.
+1. **Si ahora sí cuesta.** Son 32 plataformas en vez de 20 y la pista se borra
+   detrás desde el primer lazo, así que caerse ya no se arregla volviendo a
+   subir dos escalones.
+2. **Si el desvanecimiento se entiende sin que nadie lo explique.** El tramo
+   parpadea cada vez más rápido antes de irse. Si te agarró por sorpresa, hay
+   que alargar `PISTA.msDeAviso`.
+3. **Si los dos tramos de impulso se leen.** Son los que llevan galones
+   amarillos corriendo hacia un lado. Al caer ahí sale disparada sola.
+4. **Cuánto tardaste**, para saber si la cuenta de 12-15 minutos con los tres
+   capítulos se sostiene. El robot lo termina limpio en 68 segundos.
+
+Y una que solo se ve jugando dos veces: **el empujón**. Se gana al cerrar el
+capítulo, así que la primera vez no lo tenés. La segunda sí, y aparece abajo a
+la izquierda. Se gasta tocando en el aire **mientras caés**, y es uno solo por
+capítulo.
+
+### Lo que quedó hecho en la fase 3
+
+- **El capítulo de Boo entero**, en `CAPITULOS` dentro de `src/content/luna.ts`.
+  32 plataformas y 5 lazos, con la curva que salió del probador: los diez
+  primeros saltos se pasan en uno de cada cuatro intentos y los últimos en uno
+  de cada diez.
+- **La pista se borra.** En cuanto despega de un tramo, ese tramo empieza a
+  irse: parpadea cada vez más rápido y a los 2,4 segundos ya no está ni para
+  pisarlo ni para verlo. Es la frase de Boo hecha mecánica.
+  - Hasta el primer lazo no se borra nada, que es el trato de los diez saltos
+    regalados.
+  - Al volver a un lazo después de caerse, **la pista de arriba vuelve entera**.
+    Sin eso, la primera caída sería el final de la partida.
+  - Volver a pisar un tramo que ya se está yendo no lo salva.
+- **Los tramos de impulso.** Al caer en uno, la tortuga se centra y sale
+  disparada sola con la barra llena. Como sale siempre igual, el destino se
+  puede poner al píxel. Hay dos: uno a mitad del capítulo y otro justo antes de
+  la cima, para que el último salto llegue en volandas.
+- **El empujón**, el poder de Boo. Suma 300 de velocidad de lado, medido en 85
+  px más de alcance. Solo mientras cae, a propósito: así no se gasta sin querer
+  al tocar de más al despegar. Se guarda en el `localStorage` con el progreso.
+- **El cartel de presentación**, con el retrato bordado de Boo, su historia y el
+  chiste de bamBOO. Debajo, solo en el primer capítulo, va el cómo se juega.
+- **El mundo dibujado**: pista naranja de Hot Wheels con sus soportes y sus
+  costillas, cañas de bambú creciendo por los bordes, loopings apagados al
+  fondo, galones amarillos en los tramos de impulso y el lazo dorado en los
+  hitos.
+- **Un banco para mirar el mundo sin jugarlo**, `npm run luna:pista`, hermano
+  del de la tortuga. Enseña la salida, un lazo, un tramo de impulso, la pista
+  borrándose y la cima, todo de un vistazo. Fue lo que hizo barata la fase.
+- **Tres pruebas nuevas en `npm run luna:probar`**: que el lazo no se borre, que
+  el tramo pisado sí y vuelva al caerse, y que el empujón sume solo cuando se
+  ganó y solo cuando se toca.
+
+### Dos cosas que aprendí peleándome con esto
+
+- **Los tramos de impulso rompían la comprobación de los tramos.** El probador
+  daba «NO SE PASA» en los dos que llegan a un impulso, y el nivel estaba bien:
+  como el impulso lanza en el mismo frame del aterrizaje, mirar dónde quedó
+  parada no sirve. Ahora, si el destino es de impulso, lo que se comprueba es
+  que el impulso se haya disparado.
+- **Mi primera prueba del desvanecimiento decía que el motor estaba roto y el
+  roto era el banco de pruebas.** Hacía aparecer a la tortuga veinte píxeles por
+  encima del tramo, y eso deja la línea de la caída cuatro píxeles por debajo de
+  sus pies: al primer saltito se caía, volvía al principio y la pista se
+  restauraba antes de que yo mirara. Van dos veces en dos días que el arnés
+  miente antes que el juego.
+
 
 ### Lo que se hizo la noche del 28, con lo que jugaste
 

@@ -349,9 +349,16 @@ export interface PlataformaEscrita {
   altura: number
   /**
    * Los hitos guardan el avance: si se cae, vuelve al último que
-   * pisó. Van tres o cuatro por capítulo.
+   * pisó. Van cinco por capítulo, uno cada seis o siete plataformas.
    */
   hito?: boolean
+  /**
+   * Los tramos de impulso: al caer ahí la lanzan sola, sin dedo, con
+   * la fuerza de `IMPULSO` y hacia el lado que diga. La tortuga se
+   * centra en el tramo antes de salir, así que el salto sale siempre
+   * igual y se puede poner el destino donde uno quiera.
+   */
+  impulso?: 'derecha' | 'izquierda'
 }
 
 /** La misma plataforma ya convertida. `y` es la línea que se pisa. */
@@ -360,6 +367,8 @@ export interface Plataforma {
   y: number
   ancho: number
   hito?: boolean
+  /** 1 lanza a la derecha, -1 a la izquierda. Sin esto, no es tramo de impulso. */
+  impulso?: 1 | -1
   /** Su lugar en la lista, para saber qué hito se alcanzó. */
   indice: number
 }
@@ -372,7 +381,15 @@ export interface ProgresoLuna {
   pasitos: number
   /** Las veces que se cayó en total. */
   caidas: number
+  /**
+   * Los poderes ganados, por su id. Se gana uno al cerrar cada
+   * capítulo y se gastan de a uno por capítulo, sin recarga.
+   */
+  poderes: string[]
 }
+
+/** De qué está hecho el camino de un capítulo. Lo usa el pintor. */
+export type MaterialDelMundo = 'pista' | 'cajas' | 'almohadas'
 
 /** Un capítulo entero, ya listo para jugarse. */
 export interface Nivel {
@@ -384,6 +401,48 @@ export interface Nivel {
   cima: Plataforma
   /** Dónde aparece la tortuga al empezar. */
   salida: { x: number; y: number }
+  material: MaterialDelMundo
+  /**
+   * La traba del capítulo: la pista que se borra detrás. Si es falso,
+   * el camino se queda quieto y el capítulo es solo saltar.
+   */
+  seDesvanece: boolean
+}
+
+/**
+ * Un capítulo tal como se escribe en `luna.ts`: el peluche, su
+ * presentación, el poder que se gana y las plataformas.
+ */
+export interface CapituloEscrito {
+  /** El id del peluche, que es también el del archivo de su retrato. */
+  id: string
+  /** Su nombre, para los pies de foto y los carteles. */
+  nombre: string
+  /** Su sitio en el orden. 1 es Boo. */
+  numero: number
+  material: MaterialDelMundo
+  seDesvanece: boolean
+  /** El poder que se gana al cerrarlo. */
+  poder: PoderDeLaLuna
+  presentacion: {
+    titulo: string
+    texto: string[]
+    boton: string
+  }
+  /** Lo que se lee al ganarlo, con el poder recién estrenado. */
+  cierre: {
+    titulo: string
+    texto: string
+  }
+  plataformas: PlataformaEscrita[]
+}
+
+/** Un poder de los que se ganan al cerrar un capítulo. */
+export interface PoderDeLaLuna {
+  id: string
+  nombre: string
+  /** Cómo se usa, para el cartel. */
+  comoSeUsa: string
 }
 
 /** Lo que le pasa al jugador y hay que oír fuera del motor. */
@@ -395,6 +454,10 @@ export type EventoLuna =
   | 'agotada'
   | 'hito'
   | 'cima'
+  /** Cayó en un tramo de impulso y salió disparada sin tocar nada. */
+  | 'impulso'
+  /** Gastó el empujón en pleno aire. */
+  | 'empujon'
 
 /**
  * La foto del mundo que recibe el pintor, ya interpolada entre dos
@@ -432,6 +495,13 @@ export interface EscenaLuna {
   camara: number
   /** El hito más alto que pisó, o -1 si todavía ninguno. */
   hitoAlcanzado: number
+  /**
+   * Cuánto le queda a cada tramo de pista antes de borrarse, de 1
+   * (entero) a 0 (ya no está). Va por el índice de la plataforma.
+   */
+  vidaDeLaPista: number[]
+  /** Si todavía le queda el empujón por gastar en este capítulo. */
+  tieneEmpujon: boolean
   /** Cuántos saltos lleva dados. Son los pasitos de la tortuga. */
   pasitos: number
   /** Cuántas veces se cayó. */

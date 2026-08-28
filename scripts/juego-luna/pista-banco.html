@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>La pista de Boo, tramo por tramo</title>
+    <style>
+      body { margin: 0; background: #05070f; font-family: system-ui; color: #f8f4e8; }
+      #tira { display: flex; gap: 10px; padding: 10px; }
+      figure { margin: 0; }
+      figcaption { font-size: 12px; opacity: 0.6; padding: 6px 2px; }
+      canvas { display: block; border-radius: 6px; }
+    </style>
+  </head>
+  <body>
+    <!--
+      Banco de pruebas del mundo, hermano del de la tortuga. No es
+      parte de la web: sirve para mirar la pista naranja, el bambú, los
+      lazos, los tramos de impulso y el desvanecimiento sin tener que
+      jugar hasta llegar ahí, que es lo caro.
+
+      Se mira con el servidor de siempre andando:
+        npm run dev
+        http://localhost:5173/scripts/juego-luna/pista-banco.html
+    -->
+    <div id="tira"></div>
+
+    <script type="module">
+      import { crearPintor } from '/src/juego-luna/dibujo.ts'
+      import { construirNivel } from '/src/juego-luna/mundos.ts'
+      import { CAPITULOS, MUNDO, PISTA } from '/src/content/luna.ts'
+
+      const capitulo = CAPITULOS[0]
+      const nivel = construirNivel(capitulo)
+      const enteras = nivel.plataformas.map(() => 1)
+
+      /** La escena mínima que le hace falta al pintor. */
+      function escenaEn(plataforma, extra = {}) {
+        return {
+          x: plataforma.x + plataforma.ancho / 2,
+          y: plataforma.y,
+          mirando: 1,
+          carga: 0,
+          cargando: false,
+          enSuelo: true,
+          caminado: 0.3,
+          vy: 0,
+          reloj: 2.4,
+          desdeSalto: 9999,
+          desdeAterrizaje: 9999,
+          cayendo: false,
+          agobio: 0,
+          cansancio: 0,
+          camara: plataforma.y - MUNDO.alto * 0.62,
+          hitoAlcanzado: -1,
+          vidaDeLaPista: enteras,
+          tieneEmpujon: true,
+          pasitos: 0,
+          caidas: 0,
+          plataformas: nivel.plataformas,
+          ...extra,
+        }
+      }
+
+      const aviso = PISTA.msDeAviso / PISTA.msParaIrse
+
+      /** La pista de atrás en varios estados de irse. */
+      function vidasHasta(indice) {
+        return nivel.plataformas.map((p) => {
+          if (p.indice > indice) return 1
+          const atras = indice - p.indice
+          if (atras === 0) return 1
+          if (atras === 1) return aviso * 0.6
+          if (atras === 2) return aviso * 0.2
+          return 0
+        })
+      }
+
+      const paneles = [
+        ['la salida y el bambú', escenaEn(nivel.plataformas[1])],
+        ['el primer lazo', escenaEn(nivel.plataformas[10], { hitoAlcanzado: 10 })],
+        [
+          'un tramo de impulso',
+          escenaEn(nivel.plataformas[14], { hitoAlcanzado: 10, reloj: 3.1 }),
+        ],
+        [
+          'la pista borrándose atrás',
+          escenaEn(nivel.plataformas[20], {
+            hitoAlcanzado: 16,
+            vidaDeLaPista: vidasHasta(20),
+            reloj: 3.9,
+          }),
+        ],
+        ['la cima', escenaEn(nivel.plataformas[31], { hitoAlcanzado: 27 })],
+      ]
+
+      const tira = document.getElementById('tira')
+      for (const [nombre, escena] of paneles) {
+        const figura = document.createElement('figure')
+        const lienzo = document.createElement('canvas')
+        const pie = document.createElement('figcaption')
+        pie.textContent = nombre
+        figura.append(lienzo, pie)
+        tira.append(figura)
+
+        const pintor = crearPintor(lienzo, nivel)
+        pintor.medir(206, 446)
+        pintor.pintar(escena)
+      }
+    </script>
+  </body>
+</html>

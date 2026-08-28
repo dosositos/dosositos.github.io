@@ -34,16 +34,24 @@ globalThis.cancelAnimationFrame = () => {
 
 const { crearMotor } = await import('@/juego-luna/motor.ts')
 const { construirNivel } = await import('@/juego-luna/mundos.ts')
-const { SALTO, TORTUGA, MUNDO, NIVEL_DE_PRUEBA } = await import('@/content/luna.ts')
+const { SALTO, TORTUGA, MUNDO, PISTA, CAPITULOS } = await import('@/content/luna.ts')
 
-const nivel = construirNivel(NIVEL_DE_PRUEBA)
+/**
+ * Qué capítulo se prueba. Sin argumento, el primero.
+ *
+ *   npm run luna:probar -- 2
+ */
+const cual = Number(process.argv[2]) || 1
+const capitulo = CAPITULOS.find((c) => c.numero === cual) ?? CAPITULOS[0]
+const nivel = construirNivel(capitulo)
 
 /** Arranca un motor en un nivel cualquiera y devuelve cómo pisarlo. */
-function banco(nivelDePrueba) {
+function banco(nivelDePrueba, conEmpujon) {
   const ultima = { escena: null }
   const eventos = []
   const motor = crearMotor({
     nivel: nivelDePrueba,
+    conEmpujon,
     pintar: (escena) => {
       ultima.escena = escena
     },
@@ -133,14 +141,26 @@ const masLargo = medirSalto(1)
  * salto llega, pero no si la tortuga puede *estar* ahí mirando para
  * ese lado: camina sola, y eso es la mitad del problema.
  */
-function probarTramo(desde, hasta) {
-  const nivelTramo = {
-    plataformas: [desde, hasta],
+function nivelDeDos(desde, hasta, salida) {
+  // Reindexados a 0 y 1: el motor guarda la vida de cada tramo por su
+  // índice, y con los del capítulo entero se saldría del arreglo y la
+  // tortuga se quedaría sin suelo que pisar.
+  const a = { ...desde, indice: 0 }
+  const b = { ...hasta, indice: 1 }
+  return {
+    plataformas: [a, b],
     hitos: [],
-    suelo: desde.y,
-    cima: hasta,
-    salida: { x: desde.x + desde.ancho / 2, y: desde.y },
+    suelo: a.y,
+    cima: b,
+    salida: salida ?? { x: a.x + a.ancho / 2, y: a.y },
+    material: capitulo.material,
+    // Con dos plataformas sueltas no tiene sentido borrar nada.
+    seDesvanece: false,
   }
+}
+
+function probarTramo(desde, hasta) {
+  const nivelTramo = nivelDeDos(desde, hasta)
 
   // Un ciclo entero de ida y vuelta cubre todas las posiciones y las
   // dos direcciones.
@@ -156,7 +176,7 @@ function probarTramo(desde, hasta) {
   for (let espera = 0; espera < framesDelCiclo; espera += paso) {
     for (let c = 0; c <= 20; c += 1) {
       const carga = c / 20
-      const { motor, frame } = banco(nivelTramo)
+      const { motor, frame, eventos } = banco(nivelTramo)
 
       for (let i = 0; i < espera; i += 1) frame()
       motor.presionar()
@@ -168,6 +188,17 @@ function probarTramo(desde, hasta) {
       for (let i = 0; i < 240; i += 1) {
         const e = frame()
         if (e.cayendo) break
+
+        // Si el destino es un tramo de impulso, aterrizar y quedarse
+        // quieta encima no pasa nunca: la lanza en el mismo frame. Lo
+        // que cuenta es que el impulso se haya disparado.
+        if (hasta.impulso && eventos.includes('impulso')) {
+          logrados += 1
+          cargaMinima = Math.min(cargaMinima, carga)
+          cargaMaxima = Math.max(cargaMaxima, carga)
+          break
+        }
+
         if (i > 3 && e.enSuelo) {
           // Dos frames más antes de mirar dónde cayó: la escena trae
           // la posición interpolada para dibujar, y en el frame justo
@@ -195,7 +226,7 @@ function probarTramo(desde, hasta) {
   return { intentos, logrados, cargaMinima, cargaMaxima }
 }
 
-console.log('\n  El nivel, tramo por tramo')
+console.log(`\n  Capítulo ${capitulo.numero}: ${capitulo.id}, tramo por tramo`)
 console.log(
   `  ${nivel.plataformas.length} plataformas, ${nivel.hitos.length} hitos, ${Math.round(nivel.suelo - nivel.cima.y)} px de subida\n`,
 )
@@ -205,12 +236,59 @@ console.log('   ─────   ─────   ───────   ─�
 let imposibles = 0
 let apretados = 0
 
+/**
+ * Un tramo de impulso no se salta: se cae en él y lanza solo, siempre
+ * con la misma fuerza y desde su centro. Lo único que hay que saber es
+ * si el destino está donde cae.
+ *
+ * Se la deja caer veinte píxeles por encima del tramo, que es menos de
+ * lo que perdona la caída, así que aterriza y el motor hace el resto.
+ */
+function probarImpulso(desde, hasta) {
+  const nivelTramo = nivelDeDos(desde, hasta, {
+    x: desde.x + desde.ancho / 2,
+    y: desde.y - 20,
+  })
+  const { motor, frame, eventos } = banco(nivelTramo)
+
+  let e = frame()
+  for (let i = 0; i < 300; i += 1) {
+    e = frame()
+    if (eventos.includes('caida')) break
+    if (i > 30 && e.enSuelo) {
+      frame()
+      e = frame()
+      break
+    }
+  }
+  motor.detener()
+
+  const lanzo = eventos.includes('impulso')
+  const encima =
+    Math.abs(e.y - hasta.y) < 1 && e.x >= hasta.x - 2 && e.x <= hasta.x + hasta.ancho + 2
+
+  return { lanzo, encima, x: e.x }
+}
+
 for (let i = 0; i < nivel.plataformas.length - 1; i += 1) {
   const desde = nivel.plataformas[i]
   const hasta = nivel.plataformas[i + 1]
+  const sube = Math.round(desde.y - hasta.y)
+
+  if (desde.impulso) {
+    const r = probarImpulso(desde, hasta)
+    const bien = r.lanzo && r.encima
+    if (!bien) imposibles += 1
+    console.log(
+      `   ${String(i + 1).padStart(2)}→${String(i + 2).padStart(2)}   ${String(sube).padStart(4)}   impulso   cae en x=${r.x.toFixed(0)}${
+        bien ? '' : '  ⚠ NO CAE EN LA PLATAFORMA'
+      }`,
+    )
+    continue
+  }
+
   const r = probarTramo(desde, hasta)
   const porcentaje = (r.logrados / r.intentos) * 100
-  const sube = Math.round(desde.y - hasta.y)
 
   let nota = ''
   if (r.logrados === 0) {
@@ -236,7 +314,7 @@ for (let i = 0; i < nivel.plataformas.length - 1; i += 1) {
 console.log('')
 if (imposibles > 0) {
   console.log(`  ⚠ Hay ${imposibles} tramo(s) que no se pasan ni a barra llena.`)
-  console.log('    Acercá esas plataformas en NIVEL_DE_PRUEBA, en src/content/luna.ts.\n')
+  console.log('    Acercá esas plataformas en CAPITULOS, en src/content/luna.ts.\n')
 } else if (apretados > 0) {
   console.log(`  ✓ Se puede pasar entero, pero ${apretados} tramo(s) salen apretadísimos.`)
   console.log('    Está bien si es a propósito; si no, acercalos un poco.\n')
@@ -488,10 +566,14 @@ console.log('  Aterrizando en la punta de una plataforma')
 
 /** Un salto desde el sitio, sin caminar antes: sale siempre igual. */
 function saltoQuieto(anchoDeLaSegunda) {
-  const nivelPunta = construirNivel([
-    { x: 150, ancho: 100, altura: 0 },
-    { x: 300, ancho: anchoDeLaSegunda, altura: 0 },
-  ])
+  const nivelPunta = construirNivel({
+    ...capitulo,
+    seDesvanece: false,
+    plataformas: [
+      { x: 150, ancho: 100, altura: 0 },
+      { x: 300, ancho: anchoDeLaSegunda, altura: 0 },
+    ],
+  })
   const { motor, frame, eventos } = banco(nivelPunta)
   const cuantos = (cual) => eventos.filter((e) => e === cual).length
 
@@ -538,6 +620,163 @@ console.log(
     ? '   ✓ en ninguna se quedó plantada'
     : `   ⚠ se planta con la punta en ${plantadas.map((p) => p.punta.toFixed(1)).join(', ')}`,
 )
+console.log('')
+
+/* ── 6. La pista que se borra ──────────────────────────────────
+   La traba del capítulo de Boo. Tres cosas que tienen que pasar y
+   que a ojo cuestan de comprobar, porque hay que llegar hasta el
+   primer lazo para verlas: que hasta ese lazo no se borre nada, que
+   después sí, y que al volver al lazo la pista de arriba vuelva
+   entera. Sin lo último, caerse sería el final de la partida. */
+
+console.log('  La pista que se borra')
+
+/** Un mundo chiquito con su lazo abajo y dos tramos encima. */
+function mundoQueSeBorra() {
+  return construirNivel({
+    ...capitulo,
+    seDesvanece: true,
+    plataformas: [
+      { x: 30, ancho: 120, altura: 0, hito: true },
+      { x: 210, ancho: 120, altura: 75 },
+      { x: 30, ancho: 120, altura: 150 },
+    ],
+  })
+}
+
+/** Salta desde donde esté con la carga que se le diga. */
+function saltarCon(motor, frame, carga) {
+  motor.presionar()
+  for (let i = 0; i < Math.round((SALTO.msDeCarga * carga) / FRAME); i += 1) frame()
+  motor.soltar()
+}
+
+{
+  // (a) El lazo no se borra nunca, por mucho que despegue de él.
+  const nivelLazo = mundoQueSeBorra()
+  const { motor, frame } = banco(nivelLazo)
+  frame()
+  saltarCon(motor, frame, 0.5)
+  let e = frame()
+  for (let i = 0; i < 240; i += 1) e = frame()
+  motor.detener()
+  console.log(
+    e.vidaDeLaPista[0] === 1
+      ? '   ✓ el lazo de abajo sigue entero después de despegar de él'
+      : `   ⚠ el lazo se borró (le quedó ${e.vidaDeLaPista[0].toFixed(2)})`,
+  )
+}
+
+{
+  // (b) y (c) El tramo de arriba del lazo sí se borra, y vuelve
+  // entero al caerse. Arranca parada en ese tramo, que va ancho a
+  // propósito: así el saltito de prueba cae otra vez encima y lo que
+  // se mide es el borrado y no la puntería.
+  const nivelBorrado = construirNivel({
+    ...capitulo,
+    seDesvanece: true,
+    plataformas: [
+      { x: 30, ancho: 120, altura: 0, hito: true },
+      { x: 30, ancho: 300, altura: 75 },
+    ],
+  })
+  const arriba = nivelBorrado.plataformas[1]
+  nivelBorrado.salida = { x: arriba.x + arriba.ancho / 2, y: arriba.y }
+
+  const { motor, frame, eventos } = banco(nivelBorrado)
+
+  // Unos pasos caminando, que es lo que le dice al motor en qué tramo
+  // está parada antes de despegar.
+  let e = frame()
+  for (let i = 0; i < 10; i += 1) e = frame()
+  saltarCon(motor, frame, 0.15)
+
+  const framesHastaIrse = Math.ceil(PISTA.msParaIrse / FRAME) + 40
+  let seBorro = false
+  for (let i = 0; i < framesHastaIrse && !seBorro; i += 1) {
+    e = frame()
+    if (e.vidaDeLaPista[1] === 0) seBorro = true
+  }
+  console.log(
+    seBorro
+      ? '   ✓ el tramo del que despegó se borró solo, y volver a pisarlo no lo salva'
+      : `   ⚠ no se borró (le queda ${e.vidaDeLaPista[1].toFixed(2)})`,
+  )
+
+  // Sin ese tramo se queda sin suelo, se cae y vuelve al lazo.
+  for (let i = 0; i < 600 && !eventos.includes('reaparicion'); i += 1) e = frame()
+  motor.detener()
+
+  const volvio = eventos.includes('reaparicion')
+  const enteras = volvio && e.vidaDeLaPista.every((v) => v === 1)
+  console.log(
+    enteras
+      ? '   ✓ al volver, la pista de arriba está otra vez entera'
+      : volvio
+        ? `   ⚠ volvió pero la pista sigue borrada (${e.vidaDeLaPista.join(', ')})`
+        : '   ⚠ no llegó a caerse, la prueba no dice nada',
+  )
+}
+console.log('')
+
+/* ── 7. El empujón ─────────────────────────────────────────────
+   El poder que se gana con Boo: un toque en el aire, mientras cae, y
+   llega más lejos. Se mide contra el mismo salto sin gastarlo. */
+
+console.log('  El empujón')
+
+/** El mismo salto flojo, con y sin gastar el empujón en la bajada. */
+function saltoLargo(conEmpujon, gastarlo) {
+  const anchoReal = MUNDO.ancho
+  MUNDO.ancho = 9000
+  const { motor, frame, eventos } = banco(nivelLlano(), conEmpujon)
+
+  frame()
+  const x0 = frame().x
+  saltarCon(motor, frame, 0.5)
+
+  let e = frame()
+  let usado = false
+  for (let i = 0; i < 400; i += 1) {
+    e = frame()
+    // En cuanto empieza a bajar, el toque.
+    if (gastarlo && !usado && e.vy > 0) {
+      motor.presionar()
+      motor.soltar()
+      usado = true
+    }
+    if (i > 3 && e.enSuelo) break
+  }
+  motor.detener()
+  MUNDO.ancho = anchoReal
+
+  return { alcance: e.x - x0, gastado: eventos.includes('empujon') }
+}
+
+{
+  const normal = saltoLargo(false, true)
+  const conPoder = saltoLargo(true, true)
+  const guardado = saltoLargo(true, false)
+
+  console.log(
+    `   sin el poder avanza ${Math.round(normal.alcance)} px, gastándolo ${Math.round(conPoder.alcance)} px`,
+  )
+  console.log(
+    conPoder.gastado && conPoder.alcance > normal.alcance + 20
+      ? `   ✓ el empujón suma ${Math.round(conPoder.alcance - normal.alcance)} px`
+      : '   ⚠ el empujón no hizo nada',
+  )
+  console.log(
+    !normal.gastado
+      ? '   ✓ sin haberlo ganado, tocar en el aire no hace nada'
+      : '   ⚠ lo gastó sin haberlo ganado',
+  )
+  console.log(
+    !guardado.gastado && Math.abs(guardado.alcance - normal.alcance) < 1
+      ? '   ✓ sin tocar, el salto sale igual que siempre'
+      : '   ⚠ el empujón se gastó solo',
+  )
+}
 console.log('')
 
 console.log(

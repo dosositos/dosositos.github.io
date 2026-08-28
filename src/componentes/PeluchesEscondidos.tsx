@@ -10,6 +10,7 @@ import {
 } from '@/content/peluches'
 import type { EsquinaEscondite, Peluche } from '@/content/peluches'
 import { repartoDelDia } from '@/lib/escondites'
+import { RETRATOS } from '@/lib/retratos'
 import { numeroDelDia } from '@/lib/tiempo'
 
 /**
@@ -102,28 +103,6 @@ function olvidarTodo(dormirHoy: number) {
 }
 
 /* ── La cara de cada uno ─────────────────────────────────────────── */
-
-/**
- * Los retratos bordados, los únicos archivos de imagen que viajan en
- * claro dentro del bundle (`npm run peluches:preparar` los genera). No
- * van en `content/peluches.ts` a propósito: ese archivo es datos que
- * edita Armando y no tiene por qué importar assets.
- *
- * Se recogen solos de la carpeta en vez de importarse uno por uno: el
- * día que aparezca `dummy.webp` queda cableado sin tocar este archivo,
- * y mientras no esté, ese peluche se asoma con su emoji y no se rompe
- * nada. La llave es el nombre del archivo sin extensión, que tiene que
- * coincidir con el `id` de la ficha.
- */
-const RETRATOS: Record<string, string> = Object.fromEntries(
-  Object.entries(
-    import.meta.glob('../assets/peluches/*.webp', {
-      eager: true,
-      query: '?url',
-      import: 'default',
-    }) as Record<string, string>,
-  ).map(([ruta, url]) => [ruta.split('/').pop()!.replace('.webp', ''), url]),
-)
 
 /**
  * El retrato del peluche, con el emoji de la ficha como respaldo

@@ -1,11 +1,12 @@
 import { useReducedMotion } from 'motion/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { AYUDA, CARTEL, NIVEL_DE_PRUEBA, TEXTOS } from '@/content/luna'
+import { AYUDA, CARTEL, TEXTOS } from '@/content/luna'
 import { crearPintor } from '@/juego-luna/dibujo'
 import { conectarEntrada } from '@/juego-luna/entrada'
 import { crearMotor } from '@/juego-luna/motor'
-import { construirNivel } from '@/juego-luna/mundos'
-import { anotarCapitulo, leerProgreso } from '@/juego-luna/progreso'
+import { capituloNumero, construirNivel } from '@/juego-luna/mundos'
+import { anotarCapitulo, tienePoder } from '@/juego-luna/progreso'
+import { RETRATOS } from '@/lib/retratos'
 import type { EventoLuna, ProgresoLuna } from '@/types'
 
 /**
@@ -22,15 +23,26 @@ import type { EventoLuna, ProgresoLuna } from '@/types'
  *
  * Acá adentro React solo monta el canvas y se aparta: el bucle, la
  * física y el dibujo viven en `src/juego-luna/`, fuera de React. No
- * hay un solo render por frame. Lo único que sube hasta React son las
- * cuatro cosas que van escritas con letras encima del canvas: el
- * cartel del principio, la ayuda de abajo, el aviso del lazo y la
- * llegada.
+ * hay un solo render por frame. Lo único que sube hasta React es lo
+ * que va escrito con letras encima del canvas: el cartel del capítulo,
+ * la ayuda de abajo, el aviso del lazo y el cierre.
  */
 export function Luna() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const cajaRef = useRef<HTMLDivElement>(null)
   const menosMovimiento = useReducedMotion()
+
+  // Por ahora solo está escrito el capítulo de Boo. Cuando estén los
+  // tres, de aquí sale el que le toque según el progreso.
+  const capitulo = useMemo(() => capituloNumero(1), [])
+  const nivel = useMemo(() => construirNivel(capitulo), [capitulo])
+
+  /**
+   * El empujón se gana cerrando a Boo, así que la primera vez no lo
+   * tiene y en las siguientes sí. Se lee una sola vez al montar: que
+   * aparezca a media subida sería raro.
+   */
+  const conEmpujon = useMemo(() => tienePoder(capitulo.poder.id), [capitulo])
 
   /** Mientras está en falso se ve el cartel y el dedo no hace nada. */
   const [empezado, setEmpezado] = useState(false)
@@ -47,9 +59,8 @@ export function Luna() {
   /** El aviso de haber pisado un lazo. Dura un par de segundos. */
   const [aviso, setAviso] = useState<{ texto: string; yendose: boolean } | null>(null)
 
-  // El nivel se arma una sola vez: convertir las alturas escritas a
-  // mano en plataformas no tiene por qué repetirse en cada render.
-  const nivel = useMemo(() => construirNivel(NIVEL_DE_PRUEBA), [])
+  /** Si le queda el empujón. Solo cambia una vez por capítulo. */
+  const [empujonEntero, setEmpujonEntero] = useState(conEmpujon)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -67,9 +78,9 @@ export function Luna() {
     }
 
     /**
-     * El aviso del lazo. Entra, se queda un momento y se va solo. No
-     * detiene el juego ni pide que se lo cierre: se lee de reojo
-     * mientras la tortuga sigue caminando.
+     * Los avisos de una línea. Entran, se quedan un momento y se van
+     * solos. No detienen el juego ni piden que se los cierre: se leen
+     * de reojo mientras la tortuga sigue caminando.
      */
     const mostrarAviso = (texto: string) => {
       olvidarRelojes()
@@ -114,7 +125,13 @@ export function Luna() {
       } else if (evento === 'caida') vibrar([0, 30])
       // Agotada: tres toquecitos, que se sienten como un tropiezo.
       else if (evento === 'agotada') vibrar([0, 14, 60, 14, 60, 26])
-      else if (evento === 'hito') {
+      // El tramo de impulso la manda sola: un empujón largo en la mano.
+      else if (evento === 'impulso') vibrar(34)
+      else if (evento === 'empujon') {
+        vibrar([0, 20, 40, 20])
+        setEmpujonEntero(false)
+        mostrarAviso(TEXTOS.empujonGastado)
+      } else if (evento === 'hito') {
         vibrar([0, 18, 70, 22])
         // El lazo se enciende y late, pero eso solo se pasa por alto
         // jugando. Hay que decirlo con letras.
@@ -122,15 +139,16 @@ export function Luna() {
       } else if (evento === 'cima') {
         const cuenta = motor.cuenta()
         // Se guarda al llegar arriba y no antes: es el único momento
-        // en que hay algo que valga la pena acordarse.
-        anotarCapitulo(1, cuenta.pasitos, cuenta.caidas)
+        // en que hay algo que valga la pena acordarse. El poder del
+        // capítulo se gana aquí.
+        setTotales(anotarCapitulo(capitulo.numero, cuenta.pasitos, cuenta.caidas, capitulo.poder.id))
         setLlegada(cuenta)
-        setTotales(leerProgreso())
       }
     }
 
     const motor = crearMotor({
       nivel,
+      conEmpujon,
       pintar: (escena) => pintor.pintar(escena),
       alEvento,
     })
@@ -177,7 +195,9 @@ export function Luna() {
       window.visualViewport?.removeEventListener('scroll', medir)
       window.removeEventListener('orientationchange', medir)
     }
-  }, [empezado, menosMovimiento, nivel])
+  }, [capitulo, conEmpujon, empezado, menosMovimiento, nivel])
+
+  const retrato = RETRATOS[capitulo.id]
 
   return (
     <div
@@ -190,24 +210,45 @@ export function Luna() {
         aria-label="A la luna, a pasitos de tortuga"
       />
 
-      {/* ── El cartel de antes de empezar ─────────────────────────── */}
+      {/* ── El cartel del capítulo, con su retrato ────────────────── */}
       {!empezado ? (
-        <div className="absolute inset-0 overflow-y-auto bg-[#0b1026]/85 px-6 py-10 backdrop-blur-[2px]">
+        <div className="absolute inset-0 overflow-y-auto bg-[#0b1026]/88 px-6 py-10 backdrop-blur-[2px]">
           <div className="anima-aparecer mx-auto flex min-h-full max-w-md flex-col justify-center">
-            <h2 className="fuente-mano text-3xl text-tulipan-amarillo">{CARTEL.titulo}</h2>
+            {retrato ? (
+              <img
+                src={retrato}
+                alt={capitulo.nombre}
+                className="mx-auto mb-4 h-28 w-28 object-contain"
+              />
+            ) : null}
 
-            {CARTEL.parrafos.map((parrafo, i) => (
+            <h2 className="fuente-mano text-center text-3xl text-tulipan-amarillo">
+              {capitulo.presentacion.titulo}
+            </h2>
+
+            {capitulo.presentacion.texto.map((parrafo, i) => (
               <p key={i} className="mt-4 text-[0.95rem] leading-relaxed text-margarita/75">
                 {parrafo}
               </p>
             ))}
+
+            {/* Cómo se juega va solo en el primero: después ya lo sabe. */}
+            {capitulo.numero === 1 ? (
+              <div className="mt-6 border-t border-margarita/15 pt-5">
+                {CARTEL.parrafos.map((parrafo, i) => (
+                  <p key={i} className="mt-3 text-[0.9rem] leading-relaxed text-margarita/60">
+                    {parrafo}
+                  </p>
+                ))}
+              </div>
+            ) : null}
 
             <button
               type="button"
               onClick={() => setEmpezado(true)}
               className="mt-8 w-full rounded-full bg-tulipan-amarillo px-8 py-4 font-display text-lg text-[#0b1026] transition-transform hover:-translate-y-0.5"
             >
-              {CARTEL.boton}
+              {capitulo.presentacion.boton}
             </button>
 
             <p className="fuente-mano mt-4 text-center text-base text-margarita/45">{CARTEL.pie}</p>
@@ -215,7 +256,7 @@ export function Luna() {
         </div>
       ) : null}
 
-      {/* ── El aviso del lazo ─────────────────────────────────────── */}
+      {/* ── El aviso de una línea ─────────────────────────────────── */}
       {aviso ? (
         <p
           className={`pointer-events-none absolute inset-x-0 top-20 text-center text-sm tracking-wide text-tulipan-amarillo/80 transition-opacity duration-500 ${
@@ -226,20 +267,45 @@ export function Luna() {
         </p>
       ) : null}
 
-      {/* ── La llegada y la ayuda de abajo ────────────────────────── */}
+      {/* ── El empujón, mientras le quede ─────────────────────────── */}
+      {empezado && empujonEntero && !llegada ? (
+        <p className="pointer-events-none absolute bottom-6 left-5 text-xs text-tulipan-amarillo/55">
+          {TEXTOS.empujonListo}
+        </p>
+      ) : null}
+
+      {/* ── El cierre del capítulo, con el poder ganado ───────────── */}
       {llegada ? (
-        <div className="pointer-events-none absolute inset-x-0 bottom-16 text-center">
-          <p className="font-display text-3xl text-tulipan-amarillo">{TEXTOS.llegada}</p>
-          <p className="fuente-mano mt-2 text-lg text-margarita/70">
-            {llegada.pasitos} pasitos, {llegada.caidas}{' '}
-            {llegada.caidas === 1 ? 'caída' : 'caídas'}
-          </p>
-          {totales ? (
-            <p className="mt-1 text-xs text-margarita/40">
-              {TEXTOS.enTotal}: {totales.pasitos} pasitos, {totales.caidas}{' '}
-              {totales.caidas === 1 ? 'caída' : 'caídas'}
+        <div className="absolute inset-0 overflow-y-auto bg-[#0b1026]/88 px-6 py-10 backdrop-blur-[2px]">
+          <div className="anima-aparecer mx-auto flex min-h-full max-w-md flex-col justify-center text-center">
+            {retrato ? (
+              <img src={retrato} alt="" className="mx-auto mb-4 h-32 w-32 object-contain" />
+            ) : null}
+
+            <h2 className="font-display text-3xl text-tulipan-amarillo">
+              {capitulo.cierre.titulo}
+            </h2>
+
+            <p className="fuente-mano mt-3 text-lg text-margarita/70">
+              {llegada.pasitos} pasitos, {llegada.caidas}{' '}
+              {llegada.caidas === 1 ? 'caída' : 'caídas'}
             </p>
-          ) : null}
+
+            {totales ? (
+              <p className="mt-1 text-xs text-margarita/40">
+                {TEXTOS.enTotal}: {totales.pasitos} pasitos, {totales.caidas}{' '}
+                {totales.caidas === 1 ? 'caída' : 'caídas'}
+              </p>
+            ) : null}
+
+            <p className="mt-6 text-left text-[0.95rem] leading-relaxed text-margarita/75">
+              {capitulo.cierre.texto}
+            </p>
+
+            <p className="mt-6 text-xs text-margarita/45">
+              {TEXTOS.siguiente}
+            </p>
+          </div>
         </div>
       ) : (
         <p

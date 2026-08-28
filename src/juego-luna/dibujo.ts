@@ -1,4 +1,4 @@
-import { MUNDO, TORTUGA } from '@/content/luna'
+import { MUNDO, PISTA, TORTUGA } from '@/content/luna'
 import { cabezaDe, dibujarTortuga } from '@/juego-luna/tortuga'
 import type { EscenaLuna, Nivel, Plataforma } from '@/types'
 
@@ -33,6 +33,15 @@ const COLOR = {
   barraAviso: '#c33b52',
   barraFondo: 'rgba(11, 16, 38, 0.55)',
   sombra: 'rgba(11, 16, 38, 0.35)',
+
+  /* El capítulo de Boo: la pista naranja del arreglo de Hot Wheels y
+     las cañas de bambú, que es de donde le viene el nombre. */
+  pista: '#c2521c',
+  pistaLuz: '#f5822b',
+  pistaSoporte: '#8f3b13',
+  bambu: '#3c6b4a',
+  bambuClaro: '#5c9163',
+  carrito: '#7a8fd6',
 }
 
 /** Cuánto dura el fogonazo del despegue, en milisegundos. */
@@ -75,6 +84,49 @@ function sembrarEstrellas(cantidad: number, desde: number, hasta: number) {
   return estrellas
 }
 
+/**
+ * Las cañas de bambú del capítulo de Boo, sembradas de una vez con la
+ * misma cuenta que las estrellas: el bambú no puede cambiar de sitio
+ * entre un frame y el siguiente.
+ *
+ * Crecen del borde de la pantalla hacia adentro, detrás de la pista,
+ * y nunca en el medio: ahí estorbarían para ver dónde cae.
+ */
+function sembrarBambu(desde: number, hasta: number) {
+  const canas: { x: number; y: number; alto: number; grosor: number; hojas: number }[] = []
+  let semilla = 20241223
+  const siguiente = () => {
+    semilla = (semilla * 1103515245 + 12345) % 2147483648
+    return semilla / 2147483648
+  }
+  for (let y = hasta; y > desde; y -= 120 + siguiente() * 90) {
+    const pegadoAlBorde = siguiente() < 0.5
+    canas.push({
+      x: pegadoAlBorde ? 4 + siguiente() * 26 : MUNDO.ancho - 4 - siguiente() * 26,
+      y,
+      alto: 120 + siguiente() * 150,
+      grosor: 4 + siguiente() * 4,
+      hojas: 2 + Math.floor(siguiente() * 3),
+    })
+  }
+  return canas
+}
+
+/** Un par de loopings de pista al fondo, de adorno. */
+function sembrarLoopings(desde: number, hasta: number) {
+  const loopings: { x: number; y: number; r: number }[] = []
+  const cuantos = Math.max(1, Math.round((hasta - desde) / 900))
+  for (let i = 0; i < cuantos; i += 1) {
+    const t = (i + 0.5) / cuantos
+    loopings.push({
+      x: i % 2 === 0 ? MUNDO.ancho * 0.24 : MUNDO.ancho * 0.76,
+      y: hasta - (hasta - desde) * t,
+      r: 52 + (i % 3) * 12,
+    })
+  }
+  return loopings
+}
+
 export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('sin canvas 2d')
@@ -85,6 +137,15 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
   // Las estrellas se siembran en un sitio fijo del mundo y se dibujan
   // corridas: eso es lo que da la sensación de altura.
   const estrellas = sembrarEstrellas(150, nivel.cima.y - 400, nivel.suelo + 250)
+
+  // El decorado del capítulo. En los mundos que no son de pista se
+  // queda vacío y no se dibuja nada.
+  const esDePista = nivel.material === 'pista'
+  const canas = esDePista ? sembrarBambu(nivel.cima.y - 120, nivel.suelo + 60) : []
+  const loopings = esDePista ? sembrarLoopings(nivel.cima.y, nivel.suelo) : []
+
+  /** Cuánto de la vida de un tramo es el aviso de que se va. */
+  const avisoDePista = PISTA.msDeAviso / PISTA.msParaIrse
 
   let anchoCss = 0
   let altoCss = 0
@@ -178,9 +239,36 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
 
       const arriba = escena.camara - 40
       const abajo = escena.camara + altoVista + 40
+
+      // El decorado va detrás de la pista y no se toca: es lo que
+      // dice de qué mundo estamos hablando cuando la pista ya se
+      // borró y no queda nada.
+      for (const l of loopings) {
+        if (l.y + l.r < arriba || l.y - l.r > abajo) continue
+        dibujarLooping(ctx, l)
+      }
+      for (const c of canas) {
+        if (c.y - c.alto > abajo || c.y < arriba) continue
+        dibujarCana(ctx, c)
+      }
+
       for (const p of escena.plataformas) {
         if (p.y < arriba || p.y > abajo) continue
-        dibujarPlataforma(ctx, p, escena.hitoAlcanzado, escena.reloj)
+
+        // Lo que le queda a este tramo antes de borrarse. En los
+        // capítulos sin desvanecimiento son todos 1 y no pasa nada.
+        const vida = escena.vidaDeLaPista[p.indice] ?? 1
+        if (vida <= 0) continue
+
+        ctx.globalAlpha = opacidadDeLaPista(
+          vida,
+          avisoDePista,
+          escena.reloj,
+          pintor.movimientoReducido,
+        )
+        if (esDePista) dibujarPistaNaranja(ctx, p, escena.hitoAlcanzado, escena.reloj)
+        else dibujarPlataforma(ctx, p, escena.hitoAlcanzado, escena.reloj)
+        ctx.globalAlpha = 1
       }
 
       // Se dibuja siempre que entre en pantalla, cayéndose incluida:
@@ -333,10 +421,184 @@ function dibujarLazo(ctx: CanvasRenderingContext2D, p: Plataforma, ganado: boole
   ctx.restore()
 }
 
+/* ── El capítulo de Boo ──────────────────────────────────────────── */
+
+/**
+ * Lo transparente que va un tramo según lo que le queda de vida.
+ *
+ * Se mantiene entero hasta que entra en el aviso, y ahí parpadea cada
+ * vez más rápido mientras se va. El parpadeo es lo que avisa: un suelo
+ * que desaparece sin decir nada no es una traba, es una trampa. Con
+ * «menos movimiento» no parpadea y solo se apaga.
+ */
+function opacidadDeLaPista(
+  vida: number,
+  aviso: number,
+  reloj: number,
+  movimientoReducido: boolean,
+) {
+  if (vida >= aviso) return 1
+
+  const resto = vida / aviso
+  if (movimientoReducido) return 0.2 + 0.8 * resto
+
+  const prisa = 14 + (1 - resto) * 30
+  const parpadeo = 0.5 + 0.5 * Math.sin(reloj * prisa)
+  return 0.22 + 0.78 * resto * (0.4 + 0.6 * parpadeo)
+}
+
+/**
+ * Un tramo de pista naranja de Hot Wheels, visto de canto: el riel con
+ * sus dos bordes levantados, las costillas de abajo y dos soportes que
+ * se pierden hacia abajo.
+ *
+ * Los tramos de impulso llevan galones apuntando hacia donde lanzan, y
+ * el borde de arriba de los lazos va dorado en vez de naranja.
+ */
+function dibujarPistaNaranja(
+  ctx: CanvasRenderingContext2D,
+  p: Plataforma,
+  hitoAlcanzado: number,
+  reloj: number,
+) {
+  const alto = 15
+
+  // Los soportes, primero, que van detrás de todo.
+  ctx.fillStyle = COLOR.pistaSoporte
+  for (const donde of [0.24, 0.76]) {
+    const x = p.x + p.ancho * donde
+    ctx.fillRect(x - 2, p.y + alto - 2, 4, 22)
+    ctx.fillRect(x - 7, p.y + alto + 18, 14, 3)
+  }
+
+  // El canal de la pista.
+  ctx.fillStyle = COLOR.pista
+  ctx.beginPath()
+  ctx.roundRect(p.x, p.y, p.ancho, alto, 4)
+  ctx.fill()
+
+  // Las costillas de abajo, que es lo que hace que se lea como pista
+  // de juguete y no como un ladrillo.
+  ctx.fillStyle = COLOR.pistaSoporte
+  for (let x = p.x + 6; x < p.x + p.ancho - 4; x += 11) {
+    ctx.fillRect(x, p.y + alto - 4, 5, 3)
+  }
+
+  // El borde de arriba: es la línea que se pisa y tiene que leerse sin
+  // dudar. Dorado en los lazos, naranja claro en el resto.
+  ctx.fillStyle = p.hito ? COLOR.hito : COLOR.pistaLuz
+  ctx.beginPath()
+  ctx.roundRect(p.x, p.y, p.ancho, 3.5, 2)
+  ctx.fill()
+
+  if (p.impulso) dibujarGalones(ctx, p, reloj)
+  if (p.hito) dibujarLazo(ctx, p, hitoAlcanzado >= p.indice, reloj)
+}
+
+/**
+ * Los galones de un tramo de impulso, corriendo hacia el lado que
+ * lanza. Se mueven solos: quieta, la flecha no dice que empuja.
+ */
+function dibujarGalones(ctx: CanvasRenderingContext2D, p: Plataforma, reloj: number) {
+  const hacia = p.impulso ?? 1
+  const paso = 16
+  const corrida = (reloj * 46) % paso
+  const medio = p.y + 8.5
+
+  ctx.save()
+  ctx.strokeStyle = COLOR.hito
+  ctx.lineWidth = 2.4
+  ctx.lineCap = 'round'
+  ctx.lineJoin = 'round'
+
+  for (let i = 0; i * paso < p.ancho - 10; i += 1) {
+    const avance = i * paso + corrida
+    const x = hacia > 0 ? p.x + 5 + avance : p.x + p.ancho - 5 - avance
+    if (x < p.x + 4 || x > p.x + p.ancho - 4) continue
+
+    // Los de los extremos entran y salen apagándose, para que no
+    // aparezcan de la nada en la orilla del tramo.
+    const alOrilla = Math.min(x - p.x, p.x + p.ancho - x) / 18
+    ctx.globalAlpha = Math.min(1, alOrilla) * 0.85
+
+    ctx.beginPath()
+    ctx.moveTo(x - 4 * hacia, medio - 4)
+    ctx.lineTo(x, medio)
+    ctx.lineTo(x - 4 * hacia, medio + 4)
+    ctx.stroke()
+  }
+
+  ctx.restore()
+}
+
+/** Una caña de bambú del fondo, con sus nudos y sus hojas. */
+function dibujarCana(
+  ctx: CanvasRenderingContext2D,
+  cana: { x: number; y: number; alto: number; grosor: number; hojas: number },
+) {
+  ctx.save()
+  ctx.globalAlpha = 0.5
+
+  ctx.fillStyle = COLOR.bambu
+  ctx.beginPath()
+  ctx.roundRect(cana.x - cana.grosor / 2, cana.y - cana.alto, cana.grosor, cana.alto, 2)
+  ctx.fill()
+
+  // Los nudos, cada tanto, que es lo que la hace bambú y no un palo.
+  ctx.fillStyle = COLOR.bambuClaro
+  for (let y = cana.y - 22; y > cana.y - cana.alto; y -= 34) {
+    ctx.fillRect(cana.x - cana.grosor / 2 - 1, y, cana.grosor + 2, 2.5)
+  }
+
+  // Las hojas salen del lado de adentro, hacia el medio del mundo.
+  const hacia = cana.x < MUNDO.ancho / 2 ? 1 : -1
+  for (let i = 0; i < cana.hojas; i += 1) {
+    const y = cana.y - cana.alto + 18 + i * 30
+    ctx.beginPath()
+    ctx.moveTo(cana.x, y)
+    ctx.quadraticCurveTo(cana.x + hacia * 20, y - 10, cana.x + hacia * 34, y - 2)
+    ctx.quadraticCurveTo(cana.x + hacia * 20, y + 2, cana.x, y + 3)
+    ctx.closePath()
+    ctx.fill()
+  }
+
+  ctx.restore()
+}
+
+/** Un looping de pista al fondo, de adorno y bien apagado. */
+function dibujarLooping(ctx: CanvasRenderingContext2D, l: { x: number; y: number; r: number }) {
+  ctx.save()
+  ctx.globalAlpha = 0.13
+  ctx.strokeStyle = COLOR.pistaLuz
+  ctx.lineWidth = 7
+  ctx.beginPath()
+  ctx.arc(l.x, l.y, l.r, 0, Math.PI * 2)
+  ctx.stroke()
+
+  // Las dos rampas de entrada y salida, que es lo que lo convierte en
+  // looping y no en un aro suelto.
+  ctx.lineWidth = 5
+  ctx.beginPath()
+  ctx.moveTo(l.x - l.r - 34, l.y + l.r + 16)
+  ctx.quadraticCurveTo(l.x - l.r, l.y + l.r + 6, l.x - l.r + 2, l.y + l.r * 0.4)
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.moveTo(l.x + l.r + 34, l.y + l.r + 16)
+  ctx.quadraticCurveTo(l.x + l.r, l.y + l.r + 6, l.x + l.r - 2, l.y + l.r * 0.4)
+  ctx.stroke()
+  ctx.restore()
+}
+
 /** La sombra dice dónde va a caer. Es media ayuda del juego. */
 function dibujarSombra(ctx: CanvasRenderingContext2D, escena: EscenaLuna) {
   const debajo = escena.plataformas
-    .filter((p) => escena.x >= p.x - 4 && escena.x <= p.x + p.ancho + 4 && p.y >= escena.y - 1)
+    .filter(
+      (p) =>
+        (escena.vidaDeLaPista[p.indice] ?? 1) > 0 &&
+        escena.x >= p.x - 4 &&
+        escena.x <= p.x + p.ancho + 4 &&
+        p.y >= escena.y - 1,
+    )
     .sort((a, b) => a.y - b.y)[0]
   if (!debajo) return
 

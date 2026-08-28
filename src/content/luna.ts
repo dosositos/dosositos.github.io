@@ -1,4 +1,4 @@
-import type { PlataformaEscrita } from '@/types'
+import type { CapituloEscrito } from '@/types'
 
 /**
  * A la luna, a pasitos de tortuga.
@@ -124,19 +124,65 @@ export const TORTUGA = {
 }
 
 /**
+ * La pista que se borra, que es la traba del capítulo de Boo.
+ *
+ * En cuanto despega de un tramo, ese tramo empieza a irse. No hay
+ * vuelta atrás: lo que pisó, se borra. Es su frase de la esquina
+ * hecha mecánica.
+ *
+ * No se borra nada hasta pasado el primer lazo. Los primeros saltos
+ * son para aprender y aprender con el suelo desapareciendo no se
+ * puede. Y al volver a un lazo después de caerse, la pista de arriba
+ * vuelve entera: si no, la caída sería el final de la partida.
+ */
+export const PISTA = {
+  /** Desde que despega hasta que ese tramo ya no está. */
+  msParaIrse: 2400,
+
+  /** Cuánto antes de irse empieza a parpadear. */
+  msDeAviso: 1000,
+}
+
+/**
+ * Los tramos de impulso: al caer ahí sale disparada sola, sin dedo.
+ *
+ * La tortuga se centra en el tramo antes de salir, así que el salto
+ * es siempre el mismo y el destino se puede poner con precisión. Sirve
+ * para enseñarle qué se siente un salto largo sin explicárselo.
+ */
+export const IMPULSO = {
+  /** La fuerza del lanzamiento. La de la barra llena. */
+  fuerza: 930,
+}
+
+/**
+ * El empujón, el poder que se gana con Boo.
+ *
+ * Un toque en pleno aire, **mientras cae**, y sale un poco más para
+ * adelante. Uno por capítulo y no se recarga. Solo mientras cae, a
+ * propósito: así no se gasta sin querer al tocar de más al despegar,
+ * y es justo el momento en que se ve venir que el salto salió corto.
+ */
+export const EMPUJON = {
+  /** Cuánta velocidad de lado se le suma. */
+  fuerza: 300,
+}
+
+/**
  * ══════════════════════════════════════════════════════════════
- *  EL NIVEL DE PRUEBA
+ *  LOS CAPÍTULOS
  * ══════════════════════════════════════════════════════════════
  *
- * Cada línea es una plataforma:
+ * Cada línea de `plataformas` es un tramo del camino:
  *
- *   x       dónde empieza, de 0 (orilla izquierda) a 360 (derecha)
- *   ancho   cuánto mide
- *   altura  a qué altura está, contando desde el suelo. 0 es el
- *           suelo mismo y los números crecen hacia arriba
- *   hito    si es un punto de guardado (poné `hito: true`)
+ *   x        dónde empieza, de 0 (orilla izquierda) a 360 (derecha)
+ *   ancho    cuánto mide
+ *   altura   a qué altura está, contando desde el suelo. 0 es el
+ *            suelo mismo y los números crecen hacia arriba
+ *   hito     si es un lazo, o sea un punto de guardado
+ *   impulso  'derecha' o 'izquierda' si es un tramo de impulso
  *
- * Para tantear: el salto más flojo avanza unos 95 y sube unos 50; el
+ * Para tantear: el salto más flojo avanza unos 95 y sube unos 50, el
  * más fuerte avanza unos 290 y sube unos 155. O sea que **dos
  * plataformas nunca deberían estar a más de 150 de altura una de
  * otra**, y conviene dejarlas más cerca que eso.
@@ -145,51 +191,105 @@ export const TORTUGA = {
  *
  *   npm run luna:probar
  *
- * Ese comando prueba cada salto del nivel con todas las fuerzas de la
- * barra y avisa si algún tramo no se puede pasar.
- *
- * Los hitos van cada cinco a ocho saltos. Si se cae, vuelve al último
- * que haya pisado, nunca al principio.
+ * Prueba cada salto de cada capítulo con todas las fuerzas de la barra
+ * y avisa si algún tramo no se puede pasar. `npm run luna:mapa` dice a
+ * qué distancias se puede aterrizar según lo que haya que subir.
  */
-export const NIVEL_DE_PRUEBA: PlataformaEscrita[] = [
-  // El suelo, ancho y tranquilo: aquí se aprende a saltar.
-  { x: 30, ancho: 310, altura: 0 },
 
-  // Primer tramo, de 85 en 85. Plataformas grandes y el zigzag ancho:
-  // se cruza de un lado al otro y eso enseña solo cuánta barra hace
-  // falta.
-  { x: 210, ancho: 110, altura: 85 },
-  { x: 40, ancho: 110, altura: 170 },
-  { x: 215, ancho: 100, altura: 255 },
-  { x: 35, ancho: 120, altura: 340, hito: true },
+/** El capítulo uno: la pista de Hot Wheels y el bambú. */
+const BOO: CapituloEscrito = {
+  id: 'boo',
+  nombre: 'Boo',
+  numero: 1,
+  material: 'pista',
+  seDesvanece: true,
+  poder: {
+    id: 'empujon',
+    nombre: 'el empujón',
+    comoSeUsa: 'tocá en el aire mientras caés',
+  },
+  presentacion: {
+    titulo: 'Capítulo uno: Boo',
+    texto: [
+      'Boo llegó en diciembre, en el arreglo de Hot Wheels que me regalaste. El resto del arreglo lo escogió otra persona. Al panda lo escogiste vos, y esa misma noche te dije que me iba a dormir con él. Diez días después todavía olía a vos.',
+      'Su mundo es de pista naranja y bambú, que de bamBOO le viene el nombre. Y la pista se borra detrás porque él dice que estuvo en casi todas nuestras fechas y que nadie le tomó fotos. Lo que pisás acá, se va.',
+      'Los lazos amarillos que vas a ver son los de su moño.',
+    ],
+    boton: 'subir con Boo',
+  },
+  cierre: {
+    titulo: 'Ganaste a Boo',
+    texto:
+      'Se te trepa al caparazón y ahí se queda. Desde ahora, en pleno aire y mientras caés, un toque más te da un empujón hacia adelante. Uno por capítulo, así que guardalo para cuando veás que el salto salió corto.',
+  },
+  plataformas: [
+    // El suelo, ancho y tranquilo. Aquí se aprende a saltar.
+    { x: 30, ancho: 310, altura: 0 },
 
-  // Segundo tramo: sube un poco más de golpe y las plataformas se
-  // achican.
-  { x: 215, ancho: 95, altura: 435 },
-  { x: 45, ancho: 95, altura: 530 },
-  { x: 220, ancho: 90, altura: 625 },
-  { x: 50, ancho: 90, altura: 720 },
-  { x: 210, ancho: 120, altura: 815, hito: true },
+    // ── Los primeros diez, regalados ──────────────────────────
+    // Sube de 70 en 75, plataformas grandes y el zigzag ancho. La
+    // pista todavía no se borra: hasta el primer lazo no pasa nada.
+    { x: 205, ancho: 125, altura: 70 },
+    { x: 40, ancho: 125, altura: 145 },
+    { x: 200, ancho: 120, altura: 220 },
+    { x: 45, ancho: 120, altura: 292 },
+    { x: 205, ancho: 115, altura: 367 },
+    { x: 40, ancho: 115, altura: 440 },
+    { x: 205, ancho: 115, altura: 515 },
+    { x: 45, ancho: 115, altura: 590 },
+    { x: 200, ancho: 120, altura: 663 },
+    { x: 35, ancho: 140, altura: 740, hito: true },
 
-  // Tercer tramo: de 100 en 100, y ya hay que apuntar.
-  { x: 45, ancho: 85, altura: 915 },
-  { x: 225, ancho: 85, altura: 1015 },
-  { x: 50, ancho: 80, altura: 1115 },
-  { x: 230, ancho: 80, altura: 1215 },
-  { x: 40, ancho: 120, altura: 1315, hito: true },
+    // ── Desde aquí la pista se borra ──────────────────────────
+    // Sube de 88 en 90 y las plataformas se achican. A mitad de
+    // tramo, el primer impulso: se cae ahí y sale sola.
+    { x: 210, ancho: 105, altura: 830 },
+    { x: 45, ancho: 105, altura: 920 },
+    { x: 215, ancho: 100, altura: 1008 },
+    { x: 40, ancho: 110, altura: 1098, impulso: 'derecha' },
+    { x: 230, ancho: 115, altura: 1238 },
+    { x: 35, ancho: 130, altura: 1330, hito: true },
 
-  // El último tramo, ya cerca de la luna: 105 de subida y las
-  // plataformas más chicas de todas.
-  { x: 225, ancho: 75, altura: 1420 },
-  { x: 55, ancho: 75, altura: 1525 },
-  { x: 230, ancho: 70, altura: 1630 },
-  { x: 60, ancho: 70, altura: 1735 },
+    // ── El tramo desparejo ────────────────────────────────────
+    // Aquí se deja de poder repetir la misma carga: una sube 110 y
+    // la siguiente 60, y hay una en el medio del mundo que obliga a
+    // esperar a que la tortuga se dé la vuelta.
+    { x: 215, ancho: 100, altura: 1440 },
+    { x: 90, ancho: 95, altura: 1500 },
+    { x: 225, ancho: 95, altura: 1595 },
+    { x: 50, ancho: 100, altura: 1690 },
+    { x: 185, ancho: 135, altura: 1780, hito: true },
 
-  // La cima: aquí, en el juego de verdad, está la carta. Va ancha a
-  // propósito: el último salto antes del premio no es el sitio para
-  // pedir puntería.
-  { x: 150, ancho: 145, altura: 1840, hito: true },
-]
+    // ── Ya pesa ───────────────────────────────────────────────
+    // De 100 a 110 y las plataformas más chicas hasta aquí.
+    { x: 35, ancho: 95, altura: 1885 },
+    { x: 145, ancho: 100, altura: 1985 },
+    { x: 35, ancho: 115, altura: 2085 },
+    { x: 220, ancho: 90, altura: 2200 },
+    { x: 50, ancho: 90, altura: 2310 },
+    { x: 180, ancho: 130, altura: 2415, hito: true },
+
+    // ── El último trecho hasta la luna ────────────────────────
+    // Y un impulso de regalo antes del final, que deja la cima a
+    // tiro sin pedir puntería.
+    { x: 40, ancho: 85, altura: 2525 },
+    { x: 220, ancho: 85, altura: 2635 },
+    { x: 45, ancho: 100, altura: 2745, impulso: 'derecha' },
+
+    // La cima. Aquí, en el juego entero, está la carta. Va ancha a
+    // propósito: el último salto antes del premio no es el sitio
+    // para pedir puntería, y encima llega en volandas.
+    { x: 195, ancho: 150, altura: 2885, hito: true },
+  ],
+}
+
+/**
+ * Los capítulos, en orden de llegada de los peluches.
+ *
+ * Por ahora solo Boo. Ovi y Nico son variaciones del mismo molde y
+ * entran aquí mismo cuando les toque.
+ */
+export const CAPITULOS: CapituloEscrito[] = [BOO]
 
 /**
  * La ayuda de abajo.
@@ -235,4 +335,10 @@ export const TEXTOS = {
   llegada: 'llegaste',
   /** Lo acumulado de todas las veces, debajo de lo de esta subida. */
   enTotal: 'en total',
+  /** Abajo a la izquierda, mientras le quede el empujón sin gastar. */
+  empujonListo: 'te queda un empujón',
+  /** Justo después de gastarlo. */
+  empujonGastado: 'ahí se fue el empujón',
+  /** Al cerrar el capítulo, mientras los otros dos no existan. */
+  siguiente: 'los otros dos capítulos todavía los estoy haciendo',
 }

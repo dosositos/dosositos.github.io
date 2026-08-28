@@ -34,7 +34,7 @@ await pag.screenshot({ path: 'private/notas/luna-0-cartel.png' })
 
 // El cartel de antes de empezar. Hasta que no se le da al botón, el
 // dedo no hace nada y la tortuga solo camina de fondo.
-await pag.getByRole('button', { name: 'a la luna' }).click()
+await pag.getByRole('button', { name: 'subir con Boo' }).click()
 await pag.waitForTimeout(600)
 await pag.screenshot({ path: 'private/notas/luna-1-salida.png' })
 
