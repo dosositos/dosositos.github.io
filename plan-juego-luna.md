@@ -437,6 +437,11 @@ puede aterrizar. La respuesta corta es que **la distancia cómoda ronda los 175
 para cualquier subida**, y que subir más de 130 de una vez deja una ventana tan
 estrecha que no vale la pena.
 
+**Ojo con dónde vive el arnés.** Todo esto está en `private/notas/`, que git
+ignora, así que no viaja con el repositorio y si se pierde esa carpeta se pierde
+entero. No tiene nada privado adentro y podría vivir en `scripts/`. Está
+apuntado en `PLAN.md` para decidirlo.
+
 Un salto no llega «hasta donde alcanza»: tiene que estar *bajando* al pasar por
 la altura de la plataforma. Apuntar al punto más alto del salto es fallar,
 porque ahí la tortuga va parada en el aire y el motor solo la deja aterrizar

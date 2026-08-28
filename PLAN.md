@@ -453,11 +453,69 @@ amarillo en los hitos, el cartel de presentación con su retrato bordado, los
 primeros diez saltos regalados y **el empujón**, que es el poder que se gana al
 cerrarlo. Es la fase más cara de las tres y la plantilla de las otras dos.
 
-**Antes de eso, dos cosas cortas que quedaron anotadas:** contar lo del
-cansancio en el cartel de la primera pantalla (que se desmaye sin haber avisado
-nunca de que eso podía pasar sería tramposo), y comprobar en el teléfono que el
-progreso se guarda de verdad al llegar arriba — eso es lo único de la fase 2
-que no pude probar yo, porque hay que terminar el capítulo para que se escriba.
+### Lo primero de la sesión: tres cosas cortas
+
+1. **El cartel de la primera pantalla.** Hay que contar el mantener y soltar, y
+   sobre todo **lo del cansancio**: que se desmaye sin haber avisado nunca de
+   que eso podía pasar es tramposo. Va en el mismo espíritu que la pantalla del
+   juego de frases, que explica que las frases están normalizadas.
+2. **Comprobar en el teléfono que el progreso se guarda.** Es lo único de la
+   fase 2 que no pude probar yo: hay que terminar el capítulo para que se
+   escriba en el `localStorage`. Subí el nivel de prueba hasta arriba, cerrá la
+   página, volvé a entrar y contame si el contador de pasitos siguió sumando.
+3. **Jugalo entero y decime de dificultad.** El robot lo sube en 19 pasitos sin
+   caerse, pero el robot calcula cada salto con una fórmula y vos no. Lo que
+   quiero saber: si el primer tramo es lo bastante fácil para aprender, si el
+   último tramo pide demasiada puntería, y si aburre esperar a que la tortuga
+   camine hasta el borde.
+
+### Lo que necesito que decidas
+
+Ninguna me bloquea: si no decís nada, tomo la opción que dejo marcada.
+
+- **¿El arnés de pruebas se versiona?** Todo lo que hace `private/notas/`
+  (`probar-luna.mjs`, `mapa-saltos.mjs`, `tortuga-banco.html`, `ver-luna.mjs`,
+  `ver-tortuga.mjs`, `alias-luna.mjs`) está ignorado por git, así que si un día
+  se pierde esa carpeta se pierde entero. **No tiene nada privado adentro**: es
+  código de prueba del juego. *Mi voto: moverlo a `scripts/juego-luna/` y que
+  viaje con el repositorio, como el resto de las herramientas.*
+- **¿La ayuda de abajo se va?** Hoy «mantené apretado y soltá» se queda toda la
+  partida. *Mi voto: que se desvanezca después del tercer salto y vuelva a
+  aparecer si pasa medio minuto sin que salte, por si se quedó trabada.*
+- **¿La tortuga tiene nombre?** Es el personaje del regalo entero y ahora mismo
+  se llama «la tortuga». Si tiene nombre, el cartel del final puede decirlo y
+  el chiste crece. *Mi voto: que se lo pongas vos, o que se lo ponga ella la
+  primera vez que juegue.*
+- **¿Cuántas plataformas por capítulo?** El de prueba tiene 20 y se sube en 50
+  segundos jugando perfecto. Con las caídas de verdad, tres capítulos así darían
+  algo cercano a los 15-25 minutos que dice el plan. *Mi voto: dejar 18-22 por
+  capítulo y ajustar después de verte jugar.*
+
+### Ideas que se me ocurrieron y no están en el plan
+
+Ninguna es urgente y todas se pueden tirar a la basura.
+
+- **La marca de la última carga.** Que la barra deje una rayita fina donde
+  quedó el último salto que dio. Ayuda muchísimo a aprender a medir la fuerza,
+  y no le regala nada: sigue siendo su pulso. Creo que esta vale de verdad.
+- **El hito podría hacer algo más.** Hoy el lazo se enciende y late. Al pisarlo
+  por primera vez podría soltar unas estrellitas hacia arriba, como el frasco.
+- **Contar los pasitos a la vista, chiquito, en una esquina.** El plan los
+  guarda para el final del capítulo. Verlos mientras sube puede ser bonito
+  («voy en 40 pasitos») o puede volverlo una competencia contra sí misma. No lo
+  tengo claro y por eso no lo hice.
+- **Que la luna reaccione al final.** Cuando ya está cerca, que crezca un
+  poquito con cada hito, o que el halo se abra al pisar el último. Es barato y
+  se vería.
+
+### Lo que ya está anotado de antes y sigue esperando
+
+- Los **13 puntos y coma** de `src/content/momentos.ts` y los 5 de
+  `src/content/diccionario.ts`, que son de mi redacción y no citas.
+- El **momento de Boo** en la línea del tiempo (23 de diciembre de 2024) y
+  sacarle su frase comodín de `src/content/peluches.ts`.
+- Antes de la fase 9 hay que **recordarte que juegues los tres capítulos** para
+  llenar los récords: sin eso el rival de ella no existe.
 
 El plan completo —mecánica, los tres mundos, valores de la física y orden de
 trabajo— vive en **`plan-juego-luna.md`**, en la raíz. Se lee antes de escribir
