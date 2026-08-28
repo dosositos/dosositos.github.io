@@ -48,6 +48,9 @@ va a salir y obliga a esperar el momento.
    mezquino.
 3. Al soltar, sale disparada en la dirección en la que venía caminando, con
    ángulo fijo de unos 65° y fuerza proporcional a la carga.
+4. Si en pleno vuelo choca contra el borde del mundo, rebota flojito **y se da
+   la vuelta**. Sin eso caía mirando a la pared, seguía caminando contra ella y
+   el salto siguiente salía otra vez para el mismo lado.
 
 Son dos decisiones en un solo dedo: **cuándo** (posición y dirección) y **cuánta
 fuerza**. Con eso alcanza para que haya techo de habilidad sin pedirle un
@@ -58,8 +61,12 @@ principal, pero que no quede tullido.
 
 ### Valores para empezar a tantear
 
-Mundo lógico de 360 × 640, escalado al alto de la pantalla. Estos números son un
-punto de partida, no un resultado: se ajustan jugando.
+Mundo lógico de 360 × 640. Se escala con **la más chica** de las dos medidas
+(alto de pantalla contra 640, ancho contra 360) y se ancla abajo, porque lo que
+sobra es cielo y el cielo va arriba. Escalando solo por el alto, en un teléfono
+largo el mundo se salía por los costados y una plataforma pegada al borde
+quedaba fuera de la pantalla. Estos números son un punto de partida, no un
+resultado: se ajustan jugando.
 
 - Gravedad: 2200 px/s²
 - Impulso mínimo (carga 0): 540 px/s · máximo (carga 1): 930 px/s
@@ -229,9 +236,39 @@ capítulo y las plataformas si se quieren tocar a mano.
 ### Dibujo
 
 Todo vectorial, dibujado en el canvas con formas y trazos: pista naranja, cajas,
-almohadas. **La tortuga se dibuja a mano en código** (caparazón, cabeza, cuatro
-paticas, dos fotogramas de caminata y uno de salto). Nada de imágenes
-generadas: pesan y hay que cifrarlas.
+almohadas. Nada de imágenes generadas: pesan y hay que cifrarlas.
+
+**La tortuga se dibuja a mano en código, y con detalle**, porque es el personaje
+que se mira todo el rato. Vive aparte, en `src/juego-luna/tortuga.ts`: va parada
+en dos patas, con brazos y piernas de dos huesos (hombro, codo, mano / cadera,
+rodilla, pie), caparazón a la espalda, panza con las rayas del plastrón, y una
+cara con dos ojos, cejas y boca que cambian de expresión.
+
+El archivo está partido en dos mitades a propósito. `poseDe` traduce lo que está
+pasando en el juego a una lista de ángulos, y el dibujo solo obedece: para
+cambiar cómo se mueve se tocan números en un solo lugar. Lo que hay hoy:
+
+- **Caminata** de ciclo completo: piernas en contrafase, brazos al revés de las
+  piernas, y el cuerpo que sube y baja en cada paso. Sin ese sube y baja se ve
+  patinando aunque las piernas se muevan bien.
+- **Carga**: se agacha, echa los brazos atrás, aprieta los ojos y tiembla cada
+  vez más según se llena la barra.
+- **Aire**: subiendo va estirada; cayendo se encoge, abre los brazos y pone cara
+  de susto. No son dos dibujos: se mezclan según la velocidad, y por eso el
+  salto se ve como un movimiento y no como tres estampas pegadas.
+- **Aterrizaje**: se aplasta y se estira de vuelta, corto, para que el suelo se
+  sienta duro.
+- **Parpadeo** cada tres segundos y pico, y respiración mientras carga.
+
+El tamaño sale de `TORTUGA.alto` en `luna.ts` y el dibujo entero se estira solo:
+agrandarla o achicarla es cambiar un número.
+
+**Para verla sin jugar** están `private/notas/tortuga-banco.html` (todas las
+poses, el ciclo de caminata y una tira a tamaño de teléfono, en
+`/private/notas/tortuga-banco.html` con `npm run dev` andando) y
+`private/notas/ver-tortuga.mjs`, que le saca la foto. `private/notas/ver-luna.mjs`
+hace lo mismo con el juego de verdad, en un teléfono de 412 × 892. Dibujar a
+ciegas y jugar para ver el resultado cuesta muchísimo más.
 
 Los tres retratos bordados de los peluches ya existen en claro y se usan tal
 cual en los carteles entre capítulos.
@@ -400,7 +437,7 @@ sonidos con su interruptor, apagados de fábrica.
 El pato con peluca. Es adorno y va acá aposta: si el tiempo o los créditos
 aprietan, se salta entero sin tocar nada más.
 
-### 9 · La entrada por la luna
+### 9 · La entrada por la luna y cosméticos extras
 
 La luna de la portada tocable, con su brillo lento cada quince o veinte
 segundos; la transición de cámara desde la portada; la luna más llena si ya
@@ -409,6 +446,8 @@ terminó, para releer la carta sin volver a jugar.
 Es la fase que hace visible todo lo anterior, y por eso es la última. Antes de
 empezarla hay que **recordarle que juegue los tres capítulos** para llenar los
 récords: sin eso el rival no existe.
+
+Añade un espacio para modificar al personaje, accesorios customizables para el personaje de la tortuga, entre otras cosas que se podrán desbloquear tras ciertos hitos. Puedes entrevistarme más sobre este tema cuando lleguemos a esta fase.
 
 ### Aparte, cuando haya un hueco
 

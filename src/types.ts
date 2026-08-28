@@ -361,8 +361,12 @@ export interface EscenaLuna {
   carga: number
   cargando: boolean
   enSuelo: boolean
-  /** Cuánto lleva caminado, para alternar las paticas. */
+  /** Cuánto lleva caminado, para el ciclo de la caminata. */
   caminado: number
+  /** Velocidad de subida y bajada. Negativa sube. Da la pose del aire. */
+  vy: number
+  /** Segundos desde que arrancó el juego: respiración, parpadeo, temblor. */
+  reloj: number
   /** Milisegundos desde el último despegue, para el fogonazo. */
   desdeSalto: number
   /** Milisegundos desde el último aterrizaje, para el golpe de cámara. */

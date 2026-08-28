@@ -1,34 +1,29 @@
 import { MUNDO, TORTUGA } from '@/content/luna'
+import { dibujarTortuga } from '@/juego-luna/tortuga'
 import type { EscenaLuna } from '@/types'
 
 /**
  * Pintar el mundo de la luna en un canvas 2D.
  *
- * Todo es vectorial: no hay una sola imagen. La tortuga se dibuja con
- * formas aquí abajo, y eso ahorra descargar archivos, cifrarlos y
- * esperarlos en el teléfono de ella.
+ * Todo es vectorial: no hay una sola imagen. El mundo se dibuja aquí
+ * y la tortuga en `tortuga.ts`, que es un archivo aparte porque el
+ * personaje solo ya tiene bastante adentro.
  *
  * El mundo mide 360 × 640 y se estira hasta llenar el alto de la
  * pantalla. Si el teléfono es más ancho que eso, el mundo queda
  * centrado y el cielo sigue hasta las orillas.
  */
 
-/* Los colores salen de la paleta de la web (ver index.css). El
-   caparazón es el verde del ciprés de los ramos; la luna, el blanco
-   hueso de la margarita. Están escritos a mano y no leídos del CSS
-   porque esto corre sesenta veces por segundo. */
+/* Los colores salen de la paleta de la web (ver index.css): la luna
+   es el blanco hueso de la margarita. Están escritos a mano y no
+   leídos del CSS porque esto corre sesenta veces por segundo. Los de
+   la tortuga viven en `tortuga.ts`. */
 const COLOR = {
   cieloArriba: '#0b1026',
   cieloAbajo: '#1b2148',
   estrella: '#f8f4e8',
   luna: '#f8f4e8',
   lunaHalo: 'rgba(248, 244, 232, 0.14)',
-  caparazon: '#4e7f5e',
-  caparazonOscuro: '#3a6248',
-  caparazonClaro: '#6b9c7b',
-  piel: '#c99a67',
-  pielOscura: '#a97142',
-  ojo: '#1b1b22',
   plataforma: '#2a3157',
   plataformaLuz: '#8a93c9',
   barra: '#f5c451',
@@ -83,6 +78,7 @@ export function crearPintor(canvas: HTMLCanvasElement): Pintor {
   let altoCss = 0
   let escala = 1
   let margen = 0
+  let margenAlto = 0
 
   /** Dónde despegó la última vez, para dejar ahí el fogonazo. */
   let despegue = { x: 0, y: 0 }
@@ -105,8 +101,16 @@ export function crearPintor(canvas: HTMLCanvasElement): Pintor {
       canvas.style.width = `${ancho}px`
       canvas.style.height = `${alto}px`
 
-      escala = alto / MUNDO.alto
+      // El mundo entero tiene que verse, y sobre todo tiene que verse
+      // entero de ANCHO: escalando solo por el alto, en un teléfono
+      // largo el mundo se salía por los costados y una plataforma
+      // pegada al borde quedaba fuera de la pantalla. Se toma la
+      // escala que más chica quede de las dos y el mundo se ancla
+      // abajo, porque lo que sobra es cielo y el cielo va arriba, que
+      // es para donde se sube.
+      escala = Math.min(alto / MUNDO.alto, ancho / MUNDO.ancho)
       margen = (ancho - MUNDO.ancho * escala) / 2
+      margenAlto = alto - MUNDO.alto * escala
       ctx.setTransform(densidad, 0, 0, densidad, 0, 0)
     },
 
@@ -132,7 +136,7 @@ export function crearPintor(canvas: HTMLCanvasElement): Pintor {
       }
 
       ctx.save()
-      ctx.translate(margen, golpe)
+      ctx.translate(margen, margenAlto + golpe)
       ctx.scale(escala, escala)
 
       dibujarCielo(ctx, estrellas)
@@ -229,101 +233,9 @@ function dibujarSombra(ctx: CanvasRenderingContext2D, escena: EscenaLuna) {
   ctx.globalAlpha = 0.15 + cerca * 0.3
   ctx.fillStyle = COLOR.sombra
   ctx.beginPath()
-  ctx.ellipse(escena.x, debajo.y + 2, 13 * (0.5 + cerca * 0.5), 3.5, 0, 0, Math.PI * 2)
+  ctx.ellipse(escena.x, debajo.y + 2, 10 * (0.5 + cerca * 0.5), 3, 0, 0, Math.PI * 2)
   ctx.fill()
   ctx.globalAlpha = 1
-}
-
-/**
- * La tortuga, dibujada a mano.
- *
- * Se dibuja siempre mirando a la derecha y se voltea con el espejo.
- * El origen está en sus pies, o sea en la línea que pisa.
- */
-function dibujarTortuga(ctx: CanvasRenderingContext2D, escena: EscenaLuna) {
-  ctx.save()
-  ctx.translate(escena.x, escena.y)
-  ctx.scale(escena.mirando, 1)
-
-  // Mientras carga se agacha: se ve la fuerza que está juntando.
-  if (escena.cargando) {
-    const agache = escena.carga * 0.16
-    ctx.scale(1 + agache * 0.6, 1 - agache)
-  }
-
-  const enElAire = !escena.enSuelo
-  const fotograma = Math.floor(escena.caminado) % 2
-
-  // Las cuatro paticas. En el suelo alternan; en el aire se recogen.
-  ctx.fillStyle = COLOR.pielOscura
-  const patas = enElAire
-    ? [
-        { x: -9, y: -6, w: 6, h: 5 },
-        { x: 5, y: -7, w: 6, h: 5 },
-      ]
-    : fotograma === 0
-      ? [
-          { x: -11, y: -5, w: 6, h: 6 },
-          { x: 4, y: -5, w: 6, h: 6 },
-        ]
-      : [
-          { x: -6, y: -5, w: 6, h: 6 },
-          { x: 9, y: -5, w: 6, h: 6 },
-        ]
-  for (const p of patas) {
-    ctx.beginPath()
-    ctx.roundRect(p.x, p.y, p.w, p.h, 2)
-    ctx.fill()
-  }
-
-  // La cola, atrás.
-  ctx.fillStyle = COLOR.piel
-  ctx.beginPath()
-  ctx.moveTo(-15, -13)
-  ctx.lineTo(-22, -9)
-  ctx.lineTo(-15, -7)
-  ctx.closePath()
-  ctx.fill()
-
-  // El cuello y la cabeza, adelante.
-  ctx.fillStyle = COLOR.piel
-  ctx.beginPath()
-  ctx.roundRect(6, -19, 12, 8, 3)
-  ctx.fill()
-  ctx.beginPath()
-  ctx.arc(17, -17, 6.5, 0, Math.PI * 2)
-  ctx.fill()
-
-  ctx.fillStyle = COLOR.ojo
-  ctx.beginPath()
-  ctx.arc(19.5, -19, 1.5, 0, Math.PI * 2)
-  ctx.fill()
-
-  // El caparazón, encima de todo.
-  const alto = TORTUGA.alto
-  ctx.fillStyle = COLOR.caparazon
-  ctx.beginPath()
-  ctx.ellipse(0, -alto * 0.55, TORTUGA.ancho / 2, alto * 0.48, 0, 0, Math.PI * 2)
-  ctx.fill()
-
-  ctx.strokeStyle = COLOR.caparazonOscuro
-  ctx.lineWidth = 1.5
-  ctx.stroke()
-
-  // Los gajos del caparazón, que es lo que lo hace tortuga y no piedra.
-  ctx.strokeStyle = COLOR.caparazonClaro
-  ctx.lineWidth = 1.2
-  for (const dx of [-8, 0, 8]) {
-    ctx.beginPath()
-    ctx.moveTo(dx, -alto * 0.98)
-    ctx.lineTo(dx * 1.5, -alto * 0.2)
-    ctx.stroke()
-  }
-  ctx.beginPath()
-  ctx.ellipse(0, -alto * 0.55, TORTUGA.ancho / 3.4, alto * 0.26, 0, 0, Math.PI * 2)
-  ctx.stroke()
-
-  ctx.restore()
 }
 
 /**
@@ -334,7 +246,8 @@ function dibujarBarra(ctx: CanvasRenderingContext2D, escena: EscenaLuna) {
   const ancho = 42
   const alto = 5
   const x = escena.x - ancho / 2
-  const y = escena.y - TORTUGA.alto - 16
+  // Baja con ella mientras se agacha, o queda flotando en el aire.
+  const y = escena.y - TORTUGA.alto - 10 + escena.carga * 7
 
   ctx.fillStyle = COLOR.barraFondo
   ctx.beginPath()

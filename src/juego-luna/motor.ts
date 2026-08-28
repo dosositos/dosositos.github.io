@@ -101,6 +101,9 @@ export function crearMotor({ plataformas, pintar, alEvento }: OpcionesMotor): Mo
   /** Segundos que faltan de la caída antes de reaparecer. */
   let cayendo = 0
 
+  /** Segundos desde que arrancó, para lo que respira y parpadea. */
+  let reloj = 0
+
   let acumulador = 0
   let ultimoMs = 0
   let animacion = 0
@@ -130,6 +133,8 @@ export function crearMotor({ plataformas, pintar, alEvento }: OpcionesMotor): Mo
   }
 
   function paso() {
+    reloj += PASO
+
     if (cayendo > 0) {
       cayendo -= PASO
       if (cayendo <= 0) volverAlHito()
@@ -180,12 +185,18 @@ export function crearMotor({ plataformas, pintar, alEvento }: OpcionesMotor): Mo
 
       // Las paredes del mundo devuelven, flojito. Perder un salto
       // por haberse pegado al borde no enseña nada.
+      //
+      // Al rebotar también se da la vuelta. Si no, caía mirando hacia
+      // la pared, seguía caminando contra ella y el salto siguiente
+      // salía para el mismo lado del que acababa de rebotar.
       if (t.x < 0) {
         t.x = 0
         t.vx = Math.abs(t.vx) * 0.4
+        t.mirando = 1
       } else if (t.x > MUNDO.ancho) {
         t.x = MUNDO.ancho
         t.vx = -Math.abs(t.vx) * 0.4
+        t.mirando = -1
       }
 
       // Solo se aterriza cayendo, y solo si en este paso se cruzó la
@@ -265,6 +276,8 @@ export function crearMotor({ plataformas, pintar, alEvento }: OpcionesMotor): Mo
       cargando: t.cargando,
       enSuelo: t.enSuelo,
       caminado: mezcla(previo.caminado, t.caminado) / PASITO,
+      vy: t.vy,
+      reloj,
       desdeSalto: t.desdeSalto,
       desdeAterrizaje: t.desdeAterrizaje,
       cayendo: cayendo > 0,

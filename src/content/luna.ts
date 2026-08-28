@@ -73,11 +73,18 @@ export const TORTUGA = {
   /** Velocidad de la caminata. Es el reloj del juego. */
   velocidad: 55,
 
-  /** El ancho del caparazón, para saber dónde pisa. */
-  ancho: 34,
+  /** Lo que ocupa de ancho parada. Es lo que se usa para saber
+   *  hasta dónde puede caminar antes de la orilla. */
+  ancho: 30,
 
-  /** Del suelo a lo más alto del caparazón. */
-  alto: 26,
+  /**
+   * Del suelo a la coronilla. Va parada en dos patas.
+   *
+   * Este número la agranda o la achica entera, con todo su dibujo.
+   * Con 38 se veía correcta en la computadora y diminuta en el
+   * teléfono, y ella es el personaje que hay que mirar todo el rato.
+   */
+  alto: 50,
 }
 
 /**

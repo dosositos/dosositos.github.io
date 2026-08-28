@@ -473,6 +473,18 @@ está pesado, lento o corto, son seis números en `src/content/luna.ts`.
 - **El probador se adelantó de la fase 2 a la 1** y encontró el primer error
   antes de abrir el navegador: los impulsos del plan (700 y 1400) mandaban el
   salto largo 671 px de lado en un mundo de 360 de ancho. Quedaron en 540 y 930.
+- **La tortuga se rehízo entera** (28 de agosto). Era un caparazón con paticas y
+  ahora es un personaje: parada en dos patas, brazos y piernas con codo y
+  rodilla, caparazón a la espalda, panza, y cara con cejas y boca que cambia de
+  expresión. Camina con ciclo completo, se agacha y tiembla al cargar, se estira
+  al subir, se encoge y se asusta al caer, se aplasta al aterrizar y parpadea.
+  Vive en `src/juego-luna/tortuga.ts` y su tamaño es un número de `luna.ts`.
+  Para verla sin jugar está el banco de poses de `private/notas/`.
+- **Dos arreglos que salieron de mirarlo en el teléfono:** al chocar contra el
+  borde del mundo ahora se da la vuelta (antes caía mirando a la pared y volvía
+  a saltar contra ella), y el mundo se escala con la medida más chica de las
+  dos, porque escalando solo por el alto se salía por los costados en un
+  teléfono largo.
 - **Nueva regla de voz:** nada de punto y coma en lo redactado en nombre de
   Armando. Está en `.claude/skills/repasar-textos/voz-del-proyecto.md`.
 - **Queda pendiente, cuando haya un hueco:** sacar los 13 puntos y coma que se
