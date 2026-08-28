@@ -1,13 +1,26 @@
 import { LUNA, MUNDO, TORTUGA } from '@/content/luna'
+import { dibujarEstrellaDePapel } from '@/juego-luna/estrella'
+import {
+  dibujarPilaDeCajas,
+  dibujarPolvo as dibujarPolvoDelCuarto,
+  dibujarTorre,
+  sembrarCajas,
+  sembrarPolvo,
+  sembrarTorres,
+} from '@/juego-luna/mundo-cajas'
+import { alturaDeLaCaja } from '@/juego-luna/mundos'
 import { cabezaDe, dibujarTortuga } from '@/juego-luna/tortuga'
 import type { EscenaLuna, Nivel, Plataforma } from '@/types'
 
 /**
  * Pintar el mundo de la luna en un canvas 2D.
  *
- * Todo es vectorial: no hay una sola imagen. El mundo se dibuja aquí
- * y la tortuga en `tortuga.ts`, que es un archivo aparte porque el
- * personaje solo ya tiene bastante adentro.
+ * Todo es vectorial: no hay una sola imagen. Aquí vive lo que es de
+ * los tres capítulos —el cielo, la luna, la cámara, la sombra, la
+ * barra— y cada mundo trae su material en su propio archivo: la
+ * tortuga en `tortuga.ts`, las cajas de Ovi en `mundo-cajas.ts`. La
+ * pista de Boo se quedó aquí porque fue la primera y porque es la que
+ * enseña el molde.
  *
  * El mundo mide 360 de ancho y lo que mida el capítulo de alto. La
  * cámara decide qué trozo se ve, y aquí solo se dibuja lo que entra
@@ -34,14 +47,12 @@ const COLOR = {
   barraFondo: 'rgba(11, 16, 38, 0.55)',
   sombra: 'rgba(11, 16, 38, 0.35)',
 
-  /* Las estrellitas de papel de los puntos de guardado. Son las
-     mismas del frasco: papel doblado a mano, con un pliegue de cada
-     dos en sombra. Van en los tres capítulos, por eso no son de
-     ningún peluche. */
-  estrellaPapel: '#f8f4e8',
-  estrellaPliegue: '#cfc7b4',
-  estrellaPapelApagada: '#5d6488',
-  estrellaPliegueApagado: '#4a5070',
+  /* La estrellita de papel de los puntos de guardado vive en
+     `estrella.ts` con sus colores: es la misma en los tres capítulos
+     y no es de ningún peluche. Aquí solo se usa su blanco para
+     marcar el filo de la plataforma que la lleva. */
+  papelDeLaEstrella: '#f8f4e8',
+
 
   /* El capítulo de Boo: la pista naranja del arreglo de Hot Wheels y
      el bambú, que es de donde le viene el nombre. La pista de verdad
@@ -258,12 +269,18 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
   // corridas: eso es lo que da la sensación de altura.
   const estrellas = sembrarEstrellas(150, nivel.cima.y - 400, nivel.suelo + 250)
 
-  // El decorado del capítulo. En los mundos que no son de pista se
-  // queda vacío y no se dibuja nada.
+  // El decorado del capítulo. Cada mundo siembra el suyo y los demás
+  // se quedan vacíos, que no cuesta nada y evita un `if` por frame.
   const esDePista = nivel.material === 'pista'
+  const esDeCajas = nivel.material === 'cajas'
+
   const matas = esDePista ? sembrarBambu(nivel.cima.y - 200, nivel.suelo + 200) : []
   const vias = esDePista ? sembrarVias(nivel.cima.y, nivel.suelo) : []
   const carritos = esDePista ? sembrarCarritos(nivel) : new Map()
+
+  const torres = esDeCajas ? sembrarTorres(nivel.cima.y - 260, nivel.suelo + 260) : []
+  const polvo = esDeCajas ? sembrarPolvo(60) : []
+  const cajas = esDeCajas ? sembrarCajas(nivel) : new Map()
 
   let anchoCss = 0
   let altoCss = 0
@@ -374,6 +391,13 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
         dibujarMata(ctx, m, arriba, abajo)
       }
 
+      // Y el del capítulo de Ovi: las torres apiladas contra las dos
+      // paredes del cuarto, y el polvo flotando en la luz de la luna.
+      for (const t of torres) dibujarTorre(ctx, t, arriba, abajo)
+      if (esDeCajas && !pintor.movimientoReducido) {
+        dibujarPolvoDelCuarto(ctx, polvo, arriba, abajo, escena.reloj)
+      }
+
       for (const p of escena.plataformas) {
         if (p.y < arriba || p.y > abajo) continue
 
@@ -391,8 +415,23 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
 
         ctx.save()
         ctx.globalAlpha = alfa
-        if (esDePista) dibujarPistaNaranja(ctx, p, escena.hitoAlcanzado, escena.reloj, alfa)
-        else dibujarPlataforma(ctx, p, escena.hitoAlcanzado, escena.reloj)
+
+        const caja = cajas.get(p.indice)
+        if (esDePista) {
+          dibujarPistaNaranja(ctx, p, escena.hitoAlcanzado, escena.reloj, alfa)
+        } else if (caja) {
+          dibujarPilaDeCajas(
+            ctx,
+            p,
+            caja,
+            escena.inclinacion[p.indice] ?? 0,
+            escena.hitoAlcanzado,
+            escena.reloj,
+            alfa,
+          )
+        } else {
+          dibujarPlataforma(ctx, p, escena.hitoAlcanzado, escena.reloj)
+        }
 
         const carrito = carritos.get(p.indice)
         if (carrito) dibujarCarrito(ctx, carrito.x, p.y, carrito.color)
@@ -544,7 +583,7 @@ function dibujarPlataforma(
 
   // La línea de arriba es la que se pisa: se marca clara para que no
   // haya duda de dónde está el suelo.
-  ctx.strokeStyle = p.hito ? COLOR.estrellaPapel : COLOR.plataformaLuz
+  ctx.strokeStyle = p.hito ? COLOR.papelDeLaEstrella : COLOR.plataformaLuz
   ctx.lineWidth = 2
   ctx.beginPath()
   ctx.moveTo(p.x + 2, p.y + 1)
@@ -694,75 +733,6 @@ function dibujarSoportesDeBambu(
     ctx.globalAlpha = alfa
     ctx.fillStyle = COLOR.pistaSombra
     ctx.fillRect(x - 3.8, arriba - 2, 7.6, 2.5)
-  }
-
-  ctx.restore()
-}
-
-/**
- * La estrellita de papel que marca un punto de guardado.
- *
- * Es la misma que se dobla a mano y se guarda en el frasco, con sus
- * pliegues alternos oscurecidos. Va aquí y no un lazo porque el lazo
- * amarillo es de Boo y estos puntos son de los tres capítulos: la
- * estrellita ya es de ellos dos y no de ninguno de los peluches.
- *
- * Apagada hasta que la pisa, encendida y latiendo después.
- */
-function dibujarEstrellaDePapel(
-  ctx: CanvasRenderingContext2D,
-  p: Plataforma,
-  ganada: boolean,
-  reloj: number,
-) {
-  const x = p.x + p.ancho / 2
-  const y = p.y - 14
-  const r = 10
-  const latido = ganada ? 1 + Math.sin(reloj * 2.2) * 0.07 : 1
-
-  ctx.save()
-  ctx.translate(x, y)
-  ctx.scale(latido, latido)
-
-  if (ganada) {
-    const halo = ctx.createRadialGradient(0, 0, r * 0.5, 0, 0, r * 3)
-    halo.addColorStop(0, 'rgba(248, 244, 232, 0.3)')
-    halo.addColorStop(1, 'rgba(248, 244, 232, 0)')
-    ctx.fillStyle = halo
-    ctx.beginPath()
-    ctx.arc(0, 0, r * 3, 0, Math.PI * 2)
-    ctx.fill()
-  }
-
-  // La silueta gordita de cinco puntas: el valle a poco más de la
-  // mitad del radio es lo que la hace de papel doblado y no de dibujo
-  // animado.
-  const punta = (i: number, radio: number) => {
-    const a = ((i * 36 - 90) * Math.PI) / 180
-    return [Math.cos(a) * radio, Math.sin(a) * radio] as const
-  }
-
-  ctx.fillStyle = ganada ? COLOR.estrellaPapel : COLOR.estrellaPapelApagada
-  ctx.beginPath()
-  for (let i = 0; i < 10; i += 1) {
-    const [px, py] = punta(i, i % 2 === 0 ? r : r * 0.55)
-    if (i === 0) ctx.moveTo(px, py)
-    else ctx.lineTo(px, py)
-  }
-  ctx.closePath()
-  ctx.fill()
-
-  // Los pliegues: uno de cada dos triángulos, sombreado.
-  ctx.fillStyle = ganada ? COLOR.estrellaPliegue : COLOR.estrellaPliegueApagado
-  for (let i = 0; i < 5; i += 1) {
-    const [vx, vy] = punta(i * 2 + 1, r * 0.55)
-    const [px, py] = punta(i * 2 + 2, r)
-    ctx.beginPath()
-    ctx.moveTo(0, 0)
-    ctx.lineTo(vx, vy)
-    ctx.lineTo(px, py)
-    ctx.closePath()
-    ctx.fill()
   }
 
   ctx.restore()
@@ -1025,25 +995,36 @@ function dibujarVia(
 
   ctx.restore()
 }
-/** La sombra dice dónde va a caer. Es media ayuda del juego. */
+/**
+ * La sombra dice dónde va a caer. Es media ayuda del juego.
+ *
+ * Se pone sobre la superficie de verdad y no sobre la `y` de la
+ * plataforma: en el capítulo de Ovi la caja está inclinada, y una
+ * sombra pegada a la línea de en medio queda flotando encima de la
+ * punta que subió.
+ */
 function dibujarSombra(ctx: CanvasRenderingContext2D, escena: EscenaLuna) {
+  const superficieDe = (p: Plataforma) =>
+    alturaDeLaCaja(p, escena.x, escena.inclinacion[p.indice] ?? 0)
+
   const debajo = escena.plataformas
     .filter(
       (p) =>
         (escena.vidaDeLaPista[p.indice] ?? 1) > 0 &&
         escena.x >= p.x - 4 &&
         escena.x <= p.x + p.ancho + 4 &&
-        p.y >= escena.y - 1,
+        superficieDe(p) >= escena.y - 1,
     )
-    .sort((a, b) => a.y - b.y)[0]
+    .sort((a, b) => superficieDe(a) - superficieDe(b))[0]
   if (!debajo) return
 
-  const caida = debajo.y - escena.y
+  const suelo = superficieDe(debajo)
+  const caida = suelo - escena.y
   const cerca = Math.max(0, 1 - caida / 320)
   ctx.globalAlpha = 0.15 + cerca * 0.3
   ctx.fillStyle = COLOR.sombra
   ctx.beginPath()
-  ctx.ellipse(escena.x, debajo.y + 2, 10 * (0.5 + cerca * 0.5), 3, 0, 0, Math.PI * 2)
+  ctx.ellipse(escena.x, suelo + 2, 10 * (0.5 + cerca * 0.5), 3, 0, 0, Math.PI * 2)
   ctx.fill()
   ctx.globalAlpha = 1
 }

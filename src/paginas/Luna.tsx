@@ -1,11 +1,18 @@
 import { useReducedMotion } from 'motion/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { AYUDA, CARTEL, TEXTOS } from '@/content/luna'
+import { AYUDA, BAUTIZO, CAPITULOS, CARTEL, TEXTOS } from '@/content/luna'
 import { crearPintor } from '@/juego-luna/dibujo'
 import { conectarEntrada } from '@/juego-luna/entrada'
 import { crearMotor } from '@/juego-luna/motor'
 import { capituloNumero, construirNivel } from '@/juego-luna/mundos'
-import { anotarCapitulo } from '@/juego-luna/progreso'
+import { conNombre } from '@/juego-luna/nombrar'
+import {
+  anotarCapitulo,
+  conCualEntra,
+  LARGO_DEL_NOMBRE,
+  leerProgreso,
+  ponerleNombre,
+} from '@/juego-luna/progreso'
 import { RETRATOS } from '@/lib/retratos'
 import type { EventoLuna, ProgresoLuna } from '@/types'
 
@@ -24,21 +31,37 @@ import type { EventoLuna, ProgresoLuna } from '@/types'
  * Acá adentro React solo monta el canvas y se aparta: el bucle, la
  * física y el dibujo viven en `src/juego-luna/`, fuera de React. No
  * hay un solo render por frame. Lo único que sube hasta React es lo
- * que va escrito con letras encima del canvas: el cartel del capítulo,
- * la ayuda de abajo, el aviso del lazo y el cierre.
+ * que va escrito con letras encima del canvas: el bautizo, el cartel
+ * del capítulo, la ayuda de abajo, el aviso de la estrella y el cierre.
  */
+
+/** El último capítulo que está escrito. Hoy dos de tres. */
+const ULTIMO = CAPITULOS.reduce((mayor, c) => Math.max(mayor, c.numero), 1)
+
+/** Las tres pantallas de antes de jugar, en orden. */
+type Fase = 'bautizo' | 'cartel' | 'jugando'
+
 export function Luna() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const cajaRef = useRef<HTMLDivElement>(null)
   const menosMovimiento = useReducedMotion()
 
-  // Por ahora solo está escrito el capítulo de Boo. Cuando estén los
-  // tres, de aquí sale el que le toque según el progreso.
-  const capitulo = useMemo(() => capituloNumero(1), [])
+  /** Lo que había guardado al abrir. De aquí sale con cuál se entra. */
+  const [guardado, setGuardado] = useState<ProgresoLuna>(() => leerProgreso())
+
+  const [numero, setNumero] = useState(() => conCualEntra(leerProgreso(), ULTIMO))
+  const capitulo = useMemo(() => capituloNumero(numero), [numero])
   const nivel = useMemo(() => construirNivel(capitulo), [capitulo])
 
-  /** Mientras está en falso se ve el cartel y el dedo no hace nada. */
-  const [empezado, setEmpezado] = useState(false)
+  /**
+   * El nombre se pregunta una sola vez, la primera de todas. Si lo deja
+   * para después queda vacío y se le vuelve a preguntar la próxima,
+   * que es la única manera de cambiarlo: no hay pantalla de ajustes.
+   */
+  const [fase, setFase] = useState<Fase>(() => (leerProgreso().nombre ? 'cartel' : 'bautizo'))
+
+  /** Lo que va escribiendo en la casilla del nombre. */
+  const [escribiendo, setEscribiendo] = useState('')
 
   /** Se enciende al pisar la última plataforma. */
   const [llegada, setLlegada] = useState<{ pasitos: number; caidas: number } | null>(null)
@@ -49,7 +72,7 @@ export function Luna() {
   /** La línea de abajo, que se va sola cuando ya entendió. */
   const [ayudaVisible, setAyudaVisible] = useState(true)
 
-  /** El aviso de haber pisado un lazo. Dura un par de segundos. */
+  /** El aviso de haber pisado una estrella. Dura un par de segundos. */
   const [aviso, setAviso] = useState<{ texto: string; yendose: boolean } | null>(null)
 
   /**
@@ -58,6 +81,12 @@ export function Luna() {
    * mirar es ella.
    */
   const [jugando, setJugando] = useState(false)
+
+  /** El nombre que ella le puso, o vacío mientras no le puso ninguno. */
+  const nombre = guardado.nombre
+  const conElNombre = (texto: string) => conNombre(texto, nombre)
+
+  const empezado = fase === 'jugando'
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -126,8 +155,8 @@ export function Luna() {
       else if (evento === 'impulso') vibrar(34)
       else if (evento === 'hito') {
         vibrar([0, 18, 70, 22])
-        // El lazo se enciende y late, pero eso solo se pasa por alto
-        // jugando. Hay que decirlo con letras.
+        // La estrella se enciende y late, pero eso solo se pasa por
+        // alto jugando. Hay que decirlo con letras.
         mostrarAviso(TEXTOS.hito)
       } else if (evento === 'cima') {
         const cuenta = motor.cuenta()
@@ -166,7 +195,8 @@ export function Luna() {
      * Medir con `visualViewport` y no con `innerHeight`: en Safari la
      * barra del navegador aparece y desaparece sola, y con
      * `innerHeight` el canvas queda más alto que lo que se ve. Además
-     * hay que volver a medir cada vez que cambia.
+     * hay que volver a medir cada vez que cambia — y en el bautizo eso
+     * pasa de verdad, porque al abrirse el teclado la ventana encoge.
      */
     const medir = () => {
       const vv = window.visualViewport
@@ -183,8 +213,10 @@ export function Luna() {
 
     // El motor arranca aunque el cartel esté puesto: detrás del texto
     // se ven el cielo y la tortuga caminando por el suelo, que invita
-    // más que un fondo negro. Lo que no se conecta hasta que le da a
-    // empezar es el dedo.
+    // más que un fondo negro. En el bautizo eso además es media
+    // respuesta a la pregunta, porque la que se va a llamar de alguna
+    // manera está ahí abajo dando vueltas. Lo que no se conecta hasta
+    // que le da a empezar es el dedo.
     motor.iniciar()
 
     const desconectar = empezado
@@ -207,6 +239,24 @@ export function Luna() {
   }, [capitulo, empezado, menosMovimiento, nivel])
 
   const retrato = RETRATOS[capitulo.id]
+  const siguiente = CAPITULOS.find((c) => c.numero === capitulo.numero + 1)
+
+  /** Guardar el nombre y pasar al cartel. Vacío es «mejor después». */
+  const bautizar = (puesto: string) => {
+    setGuardado(ponerleNombre(puesto))
+    setFase('cartel')
+  }
+
+  /** Del cierre de un capítulo al cartel del siguiente, sin salir. */
+  const alSiguiente = () => {
+    if (!siguiente) return
+    setLlegada(null)
+    setTotales(null)
+    setAyudaVisible(true)
+    setJugando(false)
+    setNumero(siguiente.numero)
+    setFase('cartel')
+  }
 
   return (
     <div
@@ -219,8 +269,66 @@ export function Luna() {
         aria-label="A la luna, a pasitos de tortuga"
       />
 
+      {/* ── El bautizo, una sola vez en la vida ───────────────────── */}
+      {fase === 'bautizo' ? (
+        <div className="absolute inset-0 overflow-y-auto bg-gradient-to-b from-[#0b1026] from-60% via-[#0b1026]/85 via-80% to-transparent px-6 pt-20 pb-10">
+          <form
+            className="anima-aparecer mx-auto flex max-w-md flex-col"
+            onSubmit={(e) => {
+              e.preventDefault()
+              bautizar(escribiendo)
+            }}
+          >
+            <h2 className="fuente-mano text-center text-3xl text-tulipan-amarillo">
+              {BAUTIZO.titulo}
+            </h2>
+
+            {BAUTIZO.parrafos.map((parrafo, i) => (
+              <p key={i} className="mt-4 text-[0.95rem] leading-relaxed text-margarita/75">
+                {parrafo}
+              </p>
+            ))}
+
+            <input
+              type="text"
+              value={escribiendo}
+              onChange={(e) => setEscribiendo(e.target.value.slice(0, LARGO_DEL_NOMBRE))}
+              maxLength={LARGO_DEL_NOMBRE}
+              placeholder={BAUTIZO.ejemplo}
+              aria-label={BAUTIZO.titulo}
+              autoComplete="off"
+              autoCapitalize="words"
+              autoCorrect="off"
+              spellCheck={false}
+              enterKeyHint="done"
+              className="fuente-mano mt-7 w-full rounded-2xl border border-margarita/20 bg-[#0b1026]/70 px-5 py-4 text-center text-2xl text-margarita placeholder:text-margarita/25 focus:border-tulipan-amarillo/60 focus:outline-none"
+            />
+
+            <button
+              type="submit"
+              disabled={escribiendo.trim() === ''}
+              className="mt-5 w-full rounded-full px-8 py-4 font-display text-lg transition disabled:border disabled:border-margarita/20 disabled:bg-transparent disabled:text-margarita/35 enabled:bg-tulipan-amarillo enabled:text-[#0b1026] enabled:hover:-translate-y-0.5"
+            >
+              {BAUTIZO.boton}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => bautizar('')}
+              className="mt-4 text-center text-sm text-margarita/45 underline decoration-margarita/20 underline-offset-4"
+            >
+              {BAUTIZO.saltar}
+            </button>
+
+            <p className="fuente-mano mt-5 text-center text-base text-margarita/40">
+              {BAUTIZO.pie}
+            </p>
+          </form>
+        </div>
+      ) : null}
+
       {/* ── El cartel del capítulo, con su retrato ────────────────── */}
-      {!empezado ? (
+      {fase === 'cartel' ? (
         <div className="absolute inset-0 overflow-y-auto bg-[#0b1026]/88 px-6 py-10 backdrop-blur-[2px]">
           <div className="anima-aparecer mx-auto flex min-h-full max-w-md flex-col justify-center">
             {retrato ? (
@@ -237,7 +345,7 @@ export function Luna() {
 
             {capitulo.presentacion.texto.map((parrafo, i) => (
               <p key={i} className="mt-4 text-[0.95rem] leading-relaxed text-margarita/75">
-                {parrafo}
+                {conElNombre(parrafo)}
               </p>
             ))}
 
@@ -246,7 +354,7 @@ export function Luna() {
               <div className="mt-6 border-t border-margarita/15 pt-5">
                 {CARTEL.parrafos.map((parrafo, i) => (
                   <p key={i} className="mt-3 text-[0.9rem] leading-relaxed text-margarita/60">
-                    {parrafo}
+                    {conElNombre(parrafo)}
                   </p>
                 ))}
               </div>
@@ -254,13 +362,15 @@ export function Luna() {
 
             <button
               type="button"
-              onClick={() => setEmpezado(true)}
+              onClick={() => setFase('jugando')}
               className="mt-8 w-full rounded-full bg-tulipan-amarillo px-8 py-4 font-display text-lg text-[#0b1026] transition-transform hover:-translate-y-0.5"
             >
               {capitulo.presentacion.boton}
             </button>
 
-            <p className="fuente-mano mt-4 text-center text-base text-margarita/45">{CARTEL.pie}</p>
+            <p className="fuente-mano mt-4 text-center text-base text-margarita/45">
+              {conElNombre(CARTEL.pie)}
+            </p>
           </div>
         </div>
       ) : null}
@@ -284,9 +394,7 @@ export function Luna() {
               <img src={retrato} alt="" className="mx-auto mb-4 h-32 w-32 object-contain" />
             ) : null}
 
-            <h2 className="font-display text-3xl text-tulipan-amarillo">
-              {capitulo.cierre.titulo}
-            </h2>
+            <h2 className="font-display text-3xl text-tulipan-amarillo">{capitulo.cierre.titulo}</h2>
 
             <p className="fuente-mano mt-3 text-lg text-margarita/70">
               {llegada.pasitos} pasitos, {llegada.caidas}{' '}
@@ -301,12 +409,20 @@ export function Luna() {
             ) : null}
 
             <p className="mt-6 text-left text-[0.95rem] leading-relaxed text-margarita/75">
-              {capitulo.cierre.texto}
+              {conElNombre(capitulo.cierre.texto)}
             </p>
 
-            <p className="mt-6 text-xs text-margarita/45">
-              {TEXTOS.siguiente}
-            </p>
+            {siguiente ? (
+              <button
+                type="button"
+                onClick={alSiguiente}
+                className="mt-8 w-full rounded-full bg-tulipan-amarillo px-8 py-4 font-display text-lg text-[#0b1026] transition-transform hover:-translate-y-0.5"
+              >
+                {TEXTOS.seguir} {siguiente.nombre}
+              </button>
+            ) : (
+              <p className="mt-6 text-xs text-margarita/45">{TEXTOS.enObra}</p>
+            )}
           </div>
         </div>
       ) : (

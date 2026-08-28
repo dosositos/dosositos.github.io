@@ -154,6 +154,57 @@ export const PISTA = {
 }
 
 /**
+ * Las cajas que ceden, que es la traba del capítulo de Ovi.
+ *
+ * Una pila de cajas de cartón no es una tabla atornillada: si te
+ * parás en la orilla, se va para ese lado. Aquí es un balancín que
+ * pivota en el medio, así que aterrizar a la derecha hunde la derecha
+ * y **levanta la izquierda**, y el salto siguiente sale desde otra
+ * altura. Aterrizar bien deja de ser llegar: es llegar *a un sitio*.
+ *
+ * No ceden todas. El suelo, las estrellas y los tramos de impulso van
+ * firmes por regla: la estrella tiene que ser el sitio donde se
+ * respira, y un tramo de impulso que se moviera arruinaría lo único
+ * que el juego promete que sale siempre igual.
+ */
+export const CAJAS = {
+  /**
+   * Cuánto baja la punta de la caja con la inclinación al tope, en
+   * unidades del mundo.
+   *
+   * **No es lo que se hunde ella.** La caja es un balancín, así que
+   * el punto donde está parada baja `cede` por su distancia al medio
+   * *dos veces*: una porque el peso ahí inclina más, y otra porque un
+   * punto más lejos del pivote baja más. Y encima la tortuga nunca
+   * llega al borde de verdad, que se le acaba el suelo a media
+   * tortuga de la punta.
+   *
+   * En números: en una caja de 100 de ancho, lo más orillada que
+   * puede estar es al 70% del semiancho, y ahí se hunde 15 × 0,7² ≈
+   * 7 px. Eso es lo que se siente al saltar. Los 15 son lo que se ve
+   * en el dibujo, que son unos 12 grados de inclinación.
+   *
+   * Se probó con 7 y la traba no existía: la caja se movía en
+   * pantalla pero el salto salía igual, porque lo que llegaba al
+   * juego eran tres píxeles y medio.
+   */
+  cede: 15,
+
+  /**
+   * Cuánto tarda en irse del todo hacia el lado donde está parada.
+   * Corto: es peso, no un motor.
+   */
+  msParaCeder: 260,
+
+  /**
+   * Y cuánto tarda en volver a quedar derecha después de que se fue.
+   * Más lento que lo anterior, porque volver a su sitio es lo que
+   * hace la caja sola y ceder lo hace empujada.
+   */
+  msParaEnderezar: 520,
+}
+
+/**
  * Los tramos de impulso: al caer ahí sale disparada sola, sin dedo.
  *
  * La tortuga se centra en el tramo antes de salir, así que el salto
@@ -223,6 +274,7 @@ const BOO: CapituloEscrito = {
   numero: 1,
   material: 'pista',
   seDesvanece: true,
+  cede: false,
   presentacion: {
     titulo: 'Capítulo uno: Boo',
     texto: [
@@ -297,13 +349,100 @@ const BOO: CapituloEscrito = {
   ],
 }
 
+/** El capítulo dos: el cuarto de las cajas de donde salió Ovi. */
+const OVI: CapituloEscrito = {
+  id: 'ovi',
+  nombre: 'Ovi',
+  numero: 2,
+  material: 'cajas',
+  seDesvanece: false,
+  cede: true,
+  presentacion: {
+    titulo: 'Capítulo dos: Ovi',
+    texto: [
+      'Ovi estaba en una caja de peluches viejos, con otros que llevaban años ahí metidos, y se vino conmigo ese mismo día. Todo rosa pastel y con esos brazos de gimnasio que tiene. Todavía no entiendo cómo nadie lo había sacado antes.',
+      'Su mundo es el cuarto de donde salió: cajas apiladas y cinta de embalaje, con rótulos que nadie volvió a leer. Y las cajas ceden. Se van para el lado donde te parás, así que dónde caés decide desde qué altura sale el salto siguiente. No basta con caer en la caja, importa en qué parte de la caja caés.',
+    ],
+    boton: 'subir con Ovi',
+  },
+  cierre: {
+    titulo: 'Ganaste a Ovi',
+    texto:
+      'Se sube al caparazón y se acomoda al lado de Boo, que ya venía ahí. Dos de tres. El que falta es el más viejo de los tres y está todavía más arriba.',
+  },
+  plataformas: [
+    // El suelo del cuarto, que es la única caja de verdad ancha. Aquí
+    // no cede nada: la primera de todas va firme por regla.
+    { x: 25, ancho: 315, altura: 0 },
+
+    // ── Las cajas se presentan ────────────────────────────────
+    // Sube de 78 en 83 y las cajas van anchas. La subida es más
+    // fácil que la de Boo a propósito: lo nuevo que hay que
+    // aprender aquí no es el salto, es que el suelo se mueve.
+    { x: 200, ancho: 130, altura: 78 },
+    { x: 40, ancho: 130, altura: 158 },
+    { x: 195, ancho: 125, altura: 240 },
+    { x: 45, ancho: 125, altura: 322 },
+    { x: 200, ancho: 120, altura: 405 },
+    { x: 40, ancho: 120, altura: 488 },
+    { x: 190, ancho: 140, altura: 570, hito: true },
+
+    // ── Y ahora sí ────────────────────────────────────────────
+    // Se achican y suben de 92 en 100. Y al final del tramo, el
+    // primer hueco que solo se pasa con la barra al tope: se llega
+    // corta dos veces, y a la tercera se entiende que hay cargas
+    // que no se pueden medir a ojo, hay que irse hasta el fondo.
+    { x: 45, ancho: 110, altura: 662 },
+    { x: 210, ancho: 105, altura: 755 },
+    { x: 50, ancho: 105, altura: 848 },
+    { x: 215, ancho: 100, altura: 945 },
+    { x: 60, ancho: 100, altura: 1089, alTope: true },
+    { x: 195, ancho: 135, altura: 1170, hito: true },
+
+    // ── El tramo desparejo ────────────────────────────────────
+    // Una sube 100 y la siguiente 62. Con el suelo quieto esto era
+    // solo cambiar de carga; con las cajas cediendo, además hay
+    // que elegir en qué punta de la caja quedarse antes de saltar.
+    { x: 45, ancho: 100, altura: 1270 },
+    { x: 175, ancho: 90, altura: 1332 },
+    { x: 40, ancho: 95, altura: 1432 },
+    { x: 200, ancho: 90, altura: 1494 },
+    { x: 55, ancho: 90, altura: 1594 },
+    { x: 190, ancho: 130, altura: 1692, hito: true },
+
+    // ── Ya pesa ───────────────────────────────────────────────
+    // Las cajas más chicas del capítulo y el segundo hueco al tope,
+    // este ya sin aviso ninguno.
+    { x: 40, ancho: 90, altura: 1792 },
+    { x: 205, ancho: 85, altura: 1896 },
+    { x: 45, ancho: 85, altura: 1999 },
+    { x: 215, ancho: 85, altura: 2104 },
+    { x: 40, ancho: 95, altura: 2248, alTope: true },
+    { x: 185, ancho: 130, altura: 2334, hito: true },
+
+    // ── El último trecho hasta la luna ────────────────────────
+    // Sin regalo de impulso, que ese es de Boo. Lo que hay aquí es
+    // una caja firme a mitad del tramo, para respirar una vez
+    // antes del final.
+    { x: 40, ancho: 85, altura: 2439 },
+    { x: 200, ancho: 80, altura: 2544 },
+    { x: 45, ancho: 90, altura: 2649, firme: true },
+    { x: 205, ancho: 85, altura: 2754 },
+    { x: 50, ancho: 90, altura: 2859 },
+
+    // La cima. Ancha, como la de Boo: el último salto antes del
+    // premio no es el sitio para pedir puntería.
+    { x: 190, ancho: 150, altura: 2964, hito: true },
+  ],
+}
+
 /**
  * Los capítulos, en orden de llegada de los peluches.
  *
- * Por ahora solo Boo. Ovi y Nico son variaciones del mismo molde y
- * entran aquí mismo cuando les toque.
+ * Falta Nico, que es el primogénito y va al final. Es otra variación
+ * del mismo molde y entra aquí mismo cuando le toque.
  */
-export const CAPITULOS: CapituloEscrito[] = [BOO]
+export const CAPITULOS: CapituloEscrito[] = [BOO, OVI]
 
 /**
  * La ayuda de abajo.
@@ -322,6 +461,34 @@ export const AYUDA = {
 }
 
 /**
+ * El bautizo: la primera pantalla de todas, una sola vez.
+ *
+ * La tortuga es de ella, y hasta ahora no tenía nombre. Se le pregunta
+ * antes del primer capítulo y lo que escriba manda en todos los textos
+ * del juego, en los tres capítulos.
+ *
+ * Se puede dejar para después sin que pase nada: el juego la llama «la
+ * tortuga» y se lo vuelve a preguntar la próxima vez. Lo que no hay es
+ * una pantalla de ajustes para cambiarlo, así que mientras no lo
+ * ponga, la puerta sigue abierta.
+ *
+ * En los textos de aquí abajo, `{tortuga}` y `{Tortuga}` son el hueco
+ * donde entra el nombre. Sin nombre puesto se llenan solos con «la
+ * tortuga» y «La tortuga».
+ */
+export const BAUTIZO = {
+  titulo: '¿Cómo se llama?',
+  parrafos: [
+    'Esta es la que sube, y hasta hoy no tiene nombre. Es tuya: ponele el que querás y así se va a llamar de aquí hasta arriba.',
+  ],
+  /** Lo que se ve escrito flojito adentro de la casilla, sin escribir nada. */
+  ejemplo: 'la tortuga',
+  boton: 'así se llama',
+  saltar: 'mejor después',
+  pie: 'Si ahorita no se te ocurre, dale nomás y te lo vuelvo a preguntar la próxima.',
+}
+
+/**
  * El cartel de antes de empezar.
  *
  * Va porque el cansancio no se puede aprender cayéndose: si se desmaya
@@ -332,7 +499,7 @@ export const AYUDA = {
 export const CARTEL = {
   titulo: 'Antes de subir, osita',
   parrafos: [
-    'La tortuga camina sola de un lado al otro y no se para nunca. Apretá la pantalla y ahí sí se para, se agacha y la barra se le va llenando. Cuando soltás, sale disparada hacia donde venía mirando. Un solo dedo, y dos cosas que decidir: cuándo y con cuánta fuerza.',
+    '{Tortuga} camina sola de un lado al otro y no se para nunca. Apretá la pantalla y ahí sí se para, se agacha y la barra se le va llenando. Cuando soltás, sale disparada hacia donde venía mirando. Un solo dedo, y dos cosas que decidir: cuándo y con cuánta fuerza.',
     'Aguantar la barra cansa. Si te quedás apretando de más se marea, se cae de espaldas con las estrellitas dando vueltas y pierde ese salto. Antes de que pase, la barra se pone roja. No perdés nada más, solo hay que esperar a que se levante.',
     'Las estrellitas de papel guardan por dónde ibas, como las del frasco. Si te caés volvés a la última que pisaste, nunca hasta abajo del todo.',
   ],
@@ -349,6 +516,8 @@ export const TEXTOS = {
   llegada: 'llegaste',
   /** Lo acumulado de todas las veces, debajo de lo de esta subida. */
   enTotal: 'en total',
-  /** Al cerrar el capítulo, mientras los otros dos no existan. */
-  siguiente: 'los otros dos capítulos todavía los estoy haciendo',
+  /** El botón para seguir con el capítulo siguiente, recién ganado el de ahora. */
+  seguir: 'seguir con',
+  /** Y al cerrar el último que está escrito, mientras falte alguno. */
+  enObra: 'el capítulo que falta todavía lo estoy haciendo',
 }

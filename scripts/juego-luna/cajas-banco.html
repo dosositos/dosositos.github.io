@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>El cuarto de Ovi, caja por caja</title>
+    <style>
+      body { margin: 0; background: #05070f; font-family: system-ui; color: #f8f4e8; }
+      #tira { display: flex; gap: 10px; padding: 10px; }
+      figure { margin: 0; }
+      figcaption { font-size: 12px; opacity: 0.6; padding: 6px 2px; }
+      canvas { display: block; border-radius: 6px; }
+    </style>
+  </head>
+  <body>
+    <!--
+      Banco de pruebas del mundo de Ovi, hermano del de la pista. No es
+      parte de la web: sirve para mirar el cartón, la cinta, los
+      peluches asomando, las torres del fondo y sobre todo **la caja
+      cediendo**, que es lo que jugando pasa en un cuarto de segundo y
+      no se puede juzgar.
+
+      Se mira con el servidor de siempre andando:
+        npm run dev
+        http://localhost:5173/scripts/juego-luna/cajas-banco.html
+    -->
+    <div id="tira"></div>
+
+    <script type="module">
+      import { crearPintor } from '/src/juego-luna/dibujo.ts'
+      import { sembrarCajas } from '/src/juego-luna/mundo-cajas.ts'
+      import { construirNivel } from '/src/juego-luna/mundos.ts'
+      import { CAJAS, CAPITULOS, MUNDO, TORTUGA } from '/src/content/luna.ts'
+
+      const capitulo = CAPITULOS.find((c) => c.id === 'ovi')
+      const nivel = construirNivel(capitulo)
+      const enteras = nivel.plataformas.map(() => 1)
+      const derechas = nivel.plataformas.map(() => 0)
+
+      // El mismo reparto que va a salir en el juego, para poder buscar
+      // una caja abierta o una con otra encima en vez de inventarlas.
+      const cajas = sembrarCajas(nivel)
+      const primeraQue = (cumple) =>
+        nivel.plataformas.find((p) => cajas.get(p.indice) && cumple(cajas.get(p.indice)))
+
+      /**
+       * La escena mínima que le hace falta al pintor, con la tortuga
+       * parada en un punto de la caja y la caja cediendo lo que le
+       * toca por estar ella ahí. Así lo que se mira es lo mismo que
+       * calcula el motor y no una postura inventada.
+       *
+       * `donde` va de 0 (punta izquierda) a 1 (punta derecha).
+       */
+      function escenaEn(plataforma, donde = 0.5, extra = {}) {
+        const margen = TORTUGA.ancho / 2
+        const pisable = plataforma.ancho - margen * 2
+        const x = plataforma.x + margen + pisable * donde
+
+        const medio = plataforma.x + plataforma.ancho / 2
+        const lado = Math.max(-1, Math.min(1, (x - medio) / (plataforma.ancho / 2)))
+        const inclinada = plataforma.cede ? lado : 0
+
+        const inclinacion = nivel.plataformas.map((p) =>
+          p.indice === plataforma.indice ? inclinada : 0,
+        )
+
+        return {
+          x,
+          y: plataforma.y + inclinada * CAJAS.cede * lado,
+          mirando: donde > 0.5 ? 1 : -1,
+          carga: 0,
+          cargando: false,
+          enSuelo: true,
+          caminado: 0.3,
+          vy: 0,
+          reloj: 2.4,
+          desdeSalto: 9999,
+          desdeAterrizaje: 9999,
+          cayendo: false,
+          agobio: 0,
+          cansancio: 0,
+          camara: plataforma.y - MUNDO.alto * 0.62,
+          hitoAlcanzado: -1,
+          vidaDeLaPista: enteras,
+          avisoDeLaPista: 0.4,
+          inclinacion,
+          cine: 'jugando',
+          cineAvance: 0,
+          pasitos: 0,
+          caidas: 0,
+          plataformas: nivel.plataformas,
+          ...extra,
+        }
+      }
+
+      const cede = nivel.plataformas[9]
+      const abierta = primeraQue((c) => c.piezas.some((z) => z.abierta)) ?? nivel.plataformas[2]
+      const conEncima = primeraQue((c) => c.encima) ?? nivel.plataformas[3]
+      const alTope = nivel.plataformas.find((p) => p.alTope) ?? nivel.plataformas[12]
+
+      const paneles = [
+        ['la salida y las torres', escenaEn(nivel.plataformas[1], 0.5)],
+        ['la caja derecha', escenaEn(cede, 0.5)],
+        ['cediendo a la derecha', escenaEn(cede, 1)],
+        ['cediendo a la izquierda', escenaEn(cede, 0)],
+        ['una tapa abierta', escenaEn(abierta, 0.5)],
+        ['una caja encima', escenaEn(conEncima, 1)],
+        ['la estrella, que no cede', escenaEn(nivel.hitos[0], 1, { hitoAlcanzado: nivel.hitos[0].indice })],
+        ['el hueco al tope', escenaEn(alTope, 0.5, { hitoAlcanzado: 7 })],
+        ['la cima', escenaEn(nivel.cima, 0.5, { hitoAlcanzado: 25 })],
+      ]
+
+      const tira = document.getElementById('tira')
+      for (const [nombre, escena] of paneles) {
+        const figura = document.createElement('figure')
+        const lienzo = document.createElement('canvas')
+        const pie = document.createElement('figcaption')
+        pie.textContent = nombre
+        figura.append(lienzo, pie)
+        tira.append(figura)
+
+        const pintor = crearPintor(lienzo, nivel)
+        pintor.medir(206, 446)
+        pintor.pintar(escena)
+      }
+    </script>
+  </body>
+</html>

@@ -359,6 +359,23 @@ export interface PlataformaEscrita {
    * igual y se puede poner el destino donde uno quiera.
    */
   impulso?: 'derecha' | 'izquierda'
+  /**
+   * Solo en los capítulos donde el suelo cede: esta plataforma no.
+   *
+   * Las estrellas, los tramos de impulso y el suelo ya son firmes por
+   * regla, y no hace falta marcarlos. Esto es para dar un respiro en
+   * medio de una racha de cajas movedizas.
+   */
+  firme?: boolean
+  /**
+   * Una nota para el probador: a esta se llega **solo con la barra al
+   * tope**, y es a propósito.
+   *
+   * No cambia nada del juego. Sirve para que `npm run luna:probar` no
+   * marque como error un salto que sale en uno de cada veinte
+   * intentos, que en el capítulo de Ovi es justamente la gracia.
+   */
+  alTope?: boolean
 }
 
 /** La misma plataforma ya convertida. `y` es la línea que se pisa. */
@@ -369,6 +386,15 @@ export interface Plataforma {
   hito?: boolean
   /** 1 lanza a la derecha, -1 a la izquierda. Sin esto, no es tramo de impulso. */
   impulso?: 1 | -1
+  /**
+   * Si esta plataforma se inclina cuando se para encima. Lo decide
+   * `construirNivel` a partir de la traba del capítulo: en el de Ovi
+   * ceden todas menos el suelo, las estrellas, los tramos de impulso
+   * y las marcadas como firmes.
+   */
+  cede?: boolean
+  /** A esta se llega solo con la barra al tope, y es a propósito. */
+  alTope?: boolean
   /** Su lugar en la lista, para saber qué hito se alcanzó. */
   indice: number
 }
@@ -381,6 +407,12 @@ export interface ProgresoLuna {
   pasitos: number
   /** Las veces que se cayó en total. */
   caidas: number
+  /**
+   * Cómo le puso ella a la tortuga la primera vez que jugó. Vacío es
+   * «todavía no le puso», y mientras esté vacío se le vuelve a
+   * preguntar y en los textos sale «la tortuga».
+   */
+  nombre: string
 }
 
 /** De qué está hecho el camino de un capítulo. Lo usa el pintor. */
@@ -398,15 +430,21 @@ export interface Nivel {
   salida: { x: number; y: number }
   material: MaterialDelMundo
   /**
-   * La traba del capítulo: la pista que se borra detrás. Si es falso,
-   * el camino se queda quieto y el capítulo es solo saltar.
+   * La traba del capítulo de Boo: la pista se borra detrás. Si es
+   * falso, el camino se queda donde está.
    */
   seDesvanece: boolean
+  /**
+   * La traba del capítulo de Ovi: las cajas se inclinan hacia el lado
+   * donde está parada, así que el punto donde aterriza decide desde
+   * qué altura sale el salto siguiente.
+   */
+  cede: boolean
 }
 
 /**
  * Un capítulo tal como se escribe en `luna.ts`: el peluche, su
- * presentación, el poder que se gana y las plataformas.
+ * presentación, su cierre y las plataformas.
  */
 export interface CapituloEscrito {
   /** El id del peluche, que es también el del archivo de su retrato. */
@@ -417,12 +455,13 @@ export interface CapituloEscrito {
   numero: number
   material: MaterialDelMundo
   seDesvanece: boolean
+  cede: boolean
   presentacion: {
     titulo: string
     texto: string[]
     boton: string
   }
-  /** Lo que se lee al ganarlo, con el poder recién estrenado. */
+  /** Lo que se lee al ganarlo, con el peluche ya trepado al caparazón. */
   cierre: {
     titulo: string
     texto: string
@@ -490,6 +529,12 @@ export interface EscenaLuna {
    * 0. Cambia con las estrellas pisadas, porque la pista se apura.
    */
   avisoDeLaPista: number
+  /**
+   * Cuánto está inclinada cada caja ahora mismo, de -1 (se hundió la
+   * izquierda) a 1 (se hundió la derecha), por índice de plataforma.
+   * En los capítulos donde nada cede se queda todo en 0.
+   */
+  inclinacion: number[]
   /**
    * En qué momento del capítulo va: la luna entrando, el juego, o la
    * luna yéndose al llegar arriba.

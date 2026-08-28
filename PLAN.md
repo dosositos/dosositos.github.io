@@ -441,61 +441,96 @@ y chats, y el sobre de apertura. Eso es el regalo.
 
 ---
 
-## La próxima sesión — el juego de la luna, fase 4
+## La próxima sesión — el juego de la luna, fase 5
 
 **Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
 arrancamos por donde diga, sin que tengás que acordarte de nada.
 
-**Lo que toca:** la **fase 4**, el capítulo de **Ovi**. Cajas apiladas que ceden
-hacia el lado con más peso, los huecos que solo se cruzan de una manera. Cuesta
-bastante menos que el de Boo: la fase 3 dejó el molde hecho y Ovi es una
-variación. Hay que escribir su traba, su material en `dibujo.ts` y sus 32
-plataformas, y nada más.
+**Lo que toca:** la **fase 5**, el capítulo de **Nico**. Almohadas que se hunden
+mientras está parada encima, luz de madrugada y la luna ya grande. Es el
+capítulo más importante y el que ataca directo la mecánica central: cargar la
+barra toma tiempo, y el suelo se está yendo mientras cargás. Hay que decidir
+entre el salto seguro y el salto bueno.
 
-### Cómo está el juego ahora mismo (fase 3 cerrada)
+Cuesta lo mismo que costó Ovi, que fue poco: el molde de un capítulo ya está
+hecho dos veces. Hay que escribir su traba en el motor, su material en
+`src/juego-luna/mundo-almohadas.ts` y sus 32 plataformas en
+`src/content/luna.ts`. Y hacerle su banco, `npm run luna:almohadas`, que es lo
+que hizo barata la fase de Ovi.
+
+### Cómo está el juego ahora mismo (fase 4 cerrada)
 
 Publicado en `https://dosositos.github.io/#/luna`, sin enlace desde ningún lado
-y detrás del candado. El capítulo de Boo está entero.
+y detrás del candado. **Dos capítulos de tres, enteros.** Al ganar el de Boo se
+pasa al de Ovi sin salir de la pantalla.
 
 - **Un solo gesto en todo el juego.** Mantener y soltar. Ni poderes ni
   habilidades: se probaron dos y se tiraron los dos.
+- **Le pregunta el nombre a la tortuga** antes de la primera partida, y ese
+  nombre manda en todos los textos de los tres capítulos.
 - **32 plataformas y 5 estrellas** por capítulo. Las estrellas son las
-  estrellitas de papel del frasco, iguales en los tres mundos.
+  estrellitas de papel del frasco, iguales en los tres mundos, y en los tres son
+  suelo firme.
 - **La traba de Boo:** la pista se borra detrás. Parpadea siete veces
   acelerando y se va. Cada estrella pisada le quita 380 ms de vida, con piso de
   1,1 segundos, así que el capítulo se apura solo.
-- **Dos tramos de impulso**, que lanzan solos y siempre igual.
+- **La traba de Ovi:** las cajas ceden hacia donde está parada. Saltar desde el
+  medio llega a 154 px de altura y saltar desde la orilla a 146, así que el
+  punto donde aterriza decide el salto siguiente.
+- **Dos huecos que solo se pasan con la barra al tope**, uno por mitad del
+  capítulo de Ovi. Van marcados `alTope` en `luna.ts` y el probador los
+  comprueba en vez de darlos por error.
+- **Dos tramos de impulso** en Boo, que lanzan solos y siempre igual. Ovi no
+  tiene: cada mundo con lo suyo.
 - **La luna** abre el capítulo con una cinemática, se va para arriba, espera
   sobre la última plataforma y se va otra vez al llegar. Un toque salta la
   presentación.
-- **El fondo vive:** vías de pista que cruzan el mundo con carros corriendo por
-  encima, muy apagadas, y matas de bambú a los dos lados.
+- **El fondo vive:** en Boo, vías de pista con carros corriendo por encima y
+  matas de bambú a los lados. En Ovi, torres de cajas contra las dos paredes del
+  cuarto y polvo flotando en la luz, con una mota de cada tres del rosa de Ovi.
 
-### Los seis comandos que hacen falta
+### Los siete comandos que hacen falta
 
 ```bash
 npm run dev              # y npm run dev:telefono para la red de casa
 npm run luna:probar      # ¿se pasa el capítulo? y todas las pruebas del juego
+npm run luna:probar -- 2 # el de Ovi. Sin número, el de Boo
 npm run luna:mapa        # a qué distancia se aterriza según lo que haya que subir
-npm run luna:ver         # fotos del juego andando
-npm run luna:pista       # el banco del mundo, sin jugarlo
+npm run luna:ver         # fotos del juego andando (-- 5173 2 para el de Ovi)
+npm run luna:pista       # el banco del mundo de Boo, sin jugarlo
+npm run luna:cajas       # el banco del mundo de Ovi
 npm run luna:tortuga     # el banco de poses del personaje
 ```
 
-**Lo que más ahorra:** los dos bancos. El mundo y el personaje se ajustan
-mirándolos, no jugando hasta el tramo que se está tocando.
+**Lo que más ahorra:** los bancos. El mundo y el personaje se ajustan
+mirándolos, no jugando hasta el tramo que se está tocando. El de las cajas se
+escribió antes que el capítulo y por eso el capítulo salió en una tarde.
 
 ### Lo que aprendí y no quiero volver a aprender
 
-- **El arnés miente antes que el juego.** Tres veces seguidas una prueba nueva
-  dijo que el motor estaba roto y el roto era la prueba. Antes de creerle a una
-  prueba que falla, romper el código a propósito y ver si la caza.
+- **El arnés miente antes que el juego.** Van cuatro veces que una prueba nueva
+  dice que el motor está roto y el roto es la prueba. En la fase 4 el probador
+  comparaba el aterrizaje contra la línea de la plataforma, y como la caja ya
+  había cedido debajo de la tortuga, leía como fallados aterrizajes buenos: el
+  capítulo entero salía cinco puntos más difícil de lo que era. Antes de creerle
+  a una prueba que falla, romper el código a propósito y ver si la caza.
+- **Y miente también cuando espera por reloj.** La tortuga camina sola y no se
+  para nunca, así que «esperá tantos frames y ya estará en la orilla» es
+  mentira. Las pruebas del capítulo de Ovi esperan a que **esté** donde tiene
+  que estar, mirándole la x frame a frame.
 - **La firma del congelamiento.** Si la tortuga se queda clavada en una pose
   agachada y se arregla al saltar, es que el reloj de la pose dejó de correr.
   Pasó dos veces y ya tiene prueba en `npm run luna:probar`.
 - **`ctx.globalAlpha` no se asigna dentro de una función de dibujo.** Se lo
   lleva puesto todo lo que venga después. El desvanecimiento de un tramo entero
   se rompió por un `globalAlpha = 1` suelto: el alfa viaja como parámetro.
+- **Una plataforma no es un objeto, es varios.** Dibujada de una sola pieza, una
+  caja de 100 de ancho por 20 de alto sale una tabla y no una caja. Partida en
+  dos, tres o cuatro cajas de hombro con hombro, cada una queda casi cuadrada y
+  el material se lee de una.
+- **Lo blanco pesa.** La cinta de embalaje y los rótulos, puestos al brillo del
+  papel de verdad, eran lo más claro de la pantalla después de la luna. Todo lo
+  que no es la tortuga ni el suelo va un punto por debajo de lo que uno cree.
 
 ### Lo que sigue esperando, después del juego
 
@@ -512,18 +547,32 @@ mirándolos, no jugando hasta el tramo que se está tocando.
 7. Antes de la última fase, **recordarte que juegues los tres capítulos** para
    llenar los récords: sin eso el rival de ella no existe.
 
-### Dos decisiones que quedaron abiertas
-
-- **¿Se guarda la estrella dentro del capítulo?** Hoy al recargar la página se
-  empieza el capítulo desde abajo. *Mi voto: guardar también la última estrella,
-  porque un capítulo son tres o cuatro minutos y el Android mata las pestañas de
-  atrás.*
-- **El nombre de la tortuga.** Sigue llamándose «la tortuga». *Mi voto: que se
-  lo pongás vos, o que se lo ponga ella la primera vez que juegue.*
-
 El plan completo del juego, con la mecánica, los tres mundos, los valores de la
 física y las diez fases, vive en **`plan-juego-luna.md`**, en la raíz. Se lee
 antes de escribir la primera línea.
+
+### Lo que se cerró en la fase 4
+
+Además del capítulo de Ovi entero, tres cosas que pediste.
+
+- **Los poderes se fueron también del plan.** `plan-juego-luna.md` todavía le
+  prometía a Ovi el salto de gimnasio y a Nico el perdonar una caída, aunque
+  los poderes se habían tirado el 29. Ya no. En `PLAN.md` las bitácoras viejas
+  se quedan tachadas en vez de borradas, porque cuentan por qué se probaron y
+  por qué se fueron.
+- **El guardado se queda como estaba, y ahora está escrito.** Se guarda el
+  capítulo alcanzado y nada más: recargar la página vuelve a empezar ese
+  capítulo, pero nunca hay que repetir uno ganado. Guardar la estrella exacta
+  convertiría cerrar la página en una manera de guardar partida.
+- **La tortuga ya no se llama «la tortuga».** Antes del primer capítulo hay una
+  pantalla que le pregunta cómo se llama, con la tortuga caminando por abajo
+  mientras decide. Lo que escriba manda en todos los textos de los tres
+  capítulos. Puede dejarlo para después y se le vuelve a preguntar la próxima
+  vez: mientras no le ponga uno, la puerta sigue abierta, y esa es la única
+  manera de cambiarlo porque no hay pantalla de ajustes.
+  - En los textos de `luna.ts` el hueco se escribe `{tortuga}` y `{Tortuga}`.
+    Son dos porque sin nombre el hueco se llena con un artículo y en español
+    eso cambia de forma según dónde caiga.
 
 ### Lo que se cerró el 29, con tu tercera vuelta
 
@@ -579,7 +628,8 @@ antes de escribir la primera línea.
     final espera a que termine de irse.
   - Un toque se salta la presentación. La primera vez vale la pena mirarla, a la
     quinta no.
-- **El empujón se cambió por el planeo.** Tenías razón las dos veces: un poder
+- ~~**El empujón se cambió por el planeo.**~~ *(El planeo se fue en la vuelta
+  siguiente; queda apuntado por lo que enseñó.)* Tenías razón las dos veces: un poder
   de un golpe hay que acertarlo, se gasta entero de una y nunca se llega a
   aprender qué hace. El planeo es lo contrario: **mantené el dedo apretado
   mientras caés y la tortuga abre las cuatro patas y baja despacio**, como una
@@ -591,10 +641,6 @@ antes de escribir la primera línea.
   - Tiene su pose: la tortuga se abre y se aplana, y se la ve todo el rato.
   - El icono de abajo a la izquierda es un paracaídas y los tres puntitos son el
     tanque. Se agranda mientras planeás.
-
-**Ojo con una cosa:** el poder cambió de nombre por dentro (`empujon` → `planeo`),
-así que el que tenías ganado no cuenta. Hay que cerrar el capítulo una vez más
-para que aparezca el paracaídas.
 
 ### Lo que se afinó el 28 de noche, con lo que jugaste
 
@@ -621,21 +667,13 @@ Todo esto salió de tu lista, punto por punto.
   - Hay **carritos parqueados** cada tres tramos, siempre hacia una punta y
     nunca donde aterriza la tortuga. Y los loopings tienen dos rieles con sus
     travesaños, y las rampas se apagan en vez de cortarse en seco.
-- **Los poderes se ven con un icono.** Abajo a la izquierda, un cuadrito con los
-  dos galones del empujón y un puntito por carga: lleno mientras le quede, hueco
-  cuando lo gastó. Con letras había que leer en medio de un salto, y en medio de
-  un salto nadie lee.
+- ~~**Los poderes se ven con un icono.**~~ *(Se fue el 29 con los poderes.)*
 - **La pista se borra cada vez más rápido.** Cada estrella que pisa le quita
   380 ms, con un piso de 1,1 segundos. En el capítulo de Boo eso es
   2,6s → 2,2s → 1,8s → 1,5s → 1,1s: el último tramo se borra en menos de la
   mitad de lo que tardaba el primero, sin haber movido una plataforma.
-- **El empujón se rehízo entero.** Antes sumaba velocidad de lado a una caída, y
-  por eso se sentía como que te empujaba de costado mientras te venías abajo.
-  Ahora es **un salto nuevo en pleno aire**, con su propio ángulo y bien
-  rasante (32° contra los 65° del salto normal). Medido: un salto flojo llega a
-  186 px y con el empujón a 361, o sea que salva de sobra un salto corto. Y se
-  puede usar en cualquier momento del vuelo, no solo cayendo, salvo en el primer
-  suspiro después de despegar para que un toque de más no lo gaste.
+- ~~**El empujón se rehízo entero.**~~ *(Y a la vuelta siguiente se fue del
+  juego, igual que el planeo que vino después.)*
 
 ### El prólogo, apuntado como fase 7
 
@@ -645,7 +683,7 @@ donde se aprende a jugar y nada cuesta nada. Queda escrito en
 `plan-juego-luna.md` como la **fase 7**, después de los tres mundos y del último
 trecho, que es donde vos dijiste. Enseña una cosa por pantalla: mantener y
 soltar, el cansancio, la estrellita, los tramos que se borran y los de impulso,
-los que traigan Ovi y Nico, y el poder en el aire.
+los que traigan Ovi y Nico.
 
 Mientras esa fase no exista, el cómo se juega sigue debajo de la historia de
 Boo, porque quitarlo ahora dejaría el capítulo sin explicar a nadie. El día que
@@ -669,9 +707,8 @@ esté el prólogo, el cartel de Boo se queda solo con Boo.
   disparada sola con la barra llena. Como sale siempre igual, el destino se
   puede poner al píxel. Hay dos: uno a mitad del capítulo y otro justo antes de
   la cima, para que el último salto llegue en volandas.
-- **El empujón**, el poder de Boo. Suma 300 de velocidad de lado, medido en 85
-  px más de alcance. Solo mientras cae, a propósito: así no se gasta sin querer
-  al tocar de más al despegar. Se guarda en el `localStorage` con el progreso.
+- ~~**El empujón**, el poder de Boo.~~ *(Se fue el 29, con los dos poderes y su
+  estado en el progreso.)*
 - **El cartel de presentación**, con el retrato bordado de Boo, su historia y el
   chiste de bamBOO. Debajo, solo en el primer capítulo, va el cómo se juega.
 - **El mundo dibujado**: pista naranja de Hot Wheels con sus soportes y sus
@@ -681,9 +718,9 @@ esté el prólogo, el cartel de Boo se queda solo con Boo.
 - **Un banco para mirar el mundo sin jugarlo**, `npm run luna:pista`, hermano
   del de la tortuga. Enseña la salida, un lazo, un tramo de impulso, la pista
   borrándose y la cima, todo de un vistazo. Fue lo que hizo barata la fase.
-- **Tres pruebas nuevas en `npm run luna:probar`**: que el lazo no se borre, que
-  el tramo pisado sí y vuelva al caerse, y que el empujón sume solo cuando se
-  ganó y solo cuando se toca.
+- **Dos pruebas nuevas en `npm run luna:probar`**: que el lazo no se borre y que
+  el tramo pisado sí, y vuelva entero al caerse. (Había una tercera, del empujón,
+  y se fue con él.)
 
 ### Dos cosas que aprendí peleándome con esto
 

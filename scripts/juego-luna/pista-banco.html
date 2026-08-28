@@ -32,6 +32,7 @@
       const capitulo = CAPITULOS[0]
       const nivel = construirNivel(capitulo)
       const enteras = nivel.plataformas.map(() => 1)
+      const derechas = nivel.plataformas.map(() => 0)
 
       /** La escena mínima que le hace falta al pintor. */
       function escenaEn(plataforma, extra = {}) {
@@ -54,6 +55,9 @@
           hitoAlcanzado: -1,
           vidaDeLaPista: enteras,
           avisoDeLaPista: aviso,
+          // En el capítulo de Boo no cede nada, pero el pintor lo lee
+          // igual: sin esto, el banco se cae al primer frame.
+          inclinacion: derechas,
           cine: 'jugando',
           cineAvance: 0,
 

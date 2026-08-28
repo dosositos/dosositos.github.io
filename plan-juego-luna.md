@@ -158,12 +158,20 @@ rosa pastel y tiene complexión de gimnasio.
 
 - **Material:** cajas de cartón apiladas, peluches viejos asomando, cinta de
   embalaje. Las cajas son de tamaños distintos y algunas están mal apiladas.
+  Cada plataforma son dos, tres o cuatro cajas de hombro con hombro: de una sola
+  pieza salía una tabla y no una caja.
 - **La traba:** las cajas **ceden**. Al pisarlas se inclinan hacia el lado con
   más peso, así que el punto donde aterriza cambia el suelo del siguiente salto.
+  Es un balancín que pivota en el medio, y lo que se lleva son 8 px de altura de
+  salida entre saltar desde el medio y saltar desde la orilla: a barra llena,
+  154 contra 146. Las estrellas y el suelo no ceden, que en algún lado hay que
+  poder respirar.
   Y hay huecos que solo se pasan con la barra al tope: no hay manera de pasarlos
-  a medias.
-- **Se gana:** *el salto de gimnasio*. Un salto a fuerza máxima con un extra,
-  una vez por capítulo, para el hueco que no da.
+  a medias. Van dos por capítulo, marcados `alTope` en `luna.ts` para que el
+  probador los comprenda en vez de darlos por error de diseño.
+- **Se gana:** a Ovi, y nada más. Aquí estuvo apuntado un poder, el salto de
+  gimnasio, y se fue con los otros dos el 29 de agosto. El hueco que no da se
+  pasa con la barra al tope, que para eso está.
 
 ### 3 · Nico — las almohadas
 
@@ -176,8 +184,9 @@ mientras dormía. Es el capítulo más importante y va al final.
   hunden despacio, pero cargar la barra toma tiempo, y ahí está el nudo: el
   mundo final ataca directamente la mecánica central del juego. Hay que decidir
   entre el salto seguro y el salto bueno.
-- **Se gana:** *Nico te agarra*. Perdona una caída: en vez de bajar al hito,
-  aparece debajo y la devuelve a la plataforma. Una sola vez.
+- **Se gana:** a Nico, y con él los tres. También tuvo poder apuntado —
+  perdonar una caída— y se fue el 29 de agosto con los demás: en el capítulo
+  que ataca la mecánica central, perdonar el error es quitarle el nudo.
 
 ### 4 · El último trecho
 
@@ -366,7 +375,7 @@ empieza hasta que lo demás esté cerrado.
 | 1 | El motor pelado | El salto, en una plataforma | Sí |
 | 2 | Mundo, cámara, hitos y probador | Un nivel de prueba, de punta a punta | Sí |
 | 3 | Boo entero | Un capítulo de verdad | Sí, y es buen sitio |
-| 4 | Ovi | Dos capítulos | Sí |
+| 4 | Ovi ✓ | Dos capítulos | Sí |
 | 5 | Nico | Los tres capítulos | Sí |
 | 6 | El último trecho y la carta | El juego completo | Sí |
 | 7 | El prólogo | El juego con su escuelita delante | Sí |
@@ -468,16 +477,21 @@ se sostiene con un solo gesto.
 Esta es la plantilla. Es la fase más cara de las tres y las dos siguientes
 cuestan bastante menos porque ya son variaciones.
 
-### 4 · Ovi
+### 4 · Ovi ✓
 
-Cajas apiladas que ceden hacia el lado con más peso, los huecos que solo se
-pasan con la barra al tope, y **el salto de gimnasio**.
+Cajas apiladas que ceden hacia el lado con más peso y los huecos que solo se
+pasan con la barra al tope. Sin nada nuevo que aprender: la misma barra de
+siempre contra un suelo que ya no está quieto.
+
+Hecha. El mundo vive en `src/juego-luna/mundo-cajas.ts`, la traba en el motor
+(`moverLasCajas` y `alturaDeLaCaja`), y el banco para mirarlo sin jugarlo es
+`npm run luna:cajas`. Aquí también entró **el nombre de la tortuga**, que se le
+pregunta a ella antes del primer capítulo y manda en los textos de los tres.
 
 ### 5 · Nico
 
-Almohadas que se hunden mientras está parada encima, luz de madrugada, la luna
-ya grande, y **Nico te agarra**. Aquí se decide, jugándolo, si da para dos hitos
-más.
+Almohadas que se hunden mientras está parada encima, luz de madrugada y la luna
+ya grande. Aquí se decide, jugándolo, si da para dos hitos más.
 
 ### 6 · El último trecho, la carta y el marcador
 

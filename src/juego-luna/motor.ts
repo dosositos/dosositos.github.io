@@ -1,4 +1,5 @@
-import { CAIDA, CANSANCIO, IMPULSO, LUNA, MUNDO, PISTA, SALTO, TORTUGA } from '@/content/luna'
+import { CAIDA, CAJAS, CANSANCIO, IMPULSO, LUNA, MUNDO, PISTA, SALTO, TORTUGA } from '@/content/luna'
+import { alturaDeLaCaja } from '@/juego-luna/mundos'
 import type { EscenaLuna, EventoLuna, Nivel, Plataforma } from '@/types'
 
 /**
@@ -42,6 +43,19 @@ const PASITO = 11
  * robado.
  */
 const ORILLA = 2
+
+/**
+ * Lo que se acerca una caja a su inclinación de destino en cada paso.
+ *
+ * Es un acercamiento proporcional y no una velocidad fija: una caja
+ * que cede arranca rápido y va frenando conforme se asienta, que es
+ * como se mueve algo con peso encima. El tres de la cuenta son las
+ * constantes de tiempo que hacen falta para llegar al 95%, así que
+ * `msParaCeder` significa de verdad lo que dice su nombre.
+ */
+const ritmoDeLaCaja = (ms: number) => 1 - Math.exp((-3 * PASO * 1000) / ms)
+const CEDIENDO = ritmoDeLaCaja(CAJAS.msParaCeder)
+const ENDEREZANDO = ritmoDeLaCaja(CAJAS.msParaEnderezar)
 
 interface Tortuga {
   x: number
@@ -113,6 +127,13 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
   const ritmo: number[] = plataformas.map(() => 0)
 
   /**
+   * Cuánto está inclinada cada caja, de -1 (se hundió la izquierda) a
+   * 1 (se hundió la derecha). En los capítulos donde nada cede se
+   * queda todo en cero y no cuesta nada.
+   */
+  const inclinacion: number[] = plataformas.map(() => 0)
+
+  /**
    * Hasta el primer lazo no se borra nada. Los primeros saltos son
    * para aprender, y aprender con el suelo desapareciendo no se puede.
    */
@@ -131,6 +152,41 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
 
   /** Un tramo se puede pisar mientras no se haya borrado del todo. */
   const sigueAhi = (p: Plataforma) => vida[p.indice] > 0
+
+  /**
+   * A qué altura está el suelo de un tramo en un punto. En el capítulo
+   * de Ovi la caja está inclinada y eso ya no es su `y` a secas.
+   */
+  const alturaEn = (p: Plataforma, x: number) => alturaDeLaCaja(p, x, inclinacion[p.indice])
+
+  /**
+   * Mover las cajas: cada una se va hacia el lado donde está parada, y
+   * vuelve a quedar derecha cuando se va.
+   *
+   * El peso es todo suyo, así que solo se inclina una a la vez: la que
+   * está pisando. Las demás se enderezan, incluida la que acaba de
+   * dejar, que es la mitad del efecto — se la ve volver a su sitio
+   * mientras ella vuela.
+   */
+  function moverLasCajas() {
+    if (!nivel.cede) return
+
+    const encima = t.enSuelo && cayendo <= 0 ? ultimoPiso : -1
+
+    for (const p of plataformas) {
+      if (!p.cede) continue
+
+      let objetivo = 0
+      if (p.indice === encima) {
+        const medio = p.x + p.ancho / 2
+        const brazo = Math.max(1, p.ancho / 2)
+        objetivo = Math.max(-1, Math.min(1, (t.x - medio) / brazo))
+      }
+
+      const ritmo = objetivo === 0 ? ENDEREZANDO : CEDIENDO
+      inclinacion[p.indice] += (objetivo - inclinacion[p.indice]) * ritmo
+    }
+  }
 
   /**
    * Cuánto aguanta hoy un tramo antes de borrarse. Cada estrella
@@ -220,12 +276,20 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
     return Math.min(deseada, masAbajo)
   }
 
-  /** La plataforma que está pisando, si es que pisa alguna. */
+  /**
+   * La plataforma que está pisando, si es que pisa alguna.
+   *
+   * El margen vertical es de dos píxeles y no de medio porque en el
+   * capítulo de Ovi el suelo se mueve debajo de ella: entre un paso y
+   * el siguiente la caja cede y la tortuga queda unas décimas por
+   * encima. Dos píxeles cubren de sobra ese desfase y siguen estando
+   * muy lejos del tramo de al lado, que nunca está a menos de sesenta.
+   */
   function sueloDebajo(): Plataforma | undefined {
     return plataformas.find(
       (p) =>
         sigueAhi(p) &&
-        Math.abs(t.y - p.y) < 0.5 &&
+        Math.abs(t.y - alturaEn(p, t.x)) < 2 &&
         t.x >= p.x - ORILLA &&
         t.x <= p.x + p.ancho + ORILLA,
     )
@@ -239,6 +303,11 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
       vida[i] = 1
       ritmo[i] = 0
     }
+
+    // Y las cajas vuelven a quedar derechas. Reaparecer sobre una que
+    // sigue torcida de antes de la caída es empezar de nuevo con una
+    // trampa puesta que ella no vio ponerse.
+    for (let i = 0; i < inclinacion.length; i += 1) inclinacion[i] = 0
 
     t.x = reaparicion.x
     t.y = reaparicion.y
@@ -281,6 +350,10 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
     // "presionar". Cortarle el paso aquí la dejaba congelada en la
     // pose que tuviera puesta, casi siempre la del golpe del
     // aterrizaje, que es agachada.
+
+    // Las cajas se mueven siempre, aunque se esté cayendo o desmayada:
+    // el mundo no se para porque ella se pare.
+    moverLasCajas()
 
     if (cayendo > 0) {
       // Mientras se cae no manda nadie: sigue bajando y no choca con
@@ -361,6 +434,11 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
           t.mirando = 1
         }
       }
+
+      // Y se queda pegada al suelo, esté donde esté. Con la caja
+      // inclinándose debajo, quedarse en la `y` de antes la dejaría
+      // flotando sobre la punta que subió o enterrada en la que bajó.
+      if (piso) t.y = alturaEn(piso, t.x)
     }
 
     if (!t.enSuelo) {
@@ -411,8 +489,12 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
         for (const p of plataformas) {
           if (!sigueAhi(p)) continue
           const dentro = t.x >= p.x - ORILLA && t.x <= p.x + p.ancho + ORILLA
-          if (dentro && yAntes <= p.y && t.y >= p.y) {
-            t.y = p.y
+          // Contra la superficie de verdad, que en el capítulo de Ovi
+          // no es la línea de la plataforma sino la de la caja tal
+          // como esté inclinada en este momento.
+          const superficie = alturaEn(p, t.x)
+          if (dentro && yAntes <= superficie && t.y >= superficie) {
+            t.y = superficie
 
             // Se la mete adentro de la plataforma en el mismo frame
             // del golpe, que es donde no se nota. Aterrizando en la
@@ -422,6 +504,7 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
             // ahí se quedaba, aplastada y parpadeando, hasta saltar.
             const orilla = Math.min(TORTUGA.ancho / 2, p.ancho / 2)
             t.x = Math.min(Math.max(t.x, p.x + orilla), p.x + p.ancho - orilla)
+            t.y = alturaEn(p, t.x)
 
             t.vx = 0
             t.vy = 0
@@ -504,10 +587,13 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
     if (!t.enSuelo && t.sinSuelo * 1000 <= SALTO.msDePerdon) {
       const piso = plataformas.find(
         (p) =>
-          sigueAhi(p) && t.x >= p.x && t.x <= p.x + p.ancho && t.y <= p.y + 40 && t.y >= p.y - 40,
+          sigueAhi(p) &&
+          t.x >= p.x &&
+          t.x <= p.x + p.ancho &&
+          Math.abs(t.y - alturaEn(p, t.x)) <= 40,
       )
       if (piso) {
-        t.y = piso.y
+        t.y = alturaEn(piso, t.x)
         t.vy = 0
         t.enSuelo = true
       }
@@ -560,6 +646,8 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
       // nadie.
       vidaDeLaPista: vida,
       avisoDeLaPista: cuandoAvisa(),
+      // Igual que la vida de la pista: el mismo arreglo, sin copiar.
+      inclinacion,
       cine,
       cineAvance:
         cine === 'entrada'

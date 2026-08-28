@@ -35,7 +35,9 @@ globalThis.cancelAnimationFrame = () => {
 const { crearMotor } = await import('@/juego-luna/motor.ts')
 const { construirNivel } = await import('@/juego-luna/mundos.ts')
 const { opacidadDeLaPista } = await import('@/juego-luna/dibujo.ts')
-const { SALTO, TORTUGA, MUNDO, PISTA, LUNA, CAPITULOS } = await import('@/content/luna.ts')
+const { alturaDeLaCaja } = await import('@/juego-luna/mundos.ts')
+const { conCualEntra } = await import('@/juego-luna/progreso.ts')
+const { SALTO, TORTUGA, MUNDO, PISTA, LUNA, CAJAS, CAPITULOS } = await import('@/content/luna.ts')
 
 /**
  * Qué capítulo se prueba. Sin argumento, el primero.
@@ -156,7 +158,29 @@ function nivelDeDos(desde, hasta, salida) {
     material: capitulo.material,
     // Con dos plataformas sueltas no tiene sentido borrar nada.
     seDesvanece: false,
+    // Las cajas sí ceden, que es la mitad del problema: el salto sale
+    // desde la altura a la que la caja se haya ido, no desde la línea
+    // de la plataforma.
+    cede: capitulo.cede,
   }
+}
+
+/**
+ * ¿Está parada encima de esta plataforma?
+ *
+ * Se mira contra la superficie de verdad y no contra la línea de la
+ * plataforma, porque en el capítulo de Ovi la caja ya cedió debajo de
+ * ella en los dos frames que van del aterrizaje a esta comprobación.
+ * Comparando con la línea, un aterrizaje bueno en la orilla se leía
+ * como fallado y el capítulo entero salía cinco puntos más difícil de
+ * lo que es. El arnés mintiendo antes que el juego, otra vez.
+ */
+function estaEncima(escena, p, indiceEnLaPrueba = p.indice, margen = 1) {
+  const inclinacion = escena.inclinacion?.[indiceEnLaPrueba] ?? 0
+  const suelo = alturaDeLaCaja(p, escena.x, inclinacion)
+  return (
+    Math.abs(escena.y - suelo) < margen && escena.x >= p.x - 2 && escena.x <= p.x + p.ancho + 2
+  )
 }
 
 function probarTramo(desde, hasta) {
@@ -207,11 +231,8 @@ function probarTramo(desde, hasta) {
           // fallado.
           frame()
           const quieta = frame()
-          const encima =
-            Math.abs(quieta.y - hasta.y) < 1 &&
-            quieta.x >= hasta.x - 2 &&
-            quieta.x <= hasta.x + hasta.ancho + 2
-          if (encima) {
+          // El destino es el índice 1 del nivel de dos plataformas.
+          if (estaEncima(quieta, hasta, 1)) {
             logrados += 1
             cargaMinima = Math.min(cargaMinima, carga)
             cargaMaxima = Math.max(cargaMaxima, carga)
@@ -235,6 +256,8 @@ console.log('   ─────   ─────   ───────   ─�
 
 let imposibles = 0
 let apretados = 0
+/** Huecos marcados «al tope» que en realidad se pasan con menos. */
+let flojos = 0
 
 /**
  * Un tramo de impulso no se salta: se cae en él y lanza solo, siempre
@@ -264,8 +287,7 @@ function probarImpulso(desde, hasta) {
   motor.detener()
 
   const lanzo = eventos.includes('impulso')
-  const encima =
-    Math.abs(e.y - hasta.y) < 1 && e.x >= hasta.x - 2 && e.x <= hasta.x + hasta.ancho + 2
+  const encima = estaEncima(e, hasta, 1)
 
   return { lanzo, encima, x: e.x }
 }
@@ -294,6 +316,12 @@ for (let i = 0; i < nivel.plataformas.length - 1; i += 1) {
   if (r.logrados === 0) {
     nota = '  ⚠ NO SE PASA'
     imposibles += 1
+  } else if (hasta.alTope) {
+    // Marcado en `luna.ts` como hueco de los que solo se pasan con la
+    // barra al tope. Que salga apretado es el punto; lo que hay que
+    // comprobar es que de verdad pida el tope y no se pase a medias.
+    nota = r.cargaMinima >= 0.9 ? '  ← al tope, a propósito' : '  ⚠ NO PIDE EL TOPE'
+    if (r.cargaMinima < 0.9) flojos += 1
   } else if (porcentaje < 4) {
     nota = '  ← apretadísimo'
     apretados += 1
@@ -315,6 +343,9 @@ console.log('')
 if (imposibles > 0) {
   console.log(`  ⚠ Hay ${imposibles} tramo(s) que no se pasan ni a barra llena.`)
   console.log('    Acercá esas plataformas en CAPITULOS, en src/content/luna.ts.\n')
+} else if (flojos > 0) {
+  console.log(`  ⚠ Hay ${flojos} hueco(s) marcados «al tope» que se pasan con menos barra.`)
+  console.log('    O se alejan un poco, o se les quita el alTope en src/content/luna.ts.\n')
 } else if (apretados > 0) {
   console.log(`  ✓ Se puede pasar entero, pero ${apretados} tramo(s) salen apretadísimos.`)
   console.log('    Está bien si es a propósito; si no, acercalos un poco.\n')
@@ -385,9 +416,7 @@ function jugarNivel() {
       // frame del aterrizaje va unos píxeles por encima. Y se mira de
       // verdad, en vez de dar por hecho que el salto salió bien: tras
       // una caída puede estar en un hito de mucho más abajo.
-      const donde = nivel.plataformas.find(
-        (p) => Math.abs(e.y - p.y) < 8 && e.x >= p.x - 4 && e.x <= p.x + p.ancho + 4,
-      )
+      const donde = nivel.plataformas.find((p) => estaEncima(e, p, p.indice, 8))
       if (!donde) continue
       objetivo = donde.indice + 1
       if (objetivo >= nivel.plataformas.length) break
@@ -489,9 +518,7 @@ function probarCaida() {
     }
 
     if (e.enSuelo && !cargando && !e.cayendo) {
-      const donde = nivel.plataformas.find(
-        (p) => Math.abs(e.y - p.y) < 8 && e.x >= p.x - 4 && e.x <= p.x + p.ancho + 4,
-      )
+      const donde = nivel.plataformas.find((p) => estaEncima(e, p, p.indice, 8))
       if (!donde) continue
       const objetivo = donde.indice + 1
       if (objetivo >= nivel.plataformas.length) break
@@ -536,7 +563,7 @@ if (!caida || !caida.hito) {
   // Reaparece en el centro del hito, pero enseguida echa a caminar:
   // lo que se comprueba es que esté en esa plataforma, no clavada en
   // el punto exacto.
-  const enElHito = Math.abs(caida.y - caida.hito.y) < 8
+  const enElHito = Math.abs(caida.y - caida.hito.y) < 8 // los hitos van firmes siempre
   const cerca = caida.x >= caida.hito.x - 4 && caida.x <= caida.hito.x + caida.hito.ancho + 4
   console.log(
     `   se cayó y reapareció en x=${caida.x.toFixed(0)} y=${caida.y.toFixed(0)}; el hito va de x=${caida.hito.x} a ${caida.hito.x + caida.hito.ancho}, y=${caida.hito.y}`,
@@ -856,6 +883,249 @@ function mundoConCima() {
     eventos.includes('fin')
       ? '   ✓ la despedida termina y avisa, que es cuando sale el cartel'
       : '   ⚠ la despedida no termina nunca',
+  )
+}
+console.log('')
+
+/* ── 9. Las cajas que ceden ────────────────────────────────────
+   La traba del capítulo de Ovi. A ojo se ve que la caja se mueve,
+   pero que se mueva no es lo que importa: lo que importa es que **el
+   salto salga distinto** según desde dónde se dé. Eso son unos pocos
+   píxeles de altura de salida y a ojo no se juzga, así que se mide.
+
+   Ojo con una cosa, que ya me costó una medición mentirosa: la
+   tortuga camina sola y no se para nunca, así que «esperá tantos
+   frames y ya estará en la orilla» no es verdad. Aquí se espera a
+   que **esté** donde tiene que estar, mirándole la x frame a frame. */
+
+console.log('  Las cajas que ceden')
+
+/** Una caja sola y ancha, para dejarla caminar encima y medirla. */
+function mundoDeCajas({ conEstrella = false } = {}) {
+  const nivelCajas = construirNivel({
+    ...capitulo,
+    seDesvanece: false,
+    cede: true,
+    plataformas: [
+      { x: 30, ancho: 140, altura: 0, hito: true },
+      { x: 30, ancho: 120, altura: 80, hito: conEstrella },
+    ],
+  })
+  const caja = nivelCajas.plataformas[1]
+  nivelCajas.salida = { x: caja.x + caja.ancho / 2, y: caja.y }
+  return nivelCajas
+}
+
+/**
+ * Deja correr el juego hasta que la tortuga esté donde se le pide, y
+ * devuelve ese frame. Sin esto, cualquier medición sobre una caja es
+ * una medición de dónde quedó la tortuga por casualidad.
+ */
+function esperarA(frame, quieroQue, tope = 900) {
+  let e = frame()
+  for (let i = 0; i < tope; i += 1) {
+    e = frame()
+    if (quieroQue(e)) return e
+  }
+  return null
+}
+
+{
+  // (a) Cuánto se hunde en el medio y cuánto en la orilla. Se mira un
+  // ciclo entero de ida y vuelta y se guarda lo mejor y lo peor: eso
+  // no depende de acertarle a ningún instante.
+  const nivelCajas = mundoDeCajas()
+  const caja = nivelCajas.plataformas[1]
+  const { motor, frame } = banco(nivelCajas)
+
+  const ciclo = Math.ceil(((2 * (caja.ancho - TORTUGA.ancho)) / TORTUGA.velocidad) * 60) + 120
+  let menos = Infinity
+  let mas = -Infinity
+  let masInclinada = 0
+  for (let i = 0; i < ciclo; i += 1) {
+    const e = frame()
+    if (!e.enSuelo) continue
+    menos = Math.min(menos, e.y - caja.y)
+    mas = Math.max(mas, e.y - caja.y)
+    masInclinada = Math.max(masInclinada, Math.abs(e.inclinacion[1]))
+  }
+  motor.detener()
+
+  console.log(
+    `   pasando por el medio se hunde ${menos.toFixed(1)} px; en la orilla, ${mas.toFixed(1)}`,
+  )
+  console.log(
+    menos < 0.6 && mas > 4
+      ? `   ✓ la caja cede de verdad: hasta ${mas.toFixed(1)} px menos de altura de salida, con la caja a ${masInclinada.toFixed(2)} de inclinación`
+      : '   ⚠ la caja se mueve en el dibujo pero al salto no le llega nada',
+  )
+}
+
+{
+  // (b) Y eso tiene que verse en lo que llega el salto: misma barra
+  // llena, desde el medio y desde la orilla.
+  const alturaTras = (desdeLaOrilla) => {
+    const nivelCajas = mundoDeCajas()
+    const caja = nivelCajas.plataformas[1]
+    const medio = caja.x + caja.ancho / 2
+    const orilla = caja.x + caja.ancho - TORTUGA.ancho / 2
+    const { motor, frame, ver } = banco(nivelCajas)
+
+    // Se espera a que esté donde toca **y** a que la caja haya
+    // terminado de irse para ese lado, que es lo que se está midiendo.
+    const llego = desdeLaOrilla
+      ? esperarA(frame, (e) => e.x > orilla - 1 && Math.abs(e.inclinacion[1]) > 0.6)
+      : esperarA(frame, (e) => Math.abs(e.x - medio) < 1.2)
+    if (!llego) {
+      motor.detener()
+      return null
+    }
+
+    const y0 = ver().y
+    saltarCon(motor, frame, 1)
+    let masAlto = y0
+    for (let i = 0; i < 120; i += 1) masAlto = Math.min(masAlto, frame().y)
+    motor.detener()
+
+    // Contado desde la línea de la caja, que es lo que decide si
+    // alcanza la plataforma de arriba o se queda corta.
+    return caja.y - masAlto
+  }
+
+  const delMedio = alturaTras(false)
+  const deLaOrilla = alturaTras(true)
+
+  if (delMedio === null || deLaOrilla === null) {
+    console.log('   ⚠ no se pudo medir el salto (la tortuga no llegó a donde se le pidió)')
+  } else {
+    const perdido = delMedio - deLaOrilla
+    console.log(
+      `   a barra llena sube ${delMedio.toFixed(0)} px desde el medio y ${deLaOrilla.toFixed(0)} desde la orilla`,
+    )
+    console.log(
+      perdido > 3
+        ? `   ✓ saltar desde la orilla cuesta ${perdido.toFixed(0)} px de altura, que es la traba del capítulo`
+        : `   ⚠ desde la orilla se pierden ${perdido.toFixed(1)} px: la traba no se siente`,
+    )
+  }
+}
+
+{
+  // (c) La estrella no cede nunca, aunque el capítulo ceda. Es el
+  // sitio donde se respira: si se moviera, no habría dónde parar.
+  const nivelEstrella = mundoDeCajas({ conEstrella: true })
+  const estrella = nivelEstrella.plataformas[1]
+  const { motor, frame } = banco(nivelEstrella)
+
+  const orilla = estrella.x + estrella.ancho - TORTUGA.ancho / 2
+  const e = esperarA(frame, (x) => x.x > orilla - 1)
+  motor.detener()
+
+  console.log(
+    estrella.cede === false && e && Math.abs(e.y - estrella.y) < 0.5
+      ? '   ✓ la caja de la estrella no cede ni parada en la orilla'
+      : `   ⚠ la estrella cede (${e ? (e.y - estrella.y).toFixed(1) : '?'} px)`,
+  )
+}
+
+{
+  // (d) Al irse ella, la caja vuelve sola a quedar derecha.
+  const nivelCajas = mundoDeCajas()
+  const caja = nivelCajas.plataformas[1]
+  const { motor, frame } = banco(nivelCajas)
+
+  const torcida = esperarA(frame, (e) => Math.abs(e.inclinacion[1]) > 0.6)
+  saltarCon(motor, frame, 1)
+
+  const enderezando = Math.ceil(CAJAS.msParaEnderezar / FRAME) + 20
+  let e = frame()
+  let derecha = false
+  for (let i = 0; i < enderezando; i += 1) {
+    e = frame()
+    if (Math.abs(e.inclinacion[1]) < 0.02) derecha = true
+  }
+  motor.detener()
+
+  console.log(
+    torcida && derecha
+      ? '   ✓ en cuanto se va, la caja vuelve sola a quedar derecha'
+      : `   ⚠ la caja se queda torcida (le quedó ${e.inclinacion[1].toFixed(2)})`,
+  )
+}
+
+{
+  // (e) Y al caerse y volver al hito, ninguna caja se queda torcida:
+  // reaparecer con una trampa puesta que ella no vio ponerse sería
+  // castigarla dos veces por la misma caída.
+  const nivelCaida = construirNivel({
+    ...capitulo,
+    seDesvanece: false,
+    cede: true,
+    plataformas: [
+      { x: 30, ancho: 140, altura: 0, hito: true },
+      { x: 30, ancho: 120, altura: 80 },
+    ],
+  })
+  const caja = nivelCaida.plataformas[1]
+  nivelCaida.salida = { x: caja.x + caja.ancho / 2, y: caja.y }
+
+  const { motor, frame, eventos } = banco(nivelCaida)
+
+  // Primero torcerla, y de ahí tirarse al vacío con saltitos flojos.
+  esperarA(frame, (e) => Math.abs(e.inclinacion[1]) > 0.6)
+
+  let e = null
+  for (let i = 0; i < 900 && !eventos.includes('reaparicion'); i += 1) {
+    e = frame()
+    if (e.enSuelo && !e.cargando && !e.cayendo) saltarCon(motor, frame, 0)
+  }
+  motor.detener()
+
+  const volvio = eventos.includes('reaparicion')
+  const derechas = volvio && e.inclinacion.every((i) => Math.abs(i) < 0.02)
+  console.log(
+    derechas
+      ? '   ✓ al volver de una caída, las cajas están otra vez derechas'
+      : volvio
+        ? `   ⚠ volvió con una caja torcida (${e.inclinacion.map((i) => i.toFixed(2)).join(', ')})`
+        : '   ⚠ no llegó a caerse, la prueba no dice nada',
+  )
+}
+console.log('')
+
+/* ── 10. Con qué capítulo se entra ─────────────────────────────
+   El juego entra siempre por el primero que ella no haya ganado. Si
+   esta cuenta se equivoca no se rompe nada en pantalla: simplemente
+   nunca llega a ver un capítulo, o repite uno que ya pasó. Es de las
+   cosas que no se notan jugando y por eso se miden. */
+
+console.log('  Con qué capítulo entra')
+
+{
+  const ultimo = CAPITULOS.reduce((mayor, c) => Math.max(mayor, c.numero), 1)
+  const con = (ganados) => conCualEntra({ capitulo: ganados, pasitos: 0, caidas: 0, nombre: '' }, ultimo)
+
+  const primeraVez = con(0) === 1
+  const trasGanarUno = con(1) === Math.min(2, ultimo)
+  const ganadosTodos = con(ultimo) === ultimo
+
+  console.log(`   hay ${CAPITULOS.length} capítulos escritos, el último es el ${ultimo}`)
+  console.log(
+    primeraVez && trasGanarUno && ganadosTodos
+      ? '   ✓ la primera vez entra por el uno, después por el siguiente, y ganados todos repite el último'
+      : `   ⚠ entra mal: sin ganar nada va al ${con(0)}, con uno ganado al ${con(1)}, con todos al ${con(ultimo)}`,
+  )
+
+  // Y cada capítulo escrito tiene que construirse y tener sus cinco
+  // estrellas: escribir uno nuevo y olvidarse una es fácil.
+  const flojos = CAPITULOS.filter((c) => {
+    const suyo = construirNivel(c)
+    return suyo.hitos.length !== 5 || suyo.cima.hito !== true
+  })
+  console.log(
+    flojos.length === 0
+      ? '   ✓ los dos se construyen, con cinco estrellas cada uno y la cima marcada'
+      : `   ⚠ mal armados: ${flojos.map((c) => c.id).join(', ')}`,
   )
 }
 console.log('')
