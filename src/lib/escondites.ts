@@ -11,7 +11,7 @@ export interface Reparto {
 }
 
 /** Mezcla el día con un texto. Sirve de dado sin dejar de ser estable. */
-function revolver(dia: number, texto: string): number {
+export function revolver(dia: number, texto: string): number {
   let n = dia
   for (const c of texto) n = ((n * 33) ^ (c.codePointAt(0) ?? 0)) >>> 0
   return n

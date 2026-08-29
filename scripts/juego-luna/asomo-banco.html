@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>El asomo, fotograma por fotograma</title>
+    <style>
+      body { margin: 0; background: #10132c; font-family: system-ui; }
+      canvas { display: block; }
+    </style>
+  </head>
+  <body>
+    <!--
+      Banco del asomo de la tortuga: el adelanto del juego que sale al
+      final de una página por día. No es parte de la web.
+
+      Pone la animación entera en tiras de fotogramas, uno al lado del
+      otro, para poder mirarla con calma en vez de esperar a que pase
+      —dura tres segundos y el susto es medio— y para ver de un vistazo
+      si el «!» se sale del lienzo o si la caminata queda corta.
+
+      Se mira con el servidor de siempre andando:
+        npm run dev
+        http://localhost:5173/scripts/juego-luna/asomo-banco.html
+    -->
+    <canvas id="lienzo"></canvas>
+    <script type="module">
+      import { ASOMO, MS_DEL_ASOMO, fotoDelAsomo, fotoQuieta, pintarAsomo } from '/src/juego-luna/asomo.ts'
+
+      /* El ancho de lienzo con el que se prueba. Es un teléfono: es
+         donde se va a ver de verdad. */
+      const ANCHO = 360
+
+      /* Las tiras. Cada una es un tramo de la animación con sus
+         fotogramas, y se recortan del lienzo entero para que se vea
+         solo el pedazo donde está la tortuga. */
+      const TIRAS = [
+        { rotulo: 'entra caminando (0 → 1,8 s)', desde: 0, hasta: 1750, cuadros: 8, lado: 1 },
+        { rotulo: 'el susto y el brinco (1,8 → 2,3 s)', desde: 1750, hasta: 2300, cuadros: 8, lado: 1 },
+        { rotulo: 'se va (2,3 → 2,9 s)', desde: 2300, hasta: MS_DEL_ASOMO, cuadros: 8, lado: 1 },
+        { rotulo: 'lo mismo entrando por la derecha', desde: 1700, hasta: 2600, cuadros: 8, lado: -1 },
+        { rotulo: 'sin movimiento (prefers-reduced-motion)', quieta: true, cuadros: 3, lado: 1 },
+      ]
+
+      /* Lo ancho que se recorta alrededor de la tortuga en cada
+         fotograma. Con 96 le cabe el cuerpo, el polvo y el «!». */
+      const VENTANA = 96
+      const ESCALA = 2
+      const ALTO_ROTULO = 24
+
+      const lienzo = document.getElementById('lienzo')
+      const ctx = lienzo.getContext('2d')
+
+      const cuadrosPorTira = Math.max(...TIRAS.map((t) => t.cuadros))
+      const anchoTotal = cuadrosPorTira * VENTANA * ESCALA
+      const altoTira = (ASOMO.alto + ALTO_ROTULO) * ESCALA
+      const altoTotal = TIRAS.length * altoTira
+
+      const densidad = 2
+      lienzo.width = anchoTotal * densidad
+      lienzo.height = altoTotal * densidad
+      lienzo.style.width = `${anchoTotal}px`
+      lienzo.style.height = `${altoTotal}px`
+      ctx.scale(densidad * ESCALA, densidad * ESCALA)
+
+      TIRAS.forEach((tira, fila) => {
+        ctx.save()
+        ctx.translate(0, fila * (ASOMO.alto + ALTO_ROTULO))
+
+        ctx.fillStyle = 'rgba(248,244,232,0.5)'
+        ctx.font = '8px system-ui'
+        ctx.fillText(tira.rotulo, 6, 9)
+
+        for (let i = 0; i < tira.cuadros; i += 1) {
+          const u = tira.cuadros === 1 ? 0 : i / (tira.cuadros - 1)
+          const ms = tira.quieta ? 0 : tira.desde + (tira.hasta - tira.desde) * u
+          const foto = tira.quieta ? fotoQuieta(ANCHO, tira.lado) : fotoDelAsomo(ms, ANCHO, tira.lado)
+
+          ctx.save()
+          ctx.translate(i * VENTANA, ALTO_ROTULO)
+
+          // El suelo de la celda, para ver que no flote ni se hunda.
+          ctx.fillStyle = '#242a4e'
+          ctx.fillRect(2, ASOMO.alto - ASOMO.piso, VENTANA - 4, 2)
+
+          // La celda recorta, y dentro se corre el lienzo entero para
+          // que la tortuga caiga en el medio: así se la ve igual esté
+          // donde esté del ancho de la página.
+          ctx.beginPath()
+          ctx.rect(0, 0, VENTANA, ASOMO.alto)
+          ctx.clip()
+          ctx.translate(VENTANA / 2 - foto.escena.x, 0)
+          pintarAsomo(ctx, foto)
+          ctx.restore()
+
+          ctx.fillStyle = 'rgba(248,244,232,0.3)'
+          ctx.font = '6px system-ui'
+          ctx.fillText(tira.quieta ? 'quieta' : `${Math.round(ms)} ms`, i * VENTANA + 4, ALTO_ROTULO - 4)
+        }
+
+        ctx.restore()
+      })
+
+      document.title = 'listo'
+    </script>
+  </body>
+</html>

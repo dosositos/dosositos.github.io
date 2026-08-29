@@ -497,7 +497,30 @@ pasa al de Ovi sin salir de la pantalla.
   matas de bambú a los lados. En Ovi, torres de cajas contra las dos paredes del
   cuarto y polvo flotando en la luz, con una mota de cada tres del rosa de Ovi.
 
-### Los siete comandos que hacen falta
+### El adelanto, para antes de que el juego exista
+
+Al final de una página por día —debajo de la firma, hasta abajo del todo— la
+tortuga pasa caminando tranquila, se da cuenta de que la están viendo, le sale
+un «!» encima de la cabeza, pega el brinco y se va corriendo por donde vino.
+Tres segundos, y el susto con la huida son uno: hay que estar mirando.
+
+- Es **la misma tortuga**, no una versión chiquita: el dibujo y las poses salen
+  de `src/juego-luna/tortuga.ts` sin copiar una línea. La idea es que el día
+  que ella abra el juego reconozca a alguien.
+- La animación vive en `src/juego-luna/asomo.ts` y no tiene estado: se le pide
+  la foto del milisegundo `ms` y devuelve dónde está y cómo. Por eso tiene
+  banco (`npm run luna:asomo`) igual que el mundo y el personaje.
+- **Una página por día y una sola**, y nunca la del juego. Se salta las páginas
+  donde ese día hay un peluche escondido abajo: los dos guiños viven en el
+  mismo rincón y juntos se estorban. `npm run luna:asomo -- --semana` dice
+  dónde cae cada día.
+- **Arranca cuando ella llega hasta abajo, no cuando carga la página.** Y le
+  exige haber bajado de verdad (`scrollY > 0`) además de que el alto de la
+  página lleve un rato quieto: media web llega cifrada, y en el primer pintado
+  las estadísticas miden una pantalla. Sin esas dos condiciones la tortuga
+  entraba y se iba mientras ella todavía miraba el cargando.
+
+### Los comandos que hacen falta
 
 ```bash
 npm run dev              # y npm run dev:telefono para la red de casa
@@ -508,6 +531,7 @@ npm run luna:ver         # fotos del juego andando (-- 5173 2 para el de Ovi)
 npm run luna:pista       # el banco del mundo de Boo, sin jugarlo
 npm run luna:cajas       # el banco del mundo de Ovi
 npm run luna:tortuga     # el banco de poses del personaje
+npm run luna:asomo       # el banco del adelanto (-- --semana: dónde cae cada día)
 ```
 
 **Lo que más ahorra:** los bancos. El mundo y el personaje se ajustan

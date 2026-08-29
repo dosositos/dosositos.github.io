@@ -29,6 +29,7 @@
     "luna:tortuga": "node scripts/juego-luna/ver-tortuga.mjs",
     "luna:pista": "node scripts/juego-luna/ver-pista.mjs",
     "luna:cajas": "node scripts/juego-luna/ver-cajas.mjs",
+    "luna:asomo": "node scripts/juego-luna/ver-asomo.mjs",
     "diccionario:preparar": "node scripts/preparar-diccionario.mjs && node scripts/cifrar-contenido.mjs"
   },
   "dependencies": {

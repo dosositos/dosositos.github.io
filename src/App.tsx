@@ -1,4 +1,5 @@
 import { Link, Route, Routes, useLocation } from 'react-router-dom'
+import { AsomoDeLaTortuga } from '@/componentes/AsomoDeLaTortuga'
 import { Candado } from '@/componentes/Candado'
 import { CieloEstrellado } from '@/componentes/CieloEstrellado'
 import { PeluchesEscondidos } from '@/componentes/PeluchesEscondidos'
@@ -92,6 +93,13 @@ function Marco() {
         <footer className="pb-10 text-center text-xs text-texto-suave/50">
           hecho con las manos por {' '}osito{' '} para {' '}osita
         </footer>
+
+        {/* Debajo de la firma, lo último de la página: la tortuga del
+            juego de la luna pasa caminando, se asusta de que la miren y
+            se esconde. Una página por día, y en el juego nunca: ahí
+            vive, y adelantar algo que ya se está viendo no es adelantar
+            nada. */}
+        {!enLuna && <AsomoDeLaTortuga />}
       </div>
     </>
   )
