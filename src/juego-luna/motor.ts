@@ -1,4 +1,16 @@
-import { CAIDA, CAJAS, CANSANCIO, IMPULSO, LUNA, MUNDO, PISTA, SALTO, TORTUGA } from '@/content/luna'
+import {
+  CAIDA,
+  CAJAS,
+  CANSANCIO,
+  CINTA,
+  IMPULSO,
+  LUNA,
+  MUNDO,
+  PELUCHES,
+  PISTA,
+  SALTO,
+  TORTUGA,
+} from '@/content/luna'
 import { alturaDeLaCaja } from '@/juego-luna/mundos'
 import type { EscenaLuna, EventoLuna, Nivel, Plataforma } from '@/types'
 
@@ -33,6 +45,9 @@ const PASOS_MAXIMOS = 5
 
 /** Se cae de la pantalla, medio segundo de nada, y vuelve al hito. */
 const MS_CAIDA = 500
+
+/** Lo que hay que esperar antes de poder saltarse la presentación. */
+const MS_ANTES_DE_SALTARLA = 450
 
 /** Cuántos píxeles del mundo camina entre una patica y la otra. */
 const PASITO = 11
@@ -93,6 +108,16 @@ export interface OpcionesMotor {
 export interface Motor {
   iniciar: () => void
   detener: () => void
+  /**
+   * Que la luna se presente y empiece el capítulo.
+   *
+   * El bucle arranca antes, con `iniciar`, para que detrás del cartel
+   * se vean el cielo y la tortuga caminando. Lo que espera a este
+   * aviso es la cinemática de la luna, que es lo único que hay que
+   * mirar y que corriendo detrás del texto no se veía. Llamarlo dos
+   * veces no hace nada.
+   */
+  empezar: () => void
   /** El dedo bajó o la barra espaciadora se hundió. */
   presionar: () => void
   /** El dedo se levantó: sale disparada. */
@@ -147,7 +172,9 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
    * dedo no hace nada: la luna se está presentando o despidiendo, y
    * saltar por encima de eso rompe el cuento.
    */
-  let cine: 'entrada' | 'jugando' | 'salida' | 'fin' = conCinematica ? 'entrada' : 'jugando'
+  let cine: 'espera' | 'entrada' | 'jugando' | 'salida' | 'fin' = conCinematica
+    ? 'espera'
+    : 'jugando'
   let cineMs = 0
 
   /** Un tramo se puede pisar mientras no se haya borrado del todo. */
@@ -217,6 +244,20 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
   /** Cuántos saltos dio y cuántas veces se cayó, en esta subida. */
   let pasitos = 0
   let caidas = 0
+
+  /**
+   * La última caja de peluches que rebotó y hace cuánto. Es solo para
+   * el dibujo: la caja se aplasta al recibir y vuelve a estirarse.
+   */
+  let rebotoEn = -1
+  let msDelRebote = 0
+
+  /**
+   * Cuántas veces seguidas rebotó en la misma caja sin tocar otra
+   * cosa. Solo el primero lleva el piso garantizado; los de después
+   * salen del anterior, que es lo que hace que se apaguen solos.
+   */
+  let rebotesSeguidos = 0
 
   /** Ya llegó arriba: se deja de contar y no se avisa dos veces. */
   let terminado = false
@@ -323,6 +364,7 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
     t.cargaMs = 0
     t.sinSuelo = 0
     tirada = 0
+    rebotesSeguidos = 0
     ultimoPiso = Math.max(hitoAlcanzado, 0)
     previo = { ...t }
     avisar('reaparicion')
@@ -376,6 +418,7 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
 
     t.desdeSalto += PASO * 1000
     t.desdeAterrizaje += PASO * 1000
+    if (rebotoEn >= 0) msDelRebote += PASO * 1000
 
     // Los tramos que ya despegó se van borrando. Al llegar a cero
     // dejan de existir para todo: no se pisan y no se dibujan.
@@ -413,25 +456,50 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
       const piso = sueloDebajo()
 
       if (!piso) {
-        // Se pasó de la orilla caminando. Cae, pero con el perdón
-        // del borde todavía puede saltar un instante.
+        // Se pasó de la orilla caminando, o resbalando. Cae, pero con
+        // el perdón del borde todavía puede saltar un instante, que en
+        // una caja de cinta es la mitad de la gracia: te está echando,
+        // soltá ya.
         t.enSuelo = false
         t.sinSuelo = 0
-      } else if (!t.cargando) {
+      } else {
         ultimoPiso = piso.indice
 
-        // Camina sola de un extremo al otro. Ese ir y venir es el
-        // reloj del juego: marca hacia dónde va a salir.
-        t.x += t.mirando * TORTUGA.velocidad * PASO
-        t.caminado += TORTUGA.velocidad * PASO
+        if (t.cargando) {
+          // La caja forrada de cinta no agarra mientras está parada:
+          // se va resbalando hacia el lado que la caja está bajando.
+          //
+          // Y se para en la orilla, igual que caminando. Al principio
+          // no se acotaba, para que aguantar de más la tirara de la
+          // caja, y era demasiado: con la carga que hace falta para
+          // un salto normal ya se caía sola, así que la caja no era
+          // difícil, era una trampa. Ahora el castigo es quedarse
+          // donde no querías — en la punta, que además está hundida
+          // por el balancín, así que el salto sale corto y del lado
+          // equivocado. Descoloca, no mata.
+          if (piso.resbala) {
+            const margen = TORTUGA.ancho / 2
+            const arrastre = CINTA.arrastre * inclinacion[piso.indice] * PASO
+            t.x = Math.min(
+              Math.max(t.x + arrastre, piso.x + margen),
+              piso.x + piso.ancho - margen,
+            )
+          }
+        } else {
+          // Camina sola de un extremo al otro. Ese ir y venir es el
+          // reloj del juego: marca hacia dónde va a salir. Caminando
+          // sí agarra, hasta en la cinta: las paticas hacen su trabajo.
+          t.x += t.mirando * TORTUGA.velocidad * PASO
+          t.caminado += TORTUGA.velocidad * PASO
 
-        const margen = TORTUGA.ancho / 2
-        if (t.x > piso.x + piso.ancho - margen) {
-          t.x = piso.x + piso.ancho - margen
-          t.mirando = -1
-        } else if (t.x < piso.x + margen) {
-          t.x = piso.x + margen
-          t.mirando = 1
+          const margen = TORTUGA.ancho / 2
+          if (t.x > piso.x + piso.ancho - margen) {
+            t.x = piso.x + piso.ancho - margen
+            t.mirando = -1
+          } else if (t.x < piso.x + margen) {
+            t.x = piso.x + margen
+            t.mirando = 1
+          }
         }
       }
 
@@ -506,12 +574,54 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
             t.x = Math.min(Math.max(t.x, p.x + orilla), p.x + p.ancho - orilla)
             t.y = alturaEn(p, t.x)
 
+            t.desdeAterrizaje = 0
+            ultimoPiso = p.indice
+
+            // La caja de peluches la devuelve en vez de pararla, con
+            // parte de lo que traía y hacia donde iba. Se agota sola
+            // porque cada rebote sale del anterior: cuando lo que
+            // devolvería ya no llega al mínimo, se queda quieta y el
+            // aterrizaje sigue de largo como en cualquier plataforma.
+            if (p.rebote) {
+              const seguido = p.indice === rebotoEn && rebotesSeguidos > 0
+              const traia = Math.abs(t.vy) * PELUCHES.devuelve
+              // El piso solo la primera vez que la toca. Después, lo
+              // que devuelva sale de lo que traía, y por eso se apaga.
+              const devuelve = Math.min(
+                seguido ? traia : Math.max(traia, PELUCHES.piso),
+                PELUCHES.tope,
+              )
+              if (devuelve >= PELUCHES.minimo) {
+                t.vy = -devuelve
+                t.vx *= PELUCHES.frena
+
+                // El montón hace de cuenco: en la mitad de afuera, un
+                // bote que iba hacia la orilla sale devuelto hacia el
+                // medio. Sin esto cada bote la corría hacia el mismo
+                // lado y al tercero se salía de la caja, que es lo
+                // contrario de lo que una red tiene que hacer.
+                const medioDeLaCaja = p.x + p.ancho / 2
+                const desdeElMedio = t.x - medioDeLaCaja
+                const enLaOrilla = Math.abs(desdeElMedio) > (p.ancho / 2) * PELUCHES.orilla
+                if (enLaOrilla && Math.sign(t.vx) === Math.sign(desdeElMedio)) t.vx = -t.vx
+                t.enSuelo = false
+                // Sin perdón del borde: está rebotando, no cayéndose.
+                t.sinSuelo = 999
+                rebotesSeguidos = p.indice === rebotoEn ? rebotesSeguidos + 1 : 1
+                rebotoEn = p.indice
+                msDelRebote = 0
+                avisar('rebote')
+                break
+              }
+            }
+
             t.vx = 0
             t.vy = 0
             t.enSuelo = true
             t.sinSuelo = 0
-            t.desdeAterrizaje = 0
-            ultimoPiso = p.indice
+            // Se acabó la racha: la próxima vez que toque una caja de
+            // peluches vuelve a llevar el piso entero.
+            rebotesSeguidos = 0
             avisar('aterrizaje')
 
             // Pisar un hito guarda el avance. Solo cuenta hacia
@@ -565,6 +675,8 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
     t.sinSuelo = 999
     t.desdeSalto = 0
 
+    rebotesSeguidos = 0
+
     if (nivel.seDesvanece && ultimoPiso > primerLazo && ritmo[ultimoPiso] === 0) {
       ritmo[ultimoPiso] = (PASO * 1000) / loQueDuraLaPista()
     }
@@ -575,8 +687,13 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
     // Un toque durante la presentación se la salta. La primera vez
     // vale la pena mirarla entera, a la quinta no.
     if (cine === 'entrada') {
-      cine = 'jugando'
-      cineMs = 0
+      // Un toque se la salta, pero no en el primer suspiro: si no, el
+      // mismo dedo que le dio al botón se come la presentación que
+      // acaba de destapar, y ella no llega a ver ni el primer frame.
+      if (cineMs >= MS_ANTES_DE_SALTARLA) {
+        cine = 'jugando'
+        cineMs = 0
+      }
       return
     }
     if (cine !== 'jugando') return
@@ -648,6 +765,7 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
       avisoDeLaPista: cuandoAvisa(),
       // Igual que la vida de la pista: el mismo arreglo, sin copiar.
       inclinacion,
+      rebote: rebotoEn >= 0 ? { indice: rebotoEn, ms: msDelRebote } : null,
       cine,
       cineAvance:
         cine === 'entrada'
@@ -693,6 +811,11 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
     },
     presionar,
     soltar,
+    empezar() {
+      if (cine !== 'espera') return
+      cine = 'entrada'
+      cineMs = 0
+    },
     medirVista(alto: number) {
       altoVista = alto
       camara = camaraObjetivo()

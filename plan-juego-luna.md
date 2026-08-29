@@ -169,6 +169,23 @@ rosa pastel y tiene complexión de gimnasio.
   Y hay huecos que solo se pasan con la barra al tope: no hay manera de pasarlos
   a medias. Van dos por capítulo, marcados `alTope` en `luna.ts` para que el
   probador los comprenda en vez de darlos por error de diseño.
+- **La caja forrada de cinta**, que es lo que complica. Alguien la envolvió
+  entera y quedó lisa. Caminando por encima no pasa nada; **parada cargando la
+  barra sí**: se va corriendo hacia el lado que la caja está bajando, hasta la
+  punta, y la punta está hundida por el balancín. No la tira, la descoloca.
+  Es la traba de Boo mirada por el otro lado —allá el tramo se borra y te apura
+  por tiempo, acá la caja te corre y te apura por sitio— y ataca la barra, que
+  es lo único que este juego tiene. Y refuerza la lección del mundo: en el medio
+  de la caja no hay cuesta, así que el medio es a la vez el único sitio donde se
+  puede cargar tranquila y el único desde donde el salto sale entero.
+- **La caja de peluches**, que es lo que da sazón. Abierta y rebosando, de una
+  así salió Ovi. Caer ahí no la para: la devuelve, con parte de lo que traía y
+  hacia donde iba, y se apaga sola en tres o cuatro botes porque cada uno sale
+  del anterior. Hace dos cosas: regala medio salto sin gastar barra ni pasito, y
+  **recoge**. Va ancha y justo encima de una estrella, así que un fallo de los
+  tramos de arriba cae en ella y vuelve para arriba en vez de irse hasta la
+  estrella. No es el tramo de impulso de Boo con otro traje: aquel centra a la
+  tortuga y la lanza siempre igual, este depende de cómo entres.
 - **Se gana:** a Ovi, y nada más. Aquí estuvo apuntado un poder, el salto de
   gimnasio, y se fue con los otros dos el 29 de agosto. El hueco que no da se
   pasa con la barra al tope, que para eso está.

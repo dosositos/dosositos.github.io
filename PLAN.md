@@ -477,14 +477,22 @@ pasa al de Ovi sin salir de la pantalla.
 - **La traba de Ovi:** las cajas ceden hacia donde está parada. Saltar desde el
   medio llega a 154 px de altura y saltar desde la orilla a 146, así que el
   punto donde aterriza decide el salto siguiente.
+- **Y dos cajas más que hacen algo.** La **forrada de cinta** no agarra mientras
+  carga: se va corriendo hasta la punta, que está hundida, así que el salto sale
+  corto y del lado equivocado. No la tira, la descoloca. La **de peluches** no
+  la para: la devuelve, con parte de lo que traía, y se apaga sola en tres o
+  cuatro botes. Va ancha y encima de una estrella, así que además recoge lo que
+  se cae de los tramos de arriba.
 - **Dos huecos que solo se pasan con la barra al tope**, uno por mitad del
   capítulo de Ovi. Van marcados `alTope` en `luna.ts` y el probador los
   comprueba en vez de darlos por error.
 - **Dos tramos de impulso** en Boo, que lanzan solos y siempre igual. Ovi no
   tiene: cada mundo con lo suyo.
-- **La luna** abre el capítulo con una cinemática, se va para arriba, espera
-  sobre la última plataforma y se va otra vez al llegar. Un toque salta la
-  presentación.
+- **La luna** se presenta **cuando ella le da al botón**, no al abrir la
+  página: corriendo detrás del cartel se gastaba entera sin que nadie pudiera
+  verla. Se va para arriba, espera sobre la última plataforma y se va otra vez
+  al llegar. Un toque salta la presentación, pero no en el primer suspiro: el
+  mismo dedo que le dio al botón no puede comerse lo que acaba de destapar.
 - **El fondo vive:** en Boo, vías de pista con carros corriendo por encima y
   matas de bambú a los lados. En Ovi, torres de cajas contra las dos paredes del
   cuarto y polvo flotando en la luz, con una mota de cada tres del rosa de Ovi.
@@ -531,6 +539,19 @@ escribió antes que el capítulo y por eso el capítulo salió en una tarde.
 - **Lo blanco pesa.** La cinta de embalaje y los rótulos, puestos al brillo del
   papel de verdad, eran lo más claro de la pantalla después de la luna. Todo lo
   que no es la tortuga ni el suelo va un punto por debajo de lo que uno cree.
+- **Una regla que castiga no puede castigar dos veces.** La caja forrada de
+  cinta empezó tirando a la tortuga si aguantaba de más, y con la carga que hace
+  falta para un salto normal ya se caía sola: no era difícil, era una trampa.
+  Ahora se para en la punta. El castigo es quedarse donde no querías.
+- **Una red que te tira es peor que no tener red.** El rebote de la caja de
+  peluches conservaba el avance de lado, así que cada bote la corría hacia el
+  mismo lado y al tercero se salía: una de cada cuatro entradas acababa en
+  caída. Se arregló haciendo del montón un cuenco, que es lo que un montón de
+  peluches es.
+- **Antes de tocar el nivel, mirá dónde se atasca el robot.** `npm run
+  luna:probar` ahora lo dice: en qué plataforma se quedó, cuánto tiempo y qué
+  tenía que saltar desde ahí. Sin eso, cada vuelta eran veinte minutos de
+  adivinar.
 
 ### Lo que sigue esperando, después del juego
 
@@ -550,6 +571,17 @@ escribió antes que el capítulo y por eso el capítulo salió en una tarde.
 El plan completo del juego, con la mecánica, los tres mundos, los valores de la
 física y las diez fases, vive en **`plan-juego-luna.md`**, en la raíz. Se lee
 antes de escribir la primera línea.
+
+### Lo que se cerró en la fase 4, con tu segunda vuelta
+
+- **La luna ya no se presenta detrás del cartel.** Antes su cinemática arrancaba
+  al abrir la página, con el texto tapando la pantalla, así que cuando le dabas
+  a empezar ya se había ido. Ahora el motor arranca en espera —la tortuga camina
+  por el suelo, que eso sí invita— y la luna sale cuando le das al botón. Y el
+  toque que se la salta no vale en el primer medio segundo.
+- **El capítulo de Ovi tiene dos cajas más que hacen algo**, la forrada de cinta
+  y la de peluches, contadas arriba. Con eso el mundo dejó de ser «las mismas
+  plataformas pero torcidas».
 
 ### Lo que se cerró en la fase 4
 

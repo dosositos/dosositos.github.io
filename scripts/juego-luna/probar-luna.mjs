@@ -37,7 +37,9 @@ const { construirNivel } = await import('@/juego-luna/mundos.ts')
 const { opacidadDeLaPista } = await import('@/juego-luna/dibujo.ts')
 const { alturaDeLaCaja } = await import('@/juego-luna/mundos.ts')
 const { conCualEntra } = await import('@/juego-luna/progreso.ts')
-const { SALTO, TORTUGA, MUNDO, PISTA, LUNA, CAJAS, CAPITULOS } = await import('@/content/luna.ts')
+const { SALTO, TORTUGA, MUNDO, PISTA, LUNA, CAJAS, CINTA, PELUCHES, CAPITULOS } = await import(
+  '@/content/luna.ts'
+)
 
 /**
  * Qué capítulo se prueba. Sin argumento, el primero.
@@ -213,10 +215,12 @@ function probarTramo(desde, hasta) {
         const e = frame()
         if (e.cayendo) break
 
-        // Si el destino es un tramo de impulso, aterrizar y quedarse
-        // quieta encima no pasa nunca: la lanza en el mismo frame. Lo
-        // que cuenta es que el impulso se haya disparado.
-        if (hasta.impulso && eventos.includes('impulso')) {
+        // Si el destino es un tramo de impulso o una caja de
+        // peluches, aterrizar y quedarse quieta encima no pasa: la
+        // lanza o la devuelve en el mismo frame. Lo que cuenta es que
+        // haya llegado a tocarla.
+        if ((hasta.impulso && eventos.includes('impulso')) ||
+            (hasta.rebote && eventos.includes('rebote'))) {
           logrados += 1
           cargaMinima = Math.min(cargaMinima, carga)
           cargaMaxima = Math.max(cargaMaxima, carga)
@@ -249,7 +253,20 @@ function probarTramo(desde, hasta) {
 
 console.log(`\n  Capítulo ${capitulo.numero}: ${capitulo.id}, tramo por tramo`)
 console.log(
-  `  ${nivel.plataformas.length} plataformas, ${nivel.hitos.length} hitos, ${Math.round(nivel.suelo - nivel.cima.y)} px de subida\n`,
+  `  ${nivel.plataformas.length} plataformas, ${nivel.hitos.length} hitos, ${Math.round(nivel.suelo - nivel.cima.y)} px de subida`,
+)
+
+const cuantasSon = (cual) => nivel.plataformas.filter((p) => p[cual]).length
+const especiales = [
+  ['de impulso', cuantasSon('impulso')],
+  ['forradas de cinta', cuantasSon('resbala')],
+  ['de peluches', cuantasSon('rebote')],
+  ['al tope', cuantasSon('alTope')],
+].filter(([, cuantas]) => cuantas > 0)
+console.log(
+  especiales.length
+    ? `  ${especiales.map(([nombre, cuantas]) => `${cuantas} ${nombre}`).join(' · ')}\n`
+    : '',
 )
 console.log('   tramo    sube   se pasa   con la barra')
 console.log('   ─────   ─────   ───────   ────────────')
@@ -334,8 +351,12 @@ for (let i = 0; i < nivel.plataformas.length - 1; i += 1) {
       ? '     —'
       : `${String(Math.round(r.cargaMinima * 100)).padStart(3)}% a ${String(Math.round(r.cargaMaxima * 100)).padStart(3)}%`
 
+  // Un rótulo de dos letras para saber de qué se habla sin contar
+  // plataformas a mano en `luna.ts`.
+  const que = hasta.rebote ? ' pel' : hasta.resbala ? ' cin' : hasta.hito ? ' ★' : ''
+
   console.log(
-    `   ${String(i + 1).padStart(2)}→${String(i + 2).padStart(2)}   ${String(sube).padStart(4)}   ${porcentaje.toFixed(1).padStart(5)}%   ${rango}${nota}`,
+    `   ${String(i + 1).padStart(2)}→${String(i + 2).padStart(2)}   ${String(sube).padStart(4)}   ${porcentaje.toFixed(1).padStart(5)}%   ${rango}${que}${nota}`,
   )
 }
 
@@ -374,29 +395,82 @@ function jugarNivel() {
   const grados = (g) => (g * Math.PI) / 180
   const { motor, frame, eventos, ver } = banco(nivel)
 
-  /** ¿Con esta carga caería dentro de la plataforma de destino? */
-  function caeDentro(escena, destino, carga) {
+  /**
+   * Desde dónde va a salir de verdad, contando lo que la caja forrada
+   * de cinta la va a arrastrar mientras carga.
+   *
+   * Sin esto el robot apuntaba desde donde estaba al empezar a cargar
+   * y soltaba desde treinta píxeles más allá, así que fallaba todos
+   * los saltos que salen de una caja con cinta y se quedaba dando
+   * vueltas sin caerse ni llegar. Una jugadora aprende esto al
+   * segundo intento; el robot tiene que saberlo para que lo que mida
+   * sea el nivel y no su propia ingenuidad.
+   */
+  function dondeSaldra(escena, donde, carga) {
+    if (!donde?.resbala) return escena.x
+    const medio = donde.x + donde.ancho / 2
+    const lado = Math.max(-1, Math.min(1, (escena.x - medio) / (donde.ancho / 2)))
+    // Entre la inclinación que la caja tiene ahora y la que va a tener
+    // cuando termine de irse hacia ella. Tomar solo la segunda
+    // sobrestimaba el arrastre, porque la caja tarda su cuarto de
+    // segundo en asentarse y en una carga corta ni llega.
+    const ahora = escena.inclinacion?.[donde.indice] ?? 0
+    const media = (ahora + lado) / 2
+    return escena.x + CINTA.arrastre * media * ((SALTO.msDeCarga * carga) / 1000)
+  }
+
+  /**
+   * Dónde caería con esta carga, o null si ni siquiera sube lo
+   * suficiente. Devuelve la x para poder elegir la carga que cae más
+   * al centro y no la primera que entra por los pelos.
+   */
+  function dondeCae(escena, destino, carga, donde) {
     const v = SALTO.impulsoMinimo + (SALTO.impulsoMaximo - SALTO.impulsoMinimo) * carga
     const vx = Math.cos(grados(SALTO.angulo)) * v * escena.mirando
     const vy = -Math.sin(grados(SALTO.angulo)) * v
     const g = SALTO.gravedad
     const dy = destino.y - escena.y
+    const salida = dondeSaldra(escena, donde, carga)
 
     // Que suba de sobra y no de milagro. Justo en el punto más alto
     // del salto la tortuga va parada en el aire, y el motor solo la
     // deja aterrizar mientras baja: apuntar al ápice es fallar.
     const alturaMaxima = (vy * vy) / (2 * g)
-    if (alturaMaxima < -dy + 15) return false
+    if (alturaMaxima < -dy + 15) return null
 
     // y(t) = vy·t + g·t²/2 = dy, quedándose con la raíz de la bajada.
     const disc = vy * vy + 2 * g * dy
-    if (disc < 0) return false
+    if (disc < 0) return null
     const t = (-vy + Math.sqrt(disc)) / g
-    const x = escena.x + vx * t
+    return salida + vx * t
+  }
 
-    // Con margen: apuntar al borde justo es pedirle al robot una
-    // puntería que la física por pasos no le va a dar.
-    return x > destino.x + 12 && x < destino.x + destino.ancho - 12
+  /**
+   * La carga que cae más al centro del destino, o null si ninguna
+   * entra. Antes se cogía la primera que entraba, y con el suelo
+   * resbalando eso quería decir apuntar al borde de la plataforma con
+   * una cuenta aproximada: fallaba y se quedaba dando vueltas.
+   *
+   * El margen de 12 px es porque la física va por pasos y el robot
+   * calcula con fórmula: apuntar al borde justo es pedirle una
+   * puntería que no le va a dar.
+   */
+  function mejorCarga(escena, destino, donde) {
+    const centro = destino.x + destino.ancho / 2
+    let mejor = null
+    let masCerca = Infinity
+    for (let c = 0; c <= 40; c += 1) {
+      const carga = c / 40
+      const x = dondeCae(escena, destino, carga, donde)
+      if (x === null) continue
+      if (x <= destino.x + 12 || x >= destino.x + destino.ancho - 12) continue
+      const lejos = Math.abs(x - centro)
+      if (lejos < masCerca) {
+        masCerca = lejos
+        mejor = carga
+      }
+    }
+    return mejor
   }
 
   let objetivo = 1
@@ -404,6 +478,14 @@ function jugarNivel() {
   let cargando = false
   let framesCargando = 0
   let cargaElegida = 0
+
+  /**
+   * Cuántos frames pasó parado en cada plataforma. Cuando el robot no
+   * llega, esto dice dónde se quedó dando vueltas, que es la única
+   * pregunta que importa y la que antes costaba media hora contestar
+   * a mano.
+   */
+  const paradoEn = new Map()
 
   while (frames < 60 * 60 * 6 && objetivo < nivel.plataformas.length) {
     const e = frame()
@@ -418,20 +500,18 @@ function jugarNivel() {
       // una caída puede estar en un hito de mucho más abajo.
       const donde = nivel.plataformas.find((p) => estaEncima(e, p, p.indice, 8))
       if (!donde) continue
+      paradoEn.set(donde.indice, (paradoEn.get(donde.indice) ?? 0) + 1)
       objetivo = donde.indice + 1
       if (objetivo >= nivel.plataformas.length) break
 
       const destino = nivel.plataformas[objetivo]
 
-      for (let c = 0; c <= 40; c += 1) {
-        const carga = c / 40
-        if (caeDentro(e, destino, carga)) {
-          cargaElegida = carga
-          cargando = true
-          framesCargando = 0
-          motor.presionar()
-          break
-        }
+      const carga = mejorCarga(e, destino, donde)
+      if (carga !== null) {
+        cargaElegida = carga
+        cargando = true
+        framesCargando = 0
+        motor.presionar()
       }
     } else if (cargando) {
       framesCargando += 1
@@ -444,11 +524,17 @@ function jugarNivel() {
 
   motor.detener()
   const cuenta = motor.cuenta()
+
+  // La plataforma donde más tiempo estuvo parado. Si no llegó, es
+  // casi siempre la que lo tiene atascado.
+  const atasco = [...paradoEn.entries()].sort((a, b) => b[1] - a[1])[0]
+
   return {
     llego: eventos.includes('cima'),
     hitos: eventos.filter((x) => x === 'hito').length,
     ...cuenta,
     segundos: frames / 60,
+    atasco: atasco ? { indice: atasco[0], frames: atasco[1] } : null,
   }
 }
 
@@ -463,6 +549,22 @@ if (partida.llego) {
   }
 } else {
   console.log(`   ⚠ no llegó: se quedó en ${partida.pasitos} pasitos con ${partida.caidas} caídas`)
+  if (partida.atasco) {
+    const p = nivel.plataformas[partida.atasco.indice]
+    const siguiente = nivel.plataformas[partida.atasco.indice + 1]
+    const que = [p.resbala && 'forrada', p.rebote && 'de peluches', p.hito && 'estrella']
+      .filter(Boolean)
+      .join(' y ')
+    console.log(
+      `     se quedó dando vueltas en la plataforma ${partida.atasco.indice + 1}${que ? ` (${que})` : ''}, ` +
+        `x=${p.x} a ${p.x + p.ancho}, ${(partida.atasco.frames / 60).toFixed(0)} segundos`,
+    )
+    if (siguiente) {
+      console.log(
+        `     desde ahí hay que subir ${Math.round(p.y - siguiente.y)} px hasta x=${siguiente.x}-${siguiente.x + siguiente.ancho}`,
+      )
+    }
+  }
   console.log('     Puede ser el nivel o puede ser el robot, que apunta con una cuenta aproximada.')
 }
 console.log('')
@@ -663,6 +765,12 @@ function mundoQueSeBorra() {
   return construirNivel({
     ...capitulo,
     seDesvanece: true,
+    // Y sin balancín, aunque el capítulo que se esté probando lo
+    // tenga: aquí se mide el desvanecimiento y nada más. Corriendo
+    // esto con las cajas de Ovi cediendo, la tortuga se caía de la
+    // plataforma antes de que el tramo terminara de borrarse y lo que
+    // salía medido era un motor roto que no lo estaba.
+    cede: false,
     plataformas: [
       { x: 30, ancho: 120, altura: 0, hito: true },
       { x: 210, ancho: 120, altura: 75 },
@@ -702,6 +810,12 @@ function saltarCon(motor, frame, carga) {
   const nivelBorrado = construirNivel({
     ...capitulo,
     seDesvanece: true,
+    // Y sin balancín, aunque el capítulo que se esté probando lo
+    // tenga: aquí se mide el desvanecimiento y nada más. Corriendo
+    // esto con las cajas de Ovi cediendo, la tortuga se caía de la
+    // plataforma antes de que el tramo terminara de borrarse y lo que
+    // salía medido era un motor roto que no lo estaba.
+    cede: false,
     plataformas: [
       { x: 30, ancho: 120, altura: 0, hito: true },
       { x: 30, ancho: 300, altura: 75 },
@@ -800,14 +914,50 @@ console.log('  Cómo se va un tramo')
 }
 console.log('')
 
-/* ── 8. La tortuga durante las cinemáticas ─────────────────────
-   Ya van dos veces que se queda congelada en la pose del golpe del
-   aterrizaje: la primera por un atasco en la orilla y la segunda
-   porque el paso de física se cortaba mientras la luna se despedía.
-   La firma es siempre la misma, que el reloj de la pose deje de
-   correr, y eso sí se puede medir. */
+/* ── 8. La luna, antes y durante ───────────────────────────────
+   Dos cosas distintas y por eso van en dos bancos.
 
-console.log('  La tortuga mientras la luna entra y se va')
+   La primera: la luna **no se presenta hasta que ella le da al
+   botón**. Corriendo antes, su cinemática se gastaba entera detrás
+   del cartel, que tapa la pantalla, y cuando por fin miraba ya se
+   había ido.
+
+   La segunda: ya van dos veces que la tortuga se queda congelada en
+   la pose del golpe del aterrizaje, una por un atasco en la orilla y
+   otra porque el paso de física se cortaba durante la despedida. La
+   firma es siempre la misma, que el reloj de la pose deje de correr,
+   y eso sí se puede medir.
+
+   Ojo con el banco de la despedida: su tortuga sale veinte píxeles
+   por encima de la cima y aterriza a los ocho frames, así que ahí no
+   se puede medir nada de la espera. Se midió, y salió mal, y el roto
+   era el banco. */
+
+console.log('  La luna, antes y durante')
+
+/** Un motor de verdad, con su reloj, sobre el nivel que se le dé. */
+function bancoConCine(nivelDelBanco) {
+  const eventos = []
+  let ultima = null
+  const motor = crearMotor({
+    nivel: nivelDelBanco,
+    conCinematica: true,
+    pintar: (e) => {
+      ultima = e
+    },
+    alEvento: (e) => eventos.push(e),
+  })
+  motor.medirVista(MUNDO.alto)
+  motor.iniciar()
+  const frame = () => {
+    ahora += FRAME
+    const cb = pendiente
+    pendiente = null
+    if (cb) cb(ahora)
+    return ultima
+  }
+  return { motor, frame, eventos }
+}
 
 /** Un mundo de dos tramos donde el de arriba es la cima. */
 function mundoConCima() {
@@ -825,38 +975,94 @@ function mundoConCima() {
 }
 
 {
-  const nivelCine = mundoConCima()
-  const eventos = []
-  let ultima = null
-  const motor = crearMotor({
-    nivel: nivelCine,
-    conCinematica: true,
-    pintar: (e) => {
-      ultima = e
-    },
-    alEvento: (e) => eventos.push(e),
+  // (a) La espera y la entrada. Aquí la tortuga arranca abajo y sin
+  // dedo no llega a ninguna parte, que es justo lo que hace falta
+  // para poder mirar la luna sin que el capítulo se termine solo.
+  const nivelEspera = construirNivel({
+    ...capitulo,
+    seDesvanece: false,
+    plataformas: [
+      { x: 30, ancho: 300, altura: 0 },
+      { x: 30, ancho: 140, altura: 300, hito: true },
+    ],
   })
-  motor.medirVista(MUNDO.alto)
-  motor.iniciar()
-  const frame = () => {
-    ahora += FRAME
-    const cb = pendiente
-    pendiente = null
-    if (cb) cb(ahora)
-    return ultima
-  }
+  const { motor, frame } = bancoConCine(nivelEspera)
+
+  let e = frame()
+  const esperando = e.cine === 'espera'
+  const caminadoAlEmpezar = e.caminado
+  for (let i = 0; i < 90; i += 1) e = frame()
+  const caminoEsperando = e.caminado - caminadoAlEmpezar
+  const sigueEsperando = e.cine === 'espera'
+
+  // Un toque tampoco la arranca: hasta el botón, el dedo no manda.
+  motor.presionar()
+  motor.soltar()
+  const aguanto = frame().cine === 'espera'
+
+  // Ahora sí.
+  motor.empezar()
+  e = frame()
+  const arranco = e.cine === 'entrada'
+
+  // Y en el primer suspiro no se la puede saltar: el mismo dedo que
+  // le dio al botón no puede comerse lo que acaba de destapar.
+  motor.presionar()
+  const aguantoElToque = frame().cine === 'entrada'
 
   // Durante la entrada tiene que seguir caminando.
-  let e = frame()
-  const caminadoAlEmpezar = e.caminado
+  const caminadoAlEntrar = e.caminado
   for (let i = 0; i < 60; i += 1) e = frame()
-  const caminoEnLaEntrada = e.caminado - caminadoAlEmpezar
+  const caminoEnLaEntrada = e.caminado - caminadoAlEntrar
 
-  // Se la deja caer sobre la cima y arranca la despedida.
+  // Y la presentación tiene que terminarse sola y soltar el juego.
+  const faltan = Math.ceil(LUNA.msDeEntrada / FRAME) + 30
+  for (let i = 0; i < faltan && e.cine === 'entrada'; i += 1) e = frame()
+  const solto = e.cine === 'jugando'
+
+  motor.detener()
+
+  console.log(
+    esperando && sigueEsperando && aguanto
+      ? '   ✓ antes del botón la luna no se presenta, y el dedo no la arranca'
+      : '   ⚠ la luna se presenta sola, detrás del cartel que la tapa',
+  )
+  console.log(
+    caminoEsperando > 0.5
+      ? '   ✓ mientras espera, la tortuga ya camina detrás del cartel'
+      : '   ⚠ detrás del cartel no se mueve nada',
+  )
+  console.log(
+    arranco && aguantoElToque
+      ? '   ✓ al darle al botón arranca, y no se la salta en el primer suspiro'
+      : arranco
+        ? '   ⚠ un toque en el primer suspiro se come la presentación'
+        : '   ⚠ el botón no arranca la presentación',
+  )
+  console.log(
+    caminoEnLaEntrada > 0.5
+      ? '   ✓ mientras la luna se presenta, sigue caminando'
+      : '   ⚠ se queda congelada durante la presentación',
+  )
+  console.log(
+    solto
+      ? '   ✓ la presentación se termina sola y suelta el juego'
+      : '   ⚠ la presentación no termina nunca',
+  )
+}
+
+{
+  // (b) La despedida. Este banco deja caer a la tortuga sobre la cima
+  // a los ocho frames, así que se empieza de una y lo único que se
+  // mira es lo que pasa de la cima en adelante.
+  const { motor, frame, eventos } = bancoConCine(mundoConCima())
+  motor.empezar()
+
+  let e = frame()
   for (let i = 0; i < 600 && !eventos.includes('cima'); i += 1) e = frame()
   const llego = eventos.includes('cima')
 
-  // Y durante la despedida, el reloj de la pose tiene que seguir.
+  // Durante la despedida, el reloj de la pose tiene que seguir.
   const aterrizajeAlLlegar = e.desdeAterrizaje
   for (let i = 0; i < 90; i += 1) e = frame()
   const corrio = e.desdeAterrizaje - aterrizajeAlLlegar
@@ -864,14 +1070,9 @@ function mundoConCima() {
   // Y la despedida tiene que terminar sola y avisar, que es cuando
   // sale el cartel del final.
   const faltan = Math.ceil(LUNA.msDeSalida / FRAME) + 30
-  for (let i = 0; i < faltan && !eventos.includes("fin"); i += 1) e = frame()
+  for (let i = 0; i < faltan && !eventos.includes('fin'); i += 1) e = frame()
   motor.detener()
 
-  console.log(
-    caminoEnLaEntrada > 0.5
-      ? '   ✓ mientras la luna se presenta, sigue caminando'
-      : '   ⚠ se queda congelada durante la presentación',
-  )
   console.log(
     llego && corrio > 1000
       ? '   ✓ mientras la luna se va, el reloj de la pose sigue corriendo'
@@ -1090,6 +1291,233 @@ function esperarA(frame, quieroQue, tope = 900) {
         ? `   ⚠ volvió con una caja torcida (${e.inclinacion.map((i) => i.toFixed(2)).join(', ')})`
         : '   ⚠ no llegó a caerse, la prueba no dice nada',
   )
+}
+console.log('')
+
+/* ── 9b. La caja forrada de cinta ──────────────────────────────
+   Lo que complica el capítulo de Ovi. Caminando por encima no pasa
+   nada; parada cargando la barra, se va resbalando hacia el lado que
+   la caja está bajando, hasta la punta. Y **se para en la punta**: la
+   primera versión la dejaba salirse y caerse, y con la carga que hace
+   falta para un salto normal ya se caía sola. Eso son las dos cosas
+   que se miden aquí, porque las dos pasan en un segundo. */
+
+console.log('  La caja forrada de cinta')
+
+/** Una caja sola, forrada o no, para cargar encima y ver qué pasa. */
+function mundoDeCinta(conCinta) {
+  const nivelCinta = construirNivel({
+    ...capitulo,
+    seDesvanece: false,
+    cede: true,
+    plataformas: [
+      { x: 30, ancho: 140, altura: 0, hito: true },
+      { x: 30, ancho: 120, altura: 80, resbala: conCinta },
+    ],
+  })
+  const caja = nivelCinta.plataformas[1]
+  nivelCinta.salida = { x: caja.x + caja.ancho / 2, y: caja.y }
+  return nivelCinta
+}
+
+{
+  /** Cuánto se corre mientras carga, desde donde se le diga. */
+  const loQueSeCorre = (conCinta) => {
+    const nivelCinta = mundoDeCinta(conCinta)
+    const caja = nivelCinta.plataformas[1]
+    const medio = caja.x + caja.ancho / 2
+    const { motor, frame, ver } = banco(nivelCinta)
+
+    // Se espera a que esté a media cuesta y mirando hacia adentro, que
+    // es el sitio de verdad donde una se para a cargar.
+    const llego = esperarA(frame, (e) => e.x > medio + 18 && e.x < medio + 26)
+    if (!llego) {
+      motor.detener()
+      return null
+    }
+
+    const antes = ver().x
+    motor.presionar()
+    // Una carga entera, que son 900 ms.
+    for (let i = 0; i < Math.ceil(SALTO.msDeCarga / FRAME); i += 1) frame()
+    const despues = ver()
+    motor.detener()
+    return { corrida: despues.x - antes, x: despues.x, enSuelo: despues.enSuelo, caja }
+  }
+
+  const conCinta = loQueSeCorre(true)
+  const sinCinta = loQueSeCorre(false)
+
+  if (!conCinta || !sinCinta) {
+    console.log('   ⚠ no se pudo medir (la tortuga no llegó a media cuesta)')
+  } else {
+    console.log(
+      `   cargando una barra entera se corre ${conCinta.corrida.toFixed(1)} px en la forrada y ${sinCinta.corrida.toFixed(1)} en una normal`,
+    )
+    // El margen de dos píxeles en la caja normal es el pasito que la
+    // escena trae interpolado del frame en que se para a cargar, no un
+    // deslizamiento.
+    console.log(
+      conCinta.corrida > 12 && Math.abs(sinCinta.corrida) < 2
+        ? '   ✓ la cinta la corre mientras carga, y solo la cinta'
+        : '   ⚠ o la cinta no corre, o corren también las cajas normales',
+    )
+
+    const orilla = conCinta.caja.x + conCinta.caja.ancho - TORTUGA.ancho / 2
+    console.log(
+      conCinta.enSuelo && conCinta.x <= orilla + 0.5
+        ? '   ✓ se para en la punta y no se cae: la cinta descoloca, no mata'
+        : `   ⚠ se salió de la caja cargando (x=${conCinta.x.toFixed(1)}, la punta está en ${orilla.toFixed(1)})`,
+    )
+  }
+}
+console.log('')
+
+/* ── 9c. La caja de peluches ───────────────────────────────────
+   Lo que le da sazón. Caer ahí no la para, la devuelve. Tres cosas
+   que tienen que cumplirse y que jugando no se pueden juzgar: que
+   devuelva de verdad, que se apague sola en unos pocos rebotes en vez
+   de quedarse botando para siempre, y que **no la saque de la caja**.
+   Lo último costó dos vueltas: con el rebote conservando el avance de
+   lado, cada bote la corría un poco más y al tercero se salía y se
+   caía, que es lo contrario de lo que una red tiene que hacer. */
+
+console.log('  La caja de peluches')
+
+/**
+ * Una caja de peluches para medirla, con el mundo entero de ancho.
+ *
+ * Anchísima a propósito: con una del ancho de las del capítulo, el
+ * salto de prueba se salía por un lado y la tortuga se caía sin haber
+ * llegado a rebotar, y lo que salía medido era cero rebotes. Aquí no
+ * hay por dónde salirse, así que lo que se mide es el rebote y nada
+ * más. Que no la saque de una caja de las de verdad se mide aparte.
+ */
+function mundoDePeluches(ancho = 340) {
+  const suyo = construirNivel({
+    ...capitulo,
+    seDesvanece: false,
+    cede: true,
+    plataformas: [
+      { x: 30, ancho: 140, altura: 0, hito: true },
+      { x: (MUNDO.ancho - ancho) / 2, ancho, altura: 90, rebote: true },
+    ],
+  })
+  const caja = suyo.plataformas[1]
+  // Y la salida en la punta de la izquierda: la tortuga arranca
+  // mirando a la derecha, así que desde ahí cualquier salto cae
+  // dentro en vez de irse por el borde.
+  suyo.salida = { x: caja.x + 25, y: caja.y }
+  return suyo
+}
+
+{
+  const nivelPeluches = mundoDePeluches()
+  const caja = nivelPeluches.plataformas[1]
+
+  /** Le hace tocar la caja, de un roce o cayendo de un salto entero. */
+  const tocarLaCaja = (fuerte) => {
+    const { motor, frame, eventos } = banco(nivelPeluches)
+
+    let masAlto = caja.y
+    let e = frame()
+    saltarCon(motor, frame, fuerte ? 1 : 0)
+
+    for (let i = 0; i < 600; i += 1) {
+      e = frame()
+      if (eventos.includes('caida')) break
+      // Cuando ya rebotó al menos una vez y vuelve a estar quieta en
+      // el suelo, se acabó la racha.
+      if (i > 20 && e.enSuelo && !e.cargando && eventos.includes('rebote')) break
+      if (eventos.includes('rebote')) masAlto = Math.min(masAlto, e.y)
+    }
+    motor.detener()
+    return {
+      rebotes: eventos.filter((x) => x === 'rebote').length,
+      cayo: eventos.includes('caida'),
+      subio: caja.y - masAlto,
+      enSuelo: e.enSuelo,
+    }
+  }
+
+  const flojo = tocarLaCaja(false)
+  const fuerte = tocarLaCaja(true)
+
+  console.log(
+    `   de un roce rebota ${flojo.rebotes} veces y sube ${flojo.subio.toFixed(0)} px; cayendo de un salto entero, ${fuerte.rebotes} veces y ${fuerte.subio.toFixed(0)} px`,
+  )
+  console.log(
+    flojo.rebotes > 0 && flojo.subio > 35
+      ? '   ✓ hasta un roce la devuelve para arriba: el piso del rebote hace su trabajo'
+      : '   ⚠ cayendo flojo no devuelve nada, y en el camino normal se llega flojo',
+  )
+  console.log(
+    fuerte.subio > flojo.subio + 15
+      ? '   ✓ y cayendo de alto devuelve más: el rebote sale de lo que traías'
+      : '   ⚠ devuelve lo mismo caiga como caiga, que es un tramo de impulso con otro traje',
+  )
+  console.log(
+    flojo.rebotes < 9 && fuerte.rebotes < 9 && flojo.enSuelo && fuerte.enSuelo
+      ? '   ✓ se apaga sola en unos pocos botes y la deja parada encima'
+      : '   ⚠ no se apaga: se queda botando',
+  )
+}
+
+{
+  // Y ahora sobre las cajas del capítulo de verdad, entrando desde la
+  // plataforma de antes como se entra jugando: de todas las veces que
+  // la toca, ¿en cuántas acaba cayéndose?
+  //
+  // Es la pregunta que importa y la que costó dos vueltas: con el
+  // rebote conservando el avance de lado, cada bote la corría un poco
+  // más hacia el mismo lado y al tercero se salía. Una red que te tira
+  // es peor que no tener red.
+  const cajas = nivel.plataformas.filter((p) => p.rebote && p.indice > 0)
+
+  if (cajas.length === 0) {
+    console.log('   · este capítulo no tiene cajas de peluches')
+  } else {
+    let toques = 0
+    let tiradas = 0
+
+    for (const caja of cajas) {
+      const desde = nivel.plataformas[caja.indice - 1]
+      const nivelTramo = nivelDeDos(desde, caja)
+
+      const recorrido = Math.max(1, desde.ancho - TORTUGA.ancho)
+      const framesDelCiclo = Math.ceil(((2 * recorrido) / TORTUGA.velocidad) * 60)
+      const paso = Math.max(4, Math.round(framesDelCiclo / 24))
+
+      for (let espera = 0; espera < framesDelCiclo; espera += paso) {
+        for (let c = 0; c <= 10; c += 1) {
+          const { motor, frame, eventos } = banco(nivelTramo)
+          for (let i = 0; i < espera; i += 1) frame()
+          saltarCon(motor, frame, c / 10)
+
+          for (let i = 0; i < 400; i += 1) {
+            const e = frame()
+            if (eventos.includes('caida')) break
+            if (i > 20 && e.enSuelo && eventos.includes('rebote')) break
+          }
+          motor.detener()
+
+          if (!eventos.includes('rebote')) continue
+          toques += 1
+          if (eventos.includes('caida')) tiradas += 1
+        }
+      }
+    }
+
+    const porcentaje = toques ? (tiradas / toques) * 100 : 0
+    console.log(
+      `   de ${toques} entradas que llegan a tocar una caja de peluches, ${tiradas} acaban en caída`,
+    )
+    console.log(
+      porcentaje < 5
+        ? '   ✓ la caja recoge: casi ninguna entrada acaba en el vacío'
+        : `   ⚠ el ${porcentaje.toFixed(0)}% de las veces la caja la termina tirando`,
+    )
+  }
 }
 console.log('')
 

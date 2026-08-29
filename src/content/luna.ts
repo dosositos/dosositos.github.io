@@ -205,6 +205,112 @@ export const CAJAS = {
 }
 
 /**
+ * La caja forrada de cinta, que es lo que complica el capítulo de Ovi.
+ *
+ * Alguien la envolvió entera y quedó lisa. Caminando por encima no
+ * pasa nada: las paticas agarran. **Parada cargando la barra sí**: se
+ * va resbalando hacia el lado que la caja está bajando, y como la caja
+ * cede hacia donde ella está, cuanto más aguanta más se inclina y más
+ * rápido se va, hasta quedarse en la punta.
+ *
+ * No la tira: se para en la orilla, igual que caminando. Al principio
+ * sí la tiraba y era demasiado, porque con la carga que hace falta
+ * para un salto normal ya se caía sola: la caja no era difícil, era
+ * una trampa. El castigo es quedarse donde no querías, y como la
+ * punta está hundida por el balancín, el salto sale corto y del lado
+ * equivocado. Descoloca, no mata.
+ *
+ * Es la traba de Boo mirada por el otro lado. Allá el tramo se borra y
+ * te apura por tiempo; acá la caja te va corriendo y te apura por
+ * sitio. Y ataca la barra, que es lo único que este juego tiene.
+ *
+ * Lo mejor que hace es que **refuerza la lección del capítulo**. En el
+ * medio de la caja no hay cuesta, así que el medio es el único sitio
+ * donde se puede cargar tranquila — y es también el único desde donde
+ * el salto sale a su altura entera, porque el balancín no la hunde.
+ * Dos reglas distintas que enseñan lo mismo.
+ */
+export const CINTA = {
+  /**
+   * Cuánto la corre por segundo con la caja del todo inclinada,
+   * mientras carga.
+   *
+   * En la orilla la inclinación anda por 0,7, así que son unos 39 px
+   * por segundo de verdad: cargar medio salto ya la lleva a la punta y
+   * la deja ahí. Con 20 no se sentía nada.
+   */
+  arrastre: 55,
+}
+
+/**
+ * La caja abierta y rebosante de peluches viejos, que es lo que le da
+ * sazón al capítulo de Ovi. De una caja así salió Ovi.
+ *
+ * Caer ahí no la para: la devuelve para arriba con parte de lo que
+ * traía y hacia donde iba. Se agota sola, y sin guardar nada, porque
+ * cada rebote sale del anterior: tres o cuatro y se queda quieta.
+ *
+ * No es el tramo de impulso de Boo con otro traje. Aquel centra a la
+ * tortuga y la lanza siempre igual, así que es un regalo del camino y
+ * el destino se puede poner al píxel. Este depende de cómo entres:
+ * cayendo de alto rebota alto, cayendo flojo rebota poco, y si venías
+ * rasante seguís yendo para allá. Es habilidad y no regalo.
+ *
+ * Tampoco cuenta como pasito, que no gastó barra.
+ */
+export const PELUCHES = {
+  /** Qué parte de la velocidad de caída devuelve. */
+  devuelve: 0.78,
+
+  /**
+   * Lo mínimo que devuelve **la primera vez que la toca**, caiga como
+   * caiga.
+   *
+   * Sin esto la caja no servía de nada en el camino normal: llegando a
+   * una plataforma que está más arriba se aterriza casi sin velocidad
+   * de bajada, así que devolver una parte de casi nada era casi nada.
+   * Con el piso, tocarla siempre regala un empujón de unos 50 px, que
+   * es medio salto sin gastar barra ni pasito.
+   *
+   * Solo en la primera: los rebotes siguientes salen del anterior y
+   * por eso se van apagando hasta que se queda quieta.
+   */
+  piso: 480,
+
+  /** Por fuerte que caiga, nunca rebota más que esto. */
+  tope: 780,
+
+  /**
+   * Por debajo de esto ya no rebota y se queda parada. Es lo que hace
+   * que se agote sola en vez de quedarse botando para siempre.
+   */
+  minimo: 300,
+
+  /**
+   * Y lo que le queda del avance de lado en cada rebote.
+   *
+   * Poco a propósito: un montón de peluches se traga lo que llevabas
+   * de lado y te devuelve casi para arriba. Con 0,86 la caja era un
+   * cañón: entrabas rasante y te disparaba fuera de la pantalla.
+   */
+  frena: 0.4,
+
+  /**
+   * Desde qué parte de la caja el montón hace de cuenco, contado
+   * desde el medio: en la mitad de afuera, un rebote que iba hacia
+   * la orilla sale devuelto hacia el centro.
+   *
+   * Es lo que convierte la caja en una red de verdad. Frenando el
+   * avance y nada más, cada bote la corría un poco hacia el mismo
+   * lado y al tercero se salía: casi una de cada cuatro entradas
+   * acababa en caída, y una red que te tira es peor que no tener red.
+   * Y no es magia: un montón de peluches es un cuenco, se hunde en el
+   * medio y sube en los bordes.
+   */
+  orilla: 0.55,
+}
+
+/**
  * Los tramos de impulso: al caer ahí sale disparada sola, sin dedo.
  *
  * La tortuga se centra en el tramo antes de salir, así que el salto
@@ -362,6 +468,7 @@ const OVI: CapituloEscrito = {
     texto: [
       'Ovi estaba en una caja de peluches viejos, con otros que llevaban años ahí metidos, y se vino conmigo ese mismo día. Todo rosa pastel y con esos brazos de gimnasio que tiene. Todavía no entiendo cómo nadie lo había sacado antes.',
       'Su mundo es el cuarto de donde salió: cajas apiladas y cinta de embalaje, con rótulos que nadie volvió a leer. Y las cajas ceden. Se van para el lado donde te parás, así que dónde caés decide desde qué altura sale el salto siguiente. No basta con caer en la caja, importa en qué parte de la caja caés.',
+      'Dos cosas más, y las dos se aprenden de un susto. Las cajas envueltas en cinta no agarran. Si te quedás cargando encima, te van corriendo hasta la orilla. Y la que está llena de peluches viejos no te para. Te devuelve.',
     ],
     boton: 'subir con Ovi',
   },
@@ -388,51 +495,68 @@ const OVI: CapituloEscrito = {
     { x: 190, ancho: 140, altura: 570, hito: true },
 
     // ── Y ahora sí ────────────────────────────────────────────
-    // Se achican y suben de 92 en 100. Y al final del tramo, el
-    // primer hueco que solo se pasa con la barra al tope: se llega
-    // corta dos veces, y a la tercera se entiende que hay cargas
-    // que no se pueden medir a ojo, hay que irse hasta el fondo.
+    // Se achican y suben de 92 en 100. Aquí aparece la primera caja
+    // forrada de cinta, y va sola en medio de cajas normales para
+    // que se note la diferencia. Al final del tramo, el primer hueco
+    // que solo se pasa con la barra al tope: se llega corta dos
+    // veces, y a la tercera se entiende que hay cargas que no se
+    // pueden medir a ojo, hay que irse hasta el fondo.
+    //
+    // **La regla de las forradas:** la plataforma que viene después
+    // de una va veinte o treinta más ancha que sus vecinas, y ninguna
+    // forrada va justo antes de un hueco al tope. La cinta ya pide
+    // decidir dónde pararse y cuánto aguantar; si encima el destino
+    // pide puntería al píxel, el tramo deja de ser difícil y pasa a
+    // ser injusto. Se probó con las dos cosas juntas y ni el robot
+    // del probador salía de ahí.
     { x: 45, ancho: 110, altura: 662 },
     { x: 210, ancho: 105, altura: 755 },
-    { x: 50, ancho: 105, altura: 848 },
-    { x: 215, ancho: 100, altura: 945 },
+    { x: 50, ancho: 105, altura: 848, resbala: true },
+    { x: 200, ancho: 130, altura: 945 },
     { x: 60, ancho: 100, altura: 1089, alTope: true },
     { x: 195, ancho: 135, altura: 1170, hito: true },
 
-    // ── El tramo desparejo ────────────────────────────────────
-    // Una sube 100 y la siguiente 62. Con el suelo quieto esto era
-    // solo cambiar de carga; con las cajas cediendo, además hay
-    // que elegir en qué punta de la caja quedarse antes de saltar.
-    { x: 45, ancho: 100, altura: 1270 },
-    { x: 175, ancho: 90, altura: 1332 },
-    { x: 40, ancho: 95, altura: 1432 },
-    { x: 200, ancho: 90, altura: 1494 },
-    { x: 55, ancho: 90, altura: 1594 },
-    { x: 190, ancho: 130, altura: 1692, hito: true },
+    // ── La primera caja de peluches, y el tramo desparejo ─────
+    // La caja de peluches va ancha y justo encima de la estrella, a
+    // propósito por partida doble: de paso regala medio salto, y si
+    // se cae de alguno de los tres tramos de arriba aterriza en ella
+    // y la devuelve, en vez de irse hasta la estrella. Es la red del
+    // capítulo, y viene de donde salió Ovi.
+    //
+    // Encima, el desparejo: una sube 100 y la siguiente 62, y las de
+    // en medio van forradas de cinta. Con el suelo quieto esto era
+    // solo cambiar de carga; aquí además hay que elegir dónde
+    // pararse, y en las forradas no se puede aguantar.
+    { x: 20, ancho: 200, altura: 1230, rebote: true },
+    { x: 215, ancho: 110, altura: 1330 },
+    { x: 40, ancho: 95, altura: 1394, resbala: true },
+    { x: 195, ancho: 120, altura: 1494 },
+    { x: 55, ancho: 90, altura: 1556, resbala: true },
+    { x: 190, ancho: 130, altura: 1656, hito: true },
 
     // ── Ya pesa ───────────────────────────────────────────────
-    // Las cajas más chicas del capítulo y el segundo hueco al tope,
-    // este ya sin aviso ninguno.
-    { x: 40, ancho: 90, altura: 1792 },
-    { x: 205, ancho: 85, altura: 1896 },
-    { x: 45, ancho: 85, altura: 1999 },
-    { x: 215, ancho: 85, altura: 2104 },
-    { x: 40, ancho: 95, altura: 2248, alTope: true },
-    { x: 185, ancho: 130, altura: 2334, hito: true },
+    // Las cajas más chicas del capítulo, dos de ellas forradas, y el
+    // segundo hueco al tope, este ya sin aviso ninguno.
+    { x: 40, ancho: 90, altura: 1756 },
+    { x: 205, ancho: 85, altura: 1860, resbala: true },
+    { x: 40, ancho: 115, altura: 1963 },
+    { x: 215, ancho: 85, altura: 2068 },
+    { x: 40, ancho: 95, altura: 2212, alTope: true },
+    { x: 185, ancho: 130, altura: 2307, hito: true },
 
     // ── El último trecho hasta la luna ────────────────────────
-    // Sin regalo de impulso, que ese es de Boo. Lo que hay aquí es
-    // una caja firme a mitad del tramo, para respirar una vez
-    // antes del final.
-    { x: 40, ancho: 85, altura: 2439 },
-    { x: 200, ancho: 80, altura: 2544 },
-    { x: 45, ancho: 90, altura: 2649, firme: true },
-    { x: 205, ancho: 85, altura: 2754 },
-    { x: 50, ancho: 90, altura: 2859 },
+    // Sin regalo de impulso, que ese es de Boo. Lo que hay aquí es la
+    // segunda caja de peluches, otra vez encima de la estrella y
+    // otra vez de red, y dos forradas en la subida final.
+    { x: 140, ancho: 200, altura: 2367, rebote: true },
+    { x: 35, ancho: 110, altura: 2467 },
+    { x: 205, ancho: 95, altura: 2575, resbala: true },
+    { x: 40, ancho: 115, altura: 2680 },
+    { x: 200, ancho: 95, altura: 2785, resbala: true },
 
     // La cima. Ancha, como la de Boo: el último salto antes del
     // premio no es el sitio para pedir puntería.
-    { x: 190, ancho: 150, altura: 2964, hito: true },
+    { x: 45, ancho: 150, altura: 2890, hito: true },
   ],
 }
 

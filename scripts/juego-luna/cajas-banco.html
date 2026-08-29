@@ -5,7 +5,7 @@
     <title>El cuarto de Ovi, caja por caja</title>
     <style>
       body { margin: 0; background: #05070f; font-family: system-ui; color: #f8f4e8; }
-      #tira { display: flex; gap: 10px; padding: 10px; }
+      #tira { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; max-width: 2440px; }
       figure { margin: 0; }
       figcaption { font-size: 12px; opacity: 0.6; padding: 6px 2px; }
       canvas { display: block; border-radius: 6px; }
@@ -83,6 +83,7 @@
           vidaDeLaPista: enteras,
           avisoDeLaPista: 0.4,
           inclinacion,
+          rebote: null,
           cine: 'jugando',
           cineAvance: 0,
           pasitos: 0,
@@ -93,6 +94,8 @@
       }
 
       const cede = nivel.plataformas[9]
+      const forrada = nivel.plataformas.find((p) => p.resbala)
+      const peluches = nivel.plataformas.find((p) => p.rebote)
       const abierta = primeraQue((c) => c.piezas.some((z) => z.abierta)) ?? nivel.plataformas[2]
       const conEncima = primeraQue((c) => c.encima) ?? nivel.plataformas[3]
       const alTope = nivel.plataformas.find((p) => p.alTope) ?? nivel.plataformas[12]
@@ -106,6 +109,13 @@
         ['una caja encima', escenaEn(conEncima, 1)],
         ['la estrella, que no cede', escenaEn(nivel.hitos[0], 1, { hitoAlcanzado: nivel.hitos[0].indice })],
         ['el hueco al tope', escenaEn(alTope, 0.5, { hitoAlcanzado: 7 })],
+        ['forrada de cinta', escenaEn(forrada, 0.5)],
+        ['forrada, ya en la punta', escenaEn(forrada, 1, { cargando: true, carga: 0.7 })],
+        ['la caja de peluches', escenaEn(peluches, 0.5)],
+        [
+          'peluches, en el golpe',
+          escenaEn(peluches, 0.5, { rebote: { indice: peluches.indice, ms: 30 } }),
+        ],
         ['la cima', escenaEn(nivel.cima, 0.5, { hitoAlcanzado: 25 })],
       ]
 
@@ -119,7 +129,7 @@
         tira.append(figura)
 
         const pintor = crearPintor(lienzo, nivel)
-        pintor.medir(206, 446)
+        pintor.medir(288, 624)
         pintor.pintar(escena)
       }
     </script>

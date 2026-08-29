@@ -4,6 +4,7 @@ import {
   dibujarPilaDeCajas,
   dibujarPolvo as dibujarPolvoDelCuarto,
   dibujarTorre,
+  loAplastada,
   sembrarCajas,
   sembrarPolvo,
   sembrarTorres,
@@ -375,7 +376,9 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
       // cuando la cámara llega, que es todo el punto: sale en la
       // cinemática, se va, y no se la vuelve a ver hasta que se la
       // alcanza.
-      if (escena.cine !== 'entrada') {
+      // En `espera` tampoco: antes de darle al botón la luna no ha
+      // salido todavía y no puede estar ya arriba aguardando.
+      if (escena.cine !== 'entrada' && escena.cine !== 'espera') {
         dibujarLunaEsperando(ctx, dondeEspera, escena)
       }
 
@@ -420,6 +423,9 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
         if (esDePista) {
           dibujarPistaNaranja(ctx, p, escena.hitoAlcanzado, escena.reloj, alfa)
         } else if (caja) {
+          // Si esta es la caja de peluches que acaba de rebotar, se la
+          // dibuja hundiéndose y volviendo.
+          const golpeada = escena.rebote?.indice === p.indice
           dibujarPilaDeCajas(
             ctx,
             p,
@@ -428,6 +434,7 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
             escena.hitoAlcanzado,
             escena.reloj,
             alfa,
+            golpeada && !pintor.movimientoReducido ? loAplastada(escena.rebote?.ms ?? 9999) : 0,
           )
         } else {
           dibujarPlataforma(ctx, p, escena.hitoAlcanzado, escena.reloj)

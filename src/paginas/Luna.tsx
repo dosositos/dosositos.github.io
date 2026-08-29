@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { AYUDA, BAUTIZO, CAPITULOS, CARTEL, TEXTOS } from '@/content/luna'
 import { crearPintor } from '@/juego-luna/dibujo'
 import { conectarEntrada } from '@/juego-luna/entrada'
-import { crearMotor } from '@/juego-luna/motor'
+import { crearMotor, type Motor } from '@/juego-luna/motor'
 import { capituloNumero, construirNivel } from '@/juego-luna/mundos'
 import { conNombre } from '@/juego-luna/nombrar'
 import {
@@ -44,6 +44,11 @@ type Fase = 'bautizo' | 'cartel' | 'jugando'
 export function Luna() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const cajaRef = useRef<HTMLDivElement>(null)
+  /**
+   * El motor de la partida de ahora, para poder darle el aviso de
+   * empezar desde fuera del efecto que lo crea.
+   */
+  const motorRef = useRef<Motor | null>(null)
   const menosMovimiento = useReducedMotion()
 
   /** Lo que había guardado al abrir. De aquí sale con cuál se entra. */
@@ -215,13 +220,14 @@ export function Luna() {
     // se ven el cielo y la tortuga caminando por el suelo, que invita
     // más que un fondo negro. En el bautizo eso además es media
     // respuesta a la pregunta, porque la que se va a llamar de alguna
-    // manera está ahí abajo dando vueltas. Lo que no se conecta hasta
-    // que le da a empezar es el dedo.
+    // manera está ahí abajo dando vueltas.
+    //
+    // Lo que no arranca todavía es la luna. Su cinemática espera al
+    // botón, porque corriendo detrás del cartel se gastaba entera sin
+    // que nadie pudiera verla. De eso se encarga el efecto de abajo,
+    // que es también el que conecta el dedo.
+    motorRef.current = motor
     motor.iniciar()
-
-    const desconectar = empezado
-      ? conectarEntrada(canvas, { presionar: motor.presionar, soltar: motor.soltar })
-      : undefined
 
     window.visualViewport?.addEventListener('resize', medir)
     window.visualViewport?.addEventListener('scroll', medir)
@@ -229,14 +235,32 @@ export function Luna() {
 
     return () => {
       motor.detener()
-      desconectar?.()
+      motorRef.current = null
       olvidarRelojes()
       window.clearTimeout(relojDeLaAyuda)
       window.visualViewport?.removeEventListener('resize', medir)
       window.visualViewport?.removeEventListener('scroll', medir)
       window.removeEventListener('orientationchange', medir)
     }
-  }, [capitulo, empezado, menosMovimiento, nivel])
+  }, [capitulo, menosMovimiento, nivel])
+
+  /**
+   * Empezar de verdad: la luna se presenta y el dedo pasa a mandar.
+   *
+   * Va aparte del efecto de arriba a propósito. Metido allí, darle al
+   * botón tiraba el motor entero y montaba uno nuevo, que funcionaba
+   * pero era un efecto de lado de una dependencia, no una decisión
+   * escrita. Y sobre todo: así el capítulo empieza cuando ella lo
+   * empieza.
+   */
+  useEffect(() => {
+    const canvas = canvasRef.current
+    const motor = motorRef.current
+    if (!empezado || !canvas || !motor) return
+
+    motor.empezar()
+    return conectarEntrada(canvas, { presionar: motor.presionar, soltar: motor.soltar })
+  }, [empezado, nivel])
 
   const retrato = RETRATOS[capitulo.id]
   const siguiente = CAPITULOS.find((c) => c.numero === capitulo.numero + 1)

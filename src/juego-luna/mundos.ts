@@ -38,7 +38,12 @@ export function construirNivel(capitulo: CapituloEscrito): Nivel {
     // marcadas como firmes a propósito. La estrella tiene que ser el
     // sitio donde se respira, y un tramo de impulso que se moviera
     // arruinaría lo único que el juego promete que sale siempre igual.
-    cede: capitulo.cede && indice > 0 && !p.hito && !p.impulso && !p.firme,
+    // Las cajas de peluches tampoco ceden: una caja llena pesa y está
+    // asentada, y si además se inclinara el rebote saldría distinto
+    // cada vez, que es justo lo que un rebote no puede hacer.
+    cede: capitulo.cede && indice > 0 && !p.hito && !p.impulso && !p.rebote && !p.firme,
+    resbala: p.resbala,
+    rebote: p.rebote,
     alTope: p.alTope,
     indice,
   }))

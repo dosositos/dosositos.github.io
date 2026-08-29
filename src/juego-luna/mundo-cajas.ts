@@ -55,6 +55,12 @@ const COLOR = {
   cinta: '#a08f6c',
   cintaBrillo: '#bfb090',
 
+  /* La caja forrada va un punto más clara que una con su banda
+     suelta: es cinta encima de cinta y tiene que leerse de lejos,
+     porque es la que castiga aguantar la barra. */
+  forro: '#b5a37c',
+  forroBrillo: '#d6c8a4',
+
   etiqueta: '#b7ae9c',
   etiquetaTinta: '#5d5445',
 
@@ -89,6 +95,27 @@ const ALTO_MINIMO = 24
 /** Lo ancha que quiere ser una caja. La fila se parte por aquí. */
 const ANCHO_DE_UNA_CAJA = 48
 
+/** Cuánto se hunde una caja de peluches en el golpe del rebote. */
+const HUNDIDO = 10
+
+/** Lo que dura ese hundido, en milisegundos. */
+const MS_DEL_HUNDIDO = 340
+
+/**
+ * Cuánto está aplastada una caja de peluches ahora mismo, de 1 (justo
+ * en el golpe) a 0 (ya se estiró).
+ *
+ * No es una bajada recta: se hunde de golpe y vuelve pasándose, como
+ * algo blando de verdad. Sale de una cuenta y no de un estado
+ * guardado, así que se dibuja igual aunque la pestaña haya estado
+ * dormida.
+ */
+export function loAplastada(ms: number) {
+  if (ms >= MS_DEL_HUNDIDO) return 0
+  const t = ms / MS_DEL_HUNDIDO
+  return (1 - t) * Math.cos(t * Math.PI * 2.4)
+}
+
 /* ── Lo que se siembra una sola vez ──────────────────────────────── */
 
 interface Pieza {
@@ -104,6 +131,8 @@ interface Pieza {
   cualPeluche: number
   /** Por dónde le baja la cinta, de 0 a 1, o nada. */
   cinta: number | null
+  /** Envuelta entera en cinta: es la caja que no agarra. */
+  forrada: boolean
   etiqueta: { dx: number; renglones: number } | null
   /** Una esquina golpeada: 0 ninguna, 1 la izquierda, 2 la derecha. */
   golpe: 0 | 1 | 2
@@ -144,13 +173,24 @@ export function sembrarCajas(nivel: Nivel) {
   for (const p of nivel.plataformas) {
     const limpia = Boolean(p.hito)
 
+    // Las dos cajas que hacen algo tienen que leerse de lejos y de un
+    // vistazo, así que no se les reparte nada al azar: la forrada va
+    // envuelta entera y sin rótulos, y la de peluches va abierta de
+    // punta a punta y rebosando. Una caja normal, en cambio, lleva
+    // como mucho una banda de cinta y una tapa abierta.
+    const forrada = Boolean(p.resbala)
+    const rebosando = Boolean(p.rebote)
+
     const cuantas = Math.max(2, Math.round(p.ancho / ANCHO_DE_UNA_CAJA))
     const anchoDeCada = p.ancho / cuantas
 
-    // Una caja de cada tres y pico está abierta, y como mucho una por
+    // Una caja de cada cuatro está abierta, y como mucho una por
     // plataforma. Más que eso y dejan de ser una sorpresa para ser el
     // decorado.
-    const cualAbierta = limpia || siguiente() > 0.24 ? -1 : Math.floor(siguiente() * cuantas)
+    const cualAbierta =
+      limpia || forrada || rebosando || siguiente() > 0.24
+        ? -1
+        : Math.floor(siguiente() * cuantas)
 
     const piezas: Pieza[] = []
     for (let i = 0; i < cuantas; i += 1) {
@@ -162,11 +202,12 @@ export function sembrarCajas(nivel: Nivel) {
         // distintos y no como un listón partido con rayas.
         alto: ALTO_MINIMO + Math.round(siguiente() * 12),
         tono: Math.floor(siguiente() * CARTON.length),
-        abierta: i === cualAbierta,
+        abierta: rebosando || i === cualAbierta,
         cualPeluche: Math.floor(siguiente() * COLORES_DE_PELUCHE.length),
-        cinta: siguiente() < 0.55 ? 0.28 + siguiente() * 0.44 : null,
+        cinta: forrada || rebosando ? null : siguiente() < 0.55 ? 0.28 + siguiente() * 0.44 : null,
+        forrada,
         etiqueta:
-          siguiente() < 0.34
+          !forrada && !rebosando && siguiente() < 0.34
             ? { dx: 0.15 + siguiente() * 0.5, renglones: siguiente() < 0.5 ? 2 : 3 }
             : null,
         golpe: (siguiente() < 0.3 ? 1 + Math.floor(siguiente() * 2) : 0) as 0 | 1 | 2,
@@ -188,7 +229,7 @@ export function sembrarCajas(nivel: Nivel) {
       piezas,
       debajo,
       encima:
-        limpia || cualAbierta >= 0 || siguiente() > 0.4
+        limpia || forrada || rebosando || cualAbierta >= 0 || siguiente() > 0.4
           ? null
           : {
               // Hacia una punta y nunca en el medio, que es por donde
@@ -415,6 +456,8 @@ export function dibujarPilaDeCajas(
   hitoAlcanzado: number,
   reloj: number,
   alfa: number,
+  /** Cuánto lleva aplastada de un rebote, de 1 (recién) a 0. */
+  aplaste = 0,
 ) {
   const medio = p.x + p.ancho / 2
   const angulo = Math.atan2(inclinacion * CAJAS.cede, p.ancho / 2)
@@ -422,7 +465,10 @@ export function dibujarPilaDeCajas(
   ctx.save()
   ctx.translate(medio, p.y)
   ctx.rotate(angulo)
-  ctx.translate(-medio, -p.y)
+  // El hundido del rebote: la caja se traga el golpe y vuelve. Se
+  // mueve solo el dibujo, no el suelo, y no se nota porque mientras
+  // dura la tortuga va por el aire.
+  ctx.translate(-medio, -p.y + aplaste * HUNDIDO)
 
   dibujarLasDeAbajo(ctx, p, caja, alfa)
   if (caja.encima) dibujarCajaDeEncima(ctx, p, caja.encima, inclinacion, alfa)
@@ -430,7 +476,7 @@ export function dibujarPilaDeCajas(
   // Los peluches primero, todos: van detrás del cartón y tienen que
   // asomar por encima del filo, no delante de él.
   for (const pieza of caja.piezas) {
-    if (pieza.abierta) dibujarPelucheAsomando(ctx, p, pieza, reloj, alfa)
+    if (pieza.abierta) dibujarPelucheAsomando(ctx, p, pieza, reloj, alfa, p.rebote === true, aplaste)
   }
 
   for (const pieza of caja.piezas) dibujarUnaCaja(ctx, p, pieza, alfa)
@@ -510,6 +556,10 @@ function dibujarUnaCaja(
   if (pieza.abierta) dibujarSolapasAbiertas(ctx, p, pieza, carton, alfa)
   else dibujarTapaCerrada(ctx, p, pieza, carton, alfa)
 
+  // La caja forrada: envuelta entera en cinta, de arriba abajo y de
+  // punta a punta. Es la que no agarra, y tiene que decirlo de lejos.
+  if (pieza.forrada) dibujarForro(ctx, p, pieza, alfa)
+
   // La acanaladura del filo: el cartón corrugado visto de canto. Son
   // unos puntitos de un píxel y es lo que convierte el material en
   // cartón; sin esto podría ser madera o plástico.
@@ -520,7 +570,8 @@ function dibujarUnaCaja(
   }
 
   // La cinta que baja por la cara, cerrando la junta de las solapas.
-  if (pieza.cinta !== null) {
+  // En la forrada no: allí la cinta es el forro entero.
+  if (pieza.cinta !== null && !pieza.forrada) {
     const cintaX = izq + pieza.ancho * pieza.cinta
     ctx.globalAlpha = alfa * 0.6
     ctx.fillStyle = COLOR.cinta
@@ -592,6 +643,48 @@ function dibujarTapaCerrada(
 }
 
 /**
+ * El forro de cinta: la caja envuelta entera, que es la que no agarra.
+ *
+ * Va con bandas de arriba abajo bien juntas y una vuelta a lo largo
+ * del filo, todas con su brillo. Es lo único liso del capítulo, y
+ * tiene que verse liso: si esta caja no se distingue de una normal a
+ * la primera ojeada, resbalarse encima se lee como que el juego falló.
+ */
+function dibujarForro(
+  ctx: CanvasRenderingContext2D,
+  p: Plataforma,
+  pieza: Pieza,
+  alfa: number,
+) {
+  const izq = p.x + pieza.dx
+  const der = izq + pieza.ancho
+
+  // Las vueltas de arriba abajo. Van separadas y no pegadas: al
+  // primer intento iban cada once píxeles y la caja se leía como una
+  // reja, no como algo envuelto.
+  ctx.globalAlpha = alfa * 0.7
+  for (let x = izq + 5; x < der - 8; x += 16) {
+    ctx.fillStyle = COLOR.forro
+    ctx.fillRect(x, p.y + 1.5, 8, pieza.alto - 2.5)
+    ctx.fillStyle = COLOR.forroBrillo
+    ctx.fillRect(x, p.y + 1.5, 1.6, pieza.alto - 2.5)
+  }
+
+  // Y las dos vueltas de lado a lado: una por el filo, que es por
+  // donde ella pisa, y otra a media altura. Cruzadas con las de
+  // arriba abajo es como se envuelve una caja de verdad.
+  ctx.globalAlpha = alfa * 0.82
+  for (const y of [p.y - 0.6, p.y + pieza.alto * 0.48]) {
+    ctx.fillStyle = COLOR.forro
+    ctx.fillRect(izq, y, pieza.ancho, 4.4)
+    ctx.fillStyle = COLOR.forroBrillo
+    ctx.fillRect(izq, y, pieza.ancho, 1.2)
+  }
+
+  ctx.globalAlpha = alfa
+}
+
+/**
  * Las solapas abiertas de una caja que alguien dejó destapada, con el
  * hueco en sombra por donde asoma el peluche.
  */
@@ -649,18 +742,32 @@ function dibujarPelucheAsomando(
   pieza: Pieza,
   reloj: number,
   alfa: number,
+  /** En la caja que rebota asoman de cuerpo entero, no de media cara. */
+  rebosando = false,
+  aplaste = 0,
 ) {
   const color = COLORES_DE_PELUCHE[pieza.cualPeluche % COLORES_DE_PELUCHE.length]
   const x = p.x + pieza.dx + pieza.ancho / 2
   // Se mece apenas, muy despacio y desfasado de caja en caja. Quieto
   // del todo parece pegado; a esta velocidad parece que respira.
   const meneo = Math.sin(reloj * 0.7 + pieza.dx * 0.13) * 1.1
-  const y = p.y - 9 + meneo * 0.4
+
+  // En la caja que rebota cada uno asoma lo suyo y es de su tamaño:
+  // todos iguales y a la misma altura se leían como una fila de
+  // sellos pegados, y lo que tiene que verse es un montón.
+  const suyo = Math.sin(pieza.dx * 0.41 + 1.7)
+  const asoma = rebosando ? 13 + suyo * 5 : 9
+  const tamano = rebosando ? 1 + suyo * 0.16 : 1
+  const y = p.y - asoma + meneo * 0.4
 
   ctx.save()
   ctx.globalAlpha = alfa
   ctx.translate(x + meneo, y)
-  ctx.rotate(meneo * 0.035)
+  ctx.rotate(meneo * 0.035 + (rebosando ? suyo * 0.14 : 0))
+  ctx.scale(tamano, tamano)
+  // En el golpe del rebote se achatan y se ensanchan, que es lo que
+  // hace que la caja se lea como blanda y no como un trampolín.
+  if (aplaste !== 0) ctx.scale(1 + aplaste * 0.18, 1 - aplaste * 0.32)
 
   // Las orejas primero, que van detrás de la cabeza.
   ctx.fillStyle = color.oreja
@@ -674,6 +781,17 @@ function dibujarPelucheAsomando(
   ctx.beginPath()
   ctx.arc(0, 0, 9, 0, Math.PI * 2)
   ctx.fill()
+
+  // A los de la caja que rebota se les ven también los bracitos
+  // abiertos por encima del borde, apretados unos contra otros.
+  if (rebosando) {
+    ctx.fillStyle = color.oreja
+    for (const lado of [-1, 1]) {
+      ctx.beginPath()
+      ctx.ellipse(lado * 9.5, 6, 3.4, 4.6, lado * 0.5, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  }
 
   // Dos ojitos de botón y el hocico. Tres puntos, y ya hay peluche.
   ctx.fillStyle = COLOR.hueco

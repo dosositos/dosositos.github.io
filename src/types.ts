@@ -362,11 +362,37 @@ export interface PlataformaEscrita {
   /**
    * Solo en los capítulos donde el suelo cede: esta plataforma no.
    *
-   * Las estrellas, los tramos de impulso y el suelo ya son firmes por
-   * regla, y no hace falta marcarlos. Esto es para dar un respiro en
-   * medio de una racha de cajas movedizas.
+   * Las estrellas, los tramos de impulso, las cajas de peluches y el
+   * suelo ya son firmes por regla, y no hace falta marcarlos. Esto es
+   * para dar un respiro en medio de una racha de cajas movedizas.
    */
   firme?: boolean
+  /**
+   * La caja forrada de cinta de embalaje: lisa, no agarra.
+   *
+   * Caminando por encima no pasa nada. **Parada cargando la barra
+   * sí**: se va resbalando hacia el lado que la caja está bajando, y
+   * como la caja cede hacia donde ella está, cuanto más aguanta más
+   * se inclina y más rápido se va. Aguantar de más la tira.
+   *
+   * Refuerza la lección del capítulo en vez de contradecirla: en el
+   * medio de la caja no hay cuesta, así que el medio es el único
+   * sitio donde se puede cargar tranquila, que es también el único
+   * desde donde el salto sale a su altura entera.
+   */
+  resbala?: boolean
+  /**
+   * La caja abierta y rebosante de peluches viejos: rebota.
+   *
+   * Caer ahí no la para, la devuelve, con parte de lo que traía y
+   * hacia donde iba. Se agota sola en tres o cuatro rebotes porque
+   * cada uno sale del anterior. No cuenta como pasito: no gastó barra.
+   *
+   * Distinta del tramo de impulso de Boo, que centra a la tortuga y
+   * la lanza siempre igual. Aquel es un regalo, este depende de cómo
+   * entres.
+   */
+  rebote?: boolean
   /**
    * Una nota para el probador: a esta se llega **solo con la barra al
    * tope**, y es a propósito.
@@ -389,10 +415,14 @@ export interface Plataforma {
   /**
    * Si esta plataforma se inclina cuando se para encima. Lo decide
    * `construirNivel` a partir de la traba del capítulo: en el de Ovi
-   * ceden todas menos el suelo, las estrellas, los tramos de impulso
-   * y las marcadas como firmes.
+   * ceden todas menos el suelo, las estrellas, los tramos de impulso,
+   * las cajas de peluches y las marcadas como firmes.
    */
   cede?: boolean
+  /** Lisa de cinta: cargar la barra encima la va resbalando. */
+  resbala?: boolean
+  /** Llena de peluches: caer ahí rebota en vez de parar. */
+  rebote?: boolean
   /** A esta se llega solo con la barra al tope, y es a propósito. */
   alTope?: boolean
   /** Su lugar en la lista, para saber qué hito se alcanzó. */
@@ -480,6 +510,8 @@ export type EventoLuna =
   | 'cima'
   /** Cayó en un tramo de impulso y salió disparada sin tocar nada. */
   | 'impulso'
+  /** Cayó en una caja de peluches y la devolvió para arriba. */
+  | 'rebote'
   /** Se acabó la cinemática de irse la luna: el capítulo terminó. */
   | 'fin'
 
@@ -536,10 +568,20 @@ export interface EscenaLuna {
    */
   inclinacion: number[]
   /**
-   * En qué momento del capítulo va: la luna entrando, el juego, o la
-   * luna yéndose al llegar arriba.
+   * La última caja de peluches que rebotó y hace cuántos
+   * milisegundos, para dibujarla aplastándose y volviendo. Nula
+   * mientras no haya rebotado ninguna.
    */
-  cine: 'entrada' | 'jugando' | 'salida' | 'fin'
+  rebote: { indice: number; ms: number } | null
+  /**
+   * En qué momento del capítulo va.
+   *
+   * `espera` es antes de empezar: la tortuga camina por el suelo
+   * detrás del cartel, pero la luna todavía no se ha presentado. Su
+   * cinemática arranca cuando ella le da al botón, que es cuando
+   * puede verla; corriendo antes se gastaba detrás del texto.
+   */
+  cine: 'espera' | 'entrada' | 'jugando' | 'salida' | 'fin'
 
   /** Por dónde va la cinemática, de 0 a 1. */
   cineAvance: number
