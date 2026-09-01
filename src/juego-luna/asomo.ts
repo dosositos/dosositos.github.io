@@ -147,6 +147,7 @@ function escenaBase(cambios: Partial<EscenaLuna>): EscenaLuna {
     vidaDeLaPista: [],
     avisoDeLaPista: 0,
     inclinacion: [],
+    hundido: [],
     rebote: null,
     cine: 'jugando',
     cineAvance: 0,

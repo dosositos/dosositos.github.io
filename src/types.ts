@@ -349,7 +349,14 @@ export interface PlataformaEscrita {
   altura: number
   /**
    * Los hitos guardan el avance: si se cae, vuelve al último que
-   * pisó. Van cinco por capítulo, uno cada seis o siete plataformas.
+   * pisó.
+   *
+   * **Cada capítulo guarda menos que el anterior:** cinco en el de
+   * Boo, cuatro en el de Ovi, tres en el de Nico, y en los tres la
+   * cima es una de ellas. Y no es solo cuánto camino hay que rehacer:
+   * el hito va firme siempre, así que quitar uno convierte ese
+   * descanso en una caja que cede o en una almohada que se hunde. El
+   * probador comprueba la cuenta.
    */
   hito?: boolean
   /**
@@ -402,6 +409,32 @@ export interface PlataformaEscrita {
    * intentos, que en el capítulo de Ovi es justamente la gracia.
    */
   alTope?: boolean
+  /**
+   * La hermana de `alTope` en el capítulo de Nico: a esta se llega
+   * **solo saliendo antes de que la almohada se hunda**, y es a
+   * propósito.
+   *
+   * Tampoco cambia nada del juego. Es lo que le dice al probador que
+   * un tramo que se pasa desde la almohada entera y no desde la
+   * hundida está bien escrito y no roto.
+   */
+  aPrisa?: boolean
+  /**
+   * La cobija enredada del capítulo de Nico: la barra carga más lento
+   * encima.
+   *
+   * Caminando no pasa nada. **Parada cargando sí**: la barra tarda
+   * `COBIJAS.msDeCarga` en llenarse en vez de `SALTO.msDeCarga`,
+   * mientras el aguante antes del desmayo sigue siendo el mismo. O
+   * sea que llegar al tope desde una cobija se paga entrando en la
+   * zona roja, y como la cobija además se hunde, cada milisegundo de
+   * más se cobra dos veces: en tiempo y en altura.
+   *
+   * La almohada cobra por esperar y la cobija cobra por apurarse. Es
+   * la traba del capítulo multiplicada por sí misma, y por eso va en
+   * el tercero y no en otro.
+   */
+  enreda?: boolean
 }
 
 /** La misma plataforma ya convertida. `y` es la línea que se pisa. */
@@ -423,8 +456,19 @@ export interface Plataforma {
   resbala?: boolean
   /** Llena de peluches: caer ahí rebota en vez de parar. */
   rebote?: boolean
+  /**
+   * Si esta almohada se hunde mientras está parada encima. Lo decide
+   * `construirNivel` a partir de la traba del capítulo: en el de Nico
+   * se hunden todas menos el suelo, las estrellas, los tramos de
+   * impulso y las marcadas como firmes.
+   */
+  hunde?: boolean
   /** A esta se llega solo con la barra al tope, y es a propósito. */
   alTope?: boolean
+  /** Y a esta, solo saliendo antes de que la almohada se hunda. */
+  aPrisa?: boolean
+  /** Enredada en la cobija: la barra carga más lento parada encima. */
+  enreda?: boolean
   /** Su lugar en la lista, para saber qué hito se alcanzó. */
   indice: number
 }
@@ -470,6 +514,12 @@ export interface Nivel {
    * qué altura sale el salto siguiente.
    */
   cede: boolean
+  /**
+   * La traba del capítulo de Nico: las almohadas se hunden mientras
+   * está parada encima, así que cuanto más se demore en salir, más
+   * abajo sale el salto. Si es falso, el suelo se queda a su altura.
+   */
+  seHunde: boolean
 }
 
 /**
@@ -486,6 +536,7 @@ export interface CapituloEscrito {
   material: MaterialDelMundo
   seDesvanece: boolean
   cede: boolean
+  seHunde: boolean
   presentacion: {
     titulo: string
     texto: string[]
@@ -567,6 +618,12 @@ export interface EscenaLuna {
    * En los capítulos donde nada cede se queda todo en 0.
    */
   inclinacion: number[]
+  /**
+   * Cuánto está hundida cada almohada ahora mismo, de 0 (entera) a 1
+   * (en el fondo), por índice de plataforma. En los capítulos donde
+   * nada se hunde se queda todo en 0.
+   */
+  hundido: number[]
   /**
    * La última caja de peluches que rebotó y hace cuántos
    * milisegundos, para dibujarla aplastándose y volviendo. Nula

@@ -1,4 +1,5 @@
 import { LUNA, MUNDO, TORTUGA } from '@/content/luna'
+import { dibujarAlmohada } from '@/juego-luna/mundo-almohadas'
 import { dibujarEstrellaDePapel } from '@/juego-luna/estrella'
 import {
   dibujarPilaDeCajas,
@@ -9,7 +10,7 @@ import {
   sembrarPolvo,
   sembrarTorres,
 } from '@/juego-luna/mundo-cajas'
-import { alturaDeLaCaja } from '@/juego-luna/mundos'
+import { superficieDe as superficieDeVerdad } from '@/juego-luna/mundos'
 import { cabezaDe, dibujarTortuga } from '@/juego-luna/tortuga'
 import type { EscenaLuna, Nivel, Plataforma } from '@/types'
 
@@ -274,6 +275,9 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
   // se quedan vacíos, que no cuesta nada y evita un `if` por frame.
   const esDePista = nivel.material === 'pista'
   const esDeCajas = nivel.material === 'cajas'
+  // El cuarto de Nico todavía no tiene decorado: el capítulo va por el
+  // prototipo y lo único dibujado es la almohada. Ver `mundo-almohadas.ts`.
+  const esDeAlmohadas = nivel.material === 'almohadas'
 
   const matas = esDePista ? sembrarBambu(nivel.cima.y - 200, nivel.suelo + 200) : []
   const vias = esDePista ? sembrarVias(nivel.cima.y, nivel.suelo) : []
@@ -422,6 +426,15 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
         const caja = cajas.get(p.indice)
         if (esDePista) {
           dibujarPistaNaranja(ctx, p, escena.hitoAlcanzado, escena.reloj, alfa)
+        } else if (esDeAlmohadas) {
+          dibujarAlmohada(
+            ctx,
+            p,
+            escena.hundido[p.indice] ?? 0,
+            escena.hitoAlcanzado,
+            escena.reloj,
+            alfa,
+          )
         } else if (caja) {
           // Si esta es la caja de peluches que acaba de rebotar, se la
           // dibuja hundiéndose y volviendo.
@@ -1012,7 +1025,7 @@ function dibujarVia(
  */
 function dibujarSombra(ctx: CanvasRenderingContext2D, escena: EscenaLuna) {
   const superficieDe = (p: Plataforma) =>
-    alturaDeLaCaja(p, escena.x, escena.inclinacion[p.indice] ?? 0)
+    superficieDeVerdad(p, escena.x, escena.inclinacion[p.indice] ?? 0, escena.hundido[p.indice] ?? 0)
 
   const debajo = escena.plataformas
     .filter(

@@ -441,36 +441,125 @@ y chats, y el sobre de apertura. Eso es el regalo.
 
 ---
 
-## La próxima sesión — el juego de la luna, fase 5
+## La próxima sesión — jugar el prototipo de Nico y después vestirlo
 
 **Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
 arrancamos por donde diga, sin que tengás que acordarte de nada.
 
-**Lo que toca:** la **fase 5**, el capítulo de **Nico**. Almohadas que se hunden
-mientras está parada encima, luz de madrugada y la luna ya grande. Es el
-capítulo más importante y el que ataca directo la mecánica central: cargar la
-barra toma tiempo, y el suelo se está yendo mientras cargás. Hay que decidir
-entre el salto seguro y el salto bueno.
+**Lo que toca, y en este orden:**
 
-Cuesta lo mismo que costó Ovi, que fue poco: el molde de un capítulo ya está
-hecho dos veces. Hay que escribir su traba en el motor, su material en
-`src/juego-luna/mundo-almohadas.ts` y sus 32 plataformas en
-`src/content/luna.ts`. Y hacerle su banco, `npm run luna:almohadas`, que es lo
-que hizo barata la fase de Ovi.
+1. **Jugá el capítulo de Nico otra vez.** Lo jugaste el 1 de septiembre y
+   dijiste que sí se siente que esperar cuesta, pero que para ser el último
+   nivel de todos no alcanzaba. Con lo que salió de ahí el capítulo tiene dos
+   cosas nuevas —las cobijas y menos guardado— y hay que volver a jugarlo con
+   las dos puestas. La pregunta ahora es otra: **¿pesa ya como último
+   capítulo, o se pasó de duro?** El número de la cobija está en `COBIJAS` en
+   `src/content/luna.ts` y se mueve en una línea, igual que el de la almohada.
+2. **Y después vestirlo.** Hoy la almohada es una almohada y la cobija es una
+   cobija, y nada más: falta el cuarto entero. Sábanas revueltas, luz de
+   madrugada y la luna ya grande, más el fondo, que en Boo son las vías con
+   carros y en Ovi las torres de cajas con el polvo. Ahí también entra partir
+   la almohada en dos o tres, como se partieron las cajas de Ovi, y marcarle
+   el hoyo donde están las paticas.
 
-### Cómo está el juego ahora mismo (fase 4 cerrada)
+### Lo que cambió el 1 de septiembre, con lo que jugaste
+
+Lo jugaste y dijiste dos cosas: que esperar sí cuesta, pero que no pesa como
+último nivel; y que cada capítulo tendría que guardar menos que el anterior,
+dejando el primero como está.
+
+- **Cada capítulo guarda menos: Boo cinco, Ovi cuatro, Nico tres.** La cima
+  sigue siendo una estrella en los tres. Y hay un regalo que no vi venir al
+  escribirlo: la estrella va **firme** siempre, así que quitar una no solo
+  alarga el trecho que hay que rehacer, además **convierte ese descanso en
+  piso que se mueve**. Las dos que perdió Nico eran las almohadas más anchas
+  de su tramo, o sea tres segundos de caminata viéndolas hundirse. El capítulo
+  se puso más duro sin tocar un solo número.
+- **Dónde cayó cada corte.** Ovi pierde la de 1656, así que el trecho va de
+  1170 a 2307 de un tirón: el desparejo entero más el segundo hueco al tope.
+  Se puede pedir porque encima de la estrella de abajo está la caja de
+  peluches, que es la red del capítulo. Nico pierde las de 540 y 1584 y le
+  quedan 1096, 2156 y la cima, que reparte **un hueco a prisa por trecho** y
+  ninguno con dos.
+- **Las cobijas enredadas, la segunda traba de Nico.** Parada en una, la barra
+  se llena en 1500 ms en vez de 900, y el aguante antes del desmayo sigue
+  siendo el mismo: el tope llega a los 1500 y el aviso rojo empieza a los
+  1550, o sea que un salto entero desde una cobija se paga mirando cómo se
+  pone roja. Y la cobija se hunde como cualquier almohada, así que cobra en
+  tiempo **y** en altura. La almohada cobra por esperar; la cobija cobra por
+  apurarse. Es la traba del capítulo multiplicada por sí misma, que es la
+  razón de que vaya en el tercero y no en otro.
+- **La regla de las cobijas:** ninguna va justo antes de un hueco marcado
+  `aPrisa`. Ese hueco pide salir en la pasada en que se llegó y la cobija pide
+  cargar largo, y pedir las dos cosas juntas no es difícil, es injusto. Es la
+  misma lección que dejaron las forradas y los huecos al tope en el cuarto de
+  Ovi. El probador la comprueba en los tres capítulos.
+- **Van cuatro cobijas**, en 1184, 1408, 1762 y 2334. La primera está sola y
+  perdonando: lo que hay que saltar desde ella son 64 px, el tramo más corto
+  del capítulo, porque la primera vez que la barra se arrastra no puede ser
+  también la vez que hace falta el tope.
+- **Se dibuja distinta de un vistazo**, que era la parte que no se podía dar
+  por buena compilando: color más caliente, esquinas duras (una almohada no
+  tiene esquinas) y una punta que cuelga. Lo que cambia encima de una cobija
+  es el ritmo de la barra, y eso no se ve hasta que ya se está cargando; si el
+  dibujo no avisa antes, deja de ser una traba y pasa a ser una sorpresa. Está
+  visto en `npm run luna:almohadas`, que ahora trae las dos pegadas.
+
+### El arnés mintió tres veces seguidas, y por la misma razón
+
+Vale la pena anotarlo porque es la séptima vez y ya no es mala suerte. La
+cobija le cambia el reloj a la barra, y **la cuenta de cuánto hay que apretar
+para una barra dada estaba escrita en cinco sitios**: el probador de tramos, el
+salto suelto, el robot que juega el capítulo, el trepador de la prueba de los
+hitos y su propia copia de la balística. Enseñarle la cobija a cuatro dejaba al
+quinto soltando el botón con el 60 % de la barra que había pedido: se quedaba
+dando vueltas sin caerse ni llegar, y el probador decía que el nivel no se
+pasaba. El nivel se pasaba perfectamente.
+
+Quedó arreglado de raíz: la puntería de los dos robots es ahora **una sola**,
+a nivel de módulo, y quién decide cuánto tarda la barra es `msDeCargaEn` en
+`src/juego-luna/mundos.ts`, que usan el juego y el arnés. La próxima traba que
+le toque el reloj se enseña en un sitio.
+
+### Cómo está el juego ahora mismo (fase 5, el prototipo de Nico)
 
 Publicado en `https://dosositos.github.io/#/luna`, sin enlace desde ningún lado
-y detrás del candado. **Dos capítulos de tres, enteros.** Al ganar el de Boo se
-pasa al de Ovi sin salir de la pantalla.
+y detrás del candado. **Los tres capítulos se juegan enteros**, y al ganar uno
+se pasa al siguiente sin salir de la pantalla. El de Nico está **jugable pero
+sin vestir**: la mecánica, el nivel, el cartel y el cierre están; el mundo
+dibujado es lo mínimo para poder juzgarlo.
+
+**Por qué se partió así.** El capítulo de Ovi enseñó que lo caro es la mecánica
+y el nivel, no el material. Y los números de un capítulo se mueven mientras se
+juega: pintar el cuarto antes de saber si la almohada se hunde a buen ritmo es
+pintarlo dos veces.
+
+- **La traba de Nico son dos.** Las almohadas se hunden mientras está parada
+  encima: 34 px en 3,6 segundos, a ritmo parejo, y paran en el fondo. No la
+  tragan y no la tiran. Saliendo en seguida se suben 146 px; tras cinco
+  segundos encima, 120. Y las cobijas enredadas le frenan la barra, que es lo
+  contrario: cobran por apurarse en vez de por esperar.
+  Eso es lo que hace que **esperar cueste**: dejar pasar una vuelta de la
+  caminata para saltar desde el punto bueno se paga en altura, igual que
+  aguantar la barra.
+- Y da vuelta una costumbre de los otros dos capítulos: aquí una plataforma
+  ancha es peor que una angosta, porque son más segundos de caminata para
+  volver al punto de salida.
+- **Tres huecos marcados `aPrisa`**, que es la marca hermana de `alTope` de
+  Ovi: se pasan saliendo en la pasada en que se llegó y no se pasan desde la
+  almohada hundida. El probador los comprueba en vez de darlos por error.
+- **La almohada tiene su banco**, `npm run luna:almohadas`: la misma almohada
+  entera, a medias y en el fondo, una al lado de la otra y quietas. Hundiéndose
+  jugando pasa despacio y mientras una está mirando otra cosa.
 
 - **Un solo gesto en todo el juego.** Mantener y soltar. Ni poderes ni
   habilidades: se probaron dos y se tiraron los dos.
 - **Le pregunta el nombre a la tortuga** antes de la primera partida, y ese
   nombre manda en todos los textos de los tres capítulos.
-- **32 plataformas y 5 estrellas** por capítulo. Las estrellas son las
-  estrellitas de papel del frasco, iguales en los tres mundos, y en los tres son
-  suelo firme.
+- **32 plataformas por capítulo, y las estrellas van bajando:** cinco en Boo,
+  cuatro en Ovi, tres en Nico, con la cima siempre marcada. Son las estrellitas
+  de papel del frasco, iguales en los tres mundos, y en los tres son suelo
+  firme.
 - **La traba de Boo:** la pista se borra detrás. Parpadea siete veces
   acelerando y se va. Cada estrella pisada le quita 380 ms de vida, con piso de
   1,1 segundos, así que el capítulo se apura solo.
@@ -525,11 +614,12 @@ Tres segundos, y el susto con la huida son uno: hay que estar mirando.
 ```bash
 npm run dev              # y npm run dev:telefono para la red de casa
 npm run luna:probar      # ¿se pasa el capítulo? y todas las pruebas del juego
-npm run luna:probar -- 2 # el de Ovi. Sin número, el de Boo
+npm run luna:probar -- 3 # el de Nico. Sin número, el de Boo; con 2, el de Ovi
 npm run luna:mapa        # a qué distancia se aterriza según lo que haya que subir
-npm run luna:ver         # fotos del juego andando (-- 5173 2 para el de Ovi)
+npm run luna:ver         # fotos del juego andando (-- 5173 3 para el de Nico)
 npm run luna:pista       # el banco del mundo de Boo, sin jugarlo
 npm run luna:cajas       # el banco del mundo de Ovi
+npm run luna:almohadas   # el banco del mundo de Nico: almohada y cobija
 npm run luna:tortuga     # el banco de poses del personaje
 npm run luna:asomo       # el banco del adelanto (-- --semana: dónde cae cada día)
 ```
@@ -540,12 +630,25 @@ escribió antes que el capítulo y por eso el capítulo salió en una tarde.
 
 ### Lo que aprendí y no quiero volver a aprender
 
-- **El arnés miente antes que el juego.** Van cuatro veces que una prueba nueva
+- **El arnés miente antes que el juego.** Van seis veces que una prueba nueva
   dice que el motor está roto y el roto es la prueba. En la fase 4 el probador
   comparaba el aterrizaje contra la línea de la plataforma, y como la caja ya
   había cedido debajo de la tortuga, leía como fallados aterrizajes buenos: el
   capítulo entero salía cinco puntos más difícil de lo que era. Antes de creerle
   a una prueba que falla, romper el código a propósito y ver si la caza.
+- **Las dos de la fase 5 fueron la misma prueba, dos veces.** Para ver si una
+  almohada vuelve a inflarse hay que dejarla sola, y la primera versión la
+  ponía debajo de la tortuga: el salto de irse volvía a caer encima y la hundía
+  de nuevo antes de que nadie mirara. Puesta al lado tampoco: saltar de costado
+  contaba como caerse, porque la caída se mide contra el sitio donde reapareció
+  y ese sitio era la almohada sin hundir. Las dos veces la prueba decía que el
+  motor no inflaba nada, y el motor infla perfectamente. Al final se salta
+  hacia arriba, a un techo de pared a pared que es imposible fallar.
+- **Y la segunda dejó una regla del nivel.** Si una almohada está a menos de 58
+  px de su estrella (los 34 que se hunde más los 24 de `margenBajoElLazo`),
+  hundirse deja a la tortuga por debajo del umbral de caída **estando parada**,
+  y el primer salto que dé desde ahí cuenta como caída aunque llegue perfecto.
+  Ya tiene prueba en `npm run luna:probar`.
 - **Y miente también cuando espera por reloj.** La tortuga camina sola y no se
   para nunca, así que «esperá tantos frames y ya estará en la orilla» es
   mentira. Las pruebas del capítulo de Ovi esperan a que **esté** donde tiene
@@ -591,10 +694,37 @@ escribió antes que el capítulo y por eso el capítulo salió en una tarde.
    `src/content/diccionario.ts`, que son de mi redacción y no citas.
 7. Antes de la última fase, **recordarte que juegues los tres capítulos** para
    llenar los récords: sin eso el rival de ella no existe.
+8. Al ganar el capítulo de Nico sale «el capítulo que falta todavía lo estoy
+   haciendo», que era verdad con dos capítulos escritos y ahora suena raro con
+   los tres. Se arregla en la fase 6, que es la que pone lo que va después de
+   ganar los tres.
 
 El plan completo del juego, con la mecánica, los tres mundos, los valores de la
 física y las diez fases, vive en **`plan-juego-luna.md`**, en la raíz. Se lee
 antes de escribir la primera línea.
+
+### Lo que se cerró en la fase 5, primera vuelta (el prototipo)
+
+- **El capítulo de Nico se juega entero.** La traba en el motor
+  (`hundirLasAlmohadas` y `superficieDe`), las 32 plataformas y las 5 estrellas
+  en `src/content/luna.ts`, el cartel con su retrato y el cierre. Sin vestir: el
+  mundo dibujado es una almohada que se lee como almohada y se ve hundirse, y
+  nada más.
+- **Su banco, `npm run luna:almohadas`**, escrito antes que el capítulo, igual
+  que el de las cajas. Enseña la misma almohada entera, a medias, en el fondo, y
+  el hueco que pide prisa saliendo ya y tras cinco segundos.
+- **Seis pruebas nuevas en `npm run luna:probar -- 3`**: que se hunda despacio y
+  pare en el fondo, lo que cuesta demorarse (26 px de altura), que ningún tramo
+  quede imposible desde el fondo salvo los marcados, que la estrella no se
+  hunda, que la almohada se infle sola al irse y que ninguna esté demasiado
+  cerca de su estrella. Comprobadas rompiendo el motor a propósito.
+- **`aPrisa`, la marca hermana de `alTope`.** El probador ya no da por error un
+  hueco que se pasa saliendo en la pasada en que se llegó, y avisa si uno
+  marcado así se sigue pasando a los cuatro segundos.
+- **El robot del probador aprendió a contar el hundimiento.** Apuntaba desde la
+  altura que tenía al empezar a cargar y soltaba veinte píxeles más abajo, así
+  que fallaba justo los saltos que el capítulo está pidiendo. Es la misma
+  trampa que la caja forrada de cinta, en el otro eje.
 
 ### Lo que se cerró en la fase 4, con tu segunda vuelta
 

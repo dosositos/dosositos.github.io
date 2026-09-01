@@ -1,4 +1,5 @@
 import {
+  ALMOHADAS,
   CAIDA,
   CAJAS,
   CANSANCIO,
@@ -11,7 +12,7 @@ import {
   SALTO,
   TORTUGA,
 } from '@/content/luna'
-import { alturaDeLaCaja } from '@/juego-luna/mundos'
+import { msDeCargaEn, superficieDe } from '@/juego-luna/mundos'
 import type { EscenaLuna, EventoLuna, Nivel, Plataforma } from '@/types'
 
 /**
@@ -71,6 +72,18 @@ const ORILLA = 2
 const ritmoDeLaCaja = (ms: number) => 1 - Math.exp((-3 * PASO * 1000) / ms)
 const CEDIENDO = ritmoDeLaCaja(CAJAS.msParaCeder)
 const ENDEREZANDO = ritmoDeLaCaja(CAJAS.msParaEnderezar)
+
+/**
+ * Lo que se hunde una almohada en cada paso, de 0 a 1.
+ *
+ * A ritmo parejo, no acercándose como las cajas: la caja se asienta y
+ * para, y la almohada tiene que seguir diciendo «seguís bajando»
+ * mientras haya alguien encima. Es lo que enseña el capítulo.
+ */
+const HUNDIENDO = (PASO * 1000) / ALMOHADAS.msParaElFondo
+
+/** Y lo que se infla, ya sin nadie encima. Eso sí va acercándose. */
+const INFLANDO = ritmoDeLaCaja(ALMOHADAS.msParaInflarse)
 
 interface Tortuga {
   x: number
@@ -159,6 +172,13 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
   const inclinacion: number[] = plataformas.map(() => 0)
 
   /**
+   * Cuánto está hundida cada almohada, de 0 (entera) a 1 (en el
+   * fondo). En los capítulos donde nada se hunde se queda todo en cero
+   * y no cuesta nada.
+   */
+  const hundido: number[] = plataformas.map(() => 0)
+
+  /**
    * Hasta el primer lazo no se borra nada. Los primeros saltos son
    * para aprender, y aprender con el suelo desapareciendo no se puede.
    */
@@ -184,7 +204,11 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
    * A qué altura está el suelo de un tramo en un punto. En el capítulo
    * de Ovi la caja está inclinada y eso ya no es su `y` a secas.
    */
-  const alturaEn = (p: Plataforma, x: number) => alturaDeLaCaja(p, x, inclinacion[p.indice])
+  const alturaEn = (p: Plataforma, x: number) =>
+    superficieDe(p, x, inclinacion[p.indice], hundido[p.indice])
+
+  /** En qué plataforma está apoyada ahora mismo, o -1 si va por el aire. */
+  const dondeEstaApoyada = () => (t.enSuelo && cayendo <= 0 ? ultimoPiso : -1)
 
   /**
    * Mover las cajas: cada una se va hacia el lado donde está parada, y
@@ -198,7 +222,7 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
   function moverLasCajas() {
     if (!nivel.cede) return
 
-    const encima = t.enSuelo && cayendo <= 0 ? ultimoPiso : -1
+    const encima = dondeEstaApoyada()
 
     for (const p of plataformas) {
       if (!p.cede) continue
@@ -212,6 +236,34 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
 
       const ritmo = objetivo === 0 ? ENDEREZANDO : CEDIENDO
       inclinacion[p.indice] += (objetivo - inclinacion[p.indice]) * ritmo
+    }
+  }
+
+  /**
+   * Hundir las almohadas: la que está pisando baja, y las demás se
+   * van inflando solas.
+   *
+   * Baja a ritmo parejo y para en el fondo. No la traga y no la tira:
+   * lo que cuesta es la altura que ya perdió, y con eso alcanza.
+   *
+   * Se hunde **esté cargando o caminando**, que es todo el asunto del
+   * capítulo: dejar pasar una vuelta de la caminata para saltar desde
+   * el punto bueno cuesta lo mismo que aguantar la barra. Aquí el
+   * tiempo se paga siempre.
+   */
+  function hundirLasAlmohadas() {
+    if (!nivel.seHunde) return
+
+    const encima = dondeEstaApoyada()
+
+    for (const p of plataformas) {
+      if (!p.hunde) continue
+
+      if (p.indice === encima) {
+        hundido[p.indice] = Math.min(1, hundido[p.indice] + HUNDIENDO)
+      } else if (hundido[p.indice] > 0) {
+        hundido[p.indice] = Math.max(0, hundido[p.indice] - hundido[p.indice] * INFLANDO)
+      }
     }
   }
 
@@ -350,6 +402,11 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
     // trampa puesta que ella no vio ponerse.
     for (let i = 0; i < inclinacion.length; i += 1) inclinacion[i] = 0
 
+    // Y las almohadas vuelven a estar enteras, por lo mismo: aparecer
+    // sobre una que quedó hundida de antes de la caída es empezar de
+    // nuevo con la altura ya gastada, y ella no vio gastarla.
+    for (let i = 0; i < hundido.length; i += 1) hundido[i] = 0
+
     t.x = reaparicion.x
     t.y = reaparicion.y
     // La cámara va de un salto y no viajando: mirar el paisaje bajar
@@ -394,8 +451,10 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
     // aterrizaje, que es agachada.
 
     // Las cajas se mueven siempre, aunque se esté cayendo o desmayada:
-    // el mundo no se para porque ella se pare.
+    // el mundo no se para porque ella se pare. Y las almohadas igual:
+    // desmayarse encima de una es seguir apoyada, y se sigue hundiendo.
     moverLasCajas()
+    hundirLasAlmohadas()
 
     if (cayendo > 0) {
       // Mientras se cae no manda nadie: sigue bajando y no choca con
@@ -438,7 +497,15 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
     if (t.cargando) {
       // La barra sube y se queda arriba. No rebota ni se reinicia:
       // castigar dos veces el mismo error es mezquino.
-      t.carga = Math.min(1, t.carga + (PASO * 1000) / SALTO.msDeCarga)
+      //
+      // Pero no sube igual en todos lados: parada en una cobija
+      // enredada tarda más en llenarse, mientras el aguante de acá
+      // abajo sigue siendo el mismo. Se mira el suelo de ahora y no el
+      // de cuando apretó, que en un capítulo donde el suelo se mueve es
+      // la única lectura honesta. En el aire —cargando con el perdón
+      // del borde— no hay cobija que valga y carga a lo normal.
+      const msDeCarga = msDeCargaEn(t.enSuelo ? sueloDebajo() : undefined)
+      t.carga = Math.min(1, t.carga + (PASO * 1000) / msDeCarga)
       t.cargaMs += PASO * 1000
 
       // Pero aguantarla para siempre esperando el momento perfecto sí
@@ -765,6 +832,7 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
       avisoDeLaPista: cuandoAvisa(),
       // Igual que la vida de la pista: el mismo arreglo, sin copiar.
       inclinacion,
+      hundido,
       rebote: rebotoEn >= 0 ? { indice: rebotoEn, ms: msDelRebote } : null,
       cine,
       cineAvance:

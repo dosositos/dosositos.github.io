@@ -393,7 +393,7 @@ empieza hasta que lo demás esté cerrado.
 | 2 | Mundo, cámara, hitos y probador | Un nivel de prueba, de punta a punta | Sí |
 | 3 | Boo entero | Un capítulo de verdad | Sí, y es buen sitio |
 | 4 | Ovi ✓ | Dos capítulos | Sí |
-| 5 | Nico | Los tres capítulos | Sí |
+| 5 | Nico (prototipo ✓, falta el mundo) | Los tres capítulos | Sí |
 | 6 | El último trecho y la carta | El juego completo | Sí |
 | 7 | El prólogo | El juego con su escuelita delante | Sí |
 | 8 | Teléfono y números | El juego, pero que se sienta bien | Sí |
@@ -509,6 +509,39 @@ pregunta a ella antes del primer capítulo y manda en los textos de los tres.
 
 Almohadas que se hunden mientras está parada encima, luz de madrugada y la luna
 ya grande. Aquí se decide, jugándolo, si da para dos hitos más.
+
+**Va en dos vueltas, y la primera ya está: el prototipo.** El capítulo se juega
+entero —la traba en el motor, las 32 plataformas, las 5 estrellas, el cartel y
+el cierre— pero el mundo está dibujado con lo justo para poder juzgarlo: una
+almohada que se lee como almohada y se ve hundirse, y nada más. Ni sábanas
+revueltas, ni cobijas colgando, ni luz de madrugada, ni fondo. Eso es la segunda
+vuelta.
+
+Se partió así porque el capítulo de Ovi enseñó que lo caro es la mecánica y el
+nivel, no el material, y que pintar un mundo cuyos números todavía se van a
+mover es pintarlo dos veces.
+
+**La traba, ya medida:** la almohada baja 34 px en 3,6 segundos y para en el
+fondo. No la traga y no la tira. Saliendo en seguida se sube 146 px; tras cinco
+segundos encima, 120. Eso es lo que hace que **esperar cueste**: dejar pasar una
+vuelta de la caminata para saltar desde el punto bueno se paga en altura, igual
+que aguantar la barra. De ahí la decisión del capítulo, el salto seguro o el
+salto bueno.
+
+Y da vuelta una costumbre de los otros dos: aquí una plataforma ancha es peor
+que una angosta, porque es más camino que desandar.
+
+**Tres huecos marcados `aPrisa`** en `luna.ts`, que es la marca hermana de
+`alTope`: se pasan saliendo en la pasada en que se llegó y no se pasan desde la
+almohada hundida. Van siempre hacia el lado al que la tortuga ya viene mirando,
+y salen de una almohada angosta: pedir prisa y encima pedir media vuelta de
+caminata para darse vuelta no es difícil, es injusto.
+
+**Una regla que salió de escribir las pruebas:** ninguna almohada puede estar a
+menos de 58 px de su estrella (los 34 que se hunde más los 24 de
+`CAIDA.margenBajoElLazo`). Más cerca, hundirse la deja por debajo del umbral de
+caída **estando parada**, y el primer salto que dé desde ahí cuenta como caída
+aunque llegue perfecto. Lo comprueba `npm run luna:probar`.
 
 ### 6 · El último trecho, la carta y el marcador
 

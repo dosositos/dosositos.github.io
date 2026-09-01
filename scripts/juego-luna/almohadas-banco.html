@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>La cama de Nico, almohada por almohada</title>
+    <style>
+      body { margin: 0; background: #05070f; font-family: system-ui; color: #f8f4e8; }
+      #tira { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; max-width: 2440px; }
+      figure { margin: 0; }
+      figcaption { font-size: 12px; opacity: 0.6; padding: 6px 2px; }
+      canvas { display: block; border-radius: 6px; }
+    </style>
+  </head>
+  <body>
+    <!--
+      Banco de pruebas del mundo de Nico, hermano del de la pista y del
+      de las cajas. No es parte de la web.
+
+      Sirve para mirar **la almohada hundiéndose**, que jugando pasa a
+      lo largo de tres segundos y medio mientras una está mirando otra
+      cosa: aquí se ve la misma almohada entera, a medias y en el
+      fondo, una al lado de la otra y quietas.
+
+      Y sirve para lo otro: que **la cobija se distinga de una almohada
+      de un vistazo**. Lo que cambia encima de una cobija es el ritmo
+      de la barra, y eso no se ve hasta que ya se está cargando; si el
+      dibujo no avisa antes, la traba deja de ser una traba y pasa a
+      ser una sorpresa. Van las dos pegadas, a la misma altura y con la
+      misma luz, que es la única forma honesta de mirarlo.
+
+      Ojo con lo que este banco NO dice: si el capítulo se pasa. Eso lo
+      contesta `npm run luna:probar -- 3`, que además mide lo que cuesta
+      demorarse. Aquí solo se mira.
+
+      Se mira con el servidor de siempre andando:
+        npm run dev
+        http://localhost:5173/scripts/juego-luna/almohadas-banco.html
+    -->
+    <div id="tira"></div>
+
+    <script type="module">
+      import { crearPintor } from '/src/juego-luna/dibujo.ts'
+      import { construirNivel } from '/src/juego-luna/mundos.ts'
+      import { ALMOHADAS, CAPITULOS, MUNDO, TORTUGA } from '/src/content/luna.ts'
+
+      const capitulo = CAPITULOS.find((c) => c.id === 'nico')
+      const nivel = construirNivel(capitulo)
+      const enteras = nivel.plataformas.map(() => 1)
+      const derechas = nivel.plataformas.map(() => 0)
+
+      /**
+       * La escena mínima que le hace falta al pintor, con la tortuga
+       * parada en un punto de la almohada y la almohada hundida lo que
+       * se le diga. La tortuga se pone sobre la superficie de verdad
+       * —la línea más lo hundido— que es la misma cuenta que hace el
+       * motor: si aquí se dibujara otra cosa, lo que se estaría
+       * mirando no sería el juego.
+       *
+       * `donde` va de 0 (punta izquierda) a 1 (punta derecha).
+       * `cuanto` va de 0 (entera) a 1 (en el fondo).
+       */
+      function escenaEn(plataforma, cuanto = 0, donde = 0.5, extra = {}) {
+        const margen = TORTUGA.ancho / 2
+        const pisable = plataforma.ancho - margen * 2
+        const x = plataforma.x + margen + pisable * donde
+
+        const baja = plataforma.hunde ? cuanto * ALMOHADAS.seHunde : 0
+        const hundido = nivel.plataformas.map((p) =>
+          p.indice === plataforma.indice ? cuanto : 0,
+        )
+
+        return {
+          x,
+          y: plataforma.y + baja,
+          mirando: donde > 0.5 ? -1 : 1,
+          carga: 0,
+          cargando: false,
+          enSuelo: true,
+          caminado: 0.3,
+          vy: 0,
+          reloj: 2.4,
+          desdeSalto: 9999,
+          desdeAterrizaje: 9999,
+          cayendo: false,
+          agobio: 0,
+          cansancio: 0,
+          camara: plataforma.y - MUNDO.alto * 0.62,
+          hitoAlcanzado: -1,
+          vidaDeLaPista: enteras,
+          avisoDeLaPista: 0.4,
+          inclinacion: derechas,
+          hundido,
+          rebote: null,
+          cine: 'jugando',
+          cineAvance: 0,
+          pasitos: 0,
+          caidas: 0,
+          plataformas: nivel.plataformas,
+          ...extra,
+        }
+      }
+
+      const cualquiera = nivel.plataformas[9]
+      const cobija = nivel.plataformas.find((p) => p.enreda)
+      const aPrisa = nivel.plataformas.find((p) => p.aPrisa)
+      // De cuál se sale para llegar al hueco que pide prisa: es la de
+      // justo antes, y es la que hay que mirar entera y hundida.
+      const antesDelPrisa = nivel.plataformas[aPrisa.indice - 1]
+
+      const paneles = [
+        ['la cama, que es la salida', escenaEn(nivel.plataformas[1], 0)],
+        ['una almohada entera', escenaEn(cualquiera, 0)],
+        ['a medio hundir', escenaEn(cualquiera, 0.5)],
+        ['en el fondo, 34 px más abajo', escenaEn(cualquiera, 1)],
+        ['hundida y en la orilla', escenaEn(cualquiera, 1, 1)],
+        [
+          'la estrella, que no se hunde',
+          escenaEn(nivel.hitos[0], 1, 0.5, { hitoAlcanzado: nivel.hitos[0].indice }),
+        ],
+        ['el hueco a prisa, saliendo ya', escenaEn(antesDelPrisa, 0)],
+        ['el mismo, tras cinco segundos', escenaEn(antesDelPrisa, 1)],
+        ['cargando en el fondo', escenaEn(cualquiera, 1, 0.5, { cargando: true, carga: 1 })],
+        ['una cobija entera', escenaEn(cobija, 0)],
+        ['la misma, a medio hundir', escenaEn(cobija, 0.5)],
+        ['y en el fondo', escenaEn(cobija, 1)],
+        [
+          'cargando en la cobija, al tope',
+          escenaEn(cobija, 0.75, 0.5, { cargando: true, carga: 1, agobio: 0.1 }),
+        ],
+        ['la cima', escenaEn(nivel.cima, 0, 0.5, { hitoAlcanzado: nivel.cima.indice })],
+      ]
+
+      const tira = document.getElementById('tira')
+      for (const [nombre, escena] of paneles) {
+        const figura = document.createElement('figure')
+        const lienzo = document.createElement('canvas')
+        const pie = document.createElement('figcaption')
+        pie.textContent = nombre
+        figura.append(lienzo, pie)
+        tira.append(figura)
+
+        const pintor = crearPintor(lienzo, nivel)
+        pintor.medir(288, 624)
+        pintor.pintar(escena)
+      }
+    </script>
+  </body>
+</html>

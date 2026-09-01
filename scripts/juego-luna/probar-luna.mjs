@@ -33,13 +33,25 @@ globalThis.cancelAnimationFrame = () => {
 }
 
 const { crearMotor } = await import('@/juego-luna/motor.ts')
-const { construirNivel } = await import('@/juego-luna/mundos.ts')
+const { construirNivel, msDeCargaEn } = await import('@/juego-luna/mundos.ts')
 const { opacidadDeLaPista } = await import('@/juego-luna/dibujo.ts')
-const { alturaDeLaCaja } = await import('@/juego-luna/mundos.ts')
+const { superficieDe } = await import('@/juego-luna/mundos.ts')
 const { conCualEntra } = await import('@/juego-luna/progreso.ts')
-const { SALTO, TORTUGA, MUNDO, PISTA, LUNA, CAJAS, CINTA, PELUCHES, CAPITULOS } = await import(
-  '@/content/luna.ts'
-)
+const {
+  SALTO,
+  TORTUGA,
+  MUNDO,
+  PISTA,
+  LUNA,
+  CAJAS,
+  CINTA,
+  PELUCHES,
+  ALMOHADAS,
+  COBIJAS,
+  CANSANCIO,
+  CAIDA,
+  CAPITULOS,
+} = await import('@/content/luna.ts')
 
 /**
  * Qué capítulo se prueba. Sin argumento, el primero.
@@ -164,6 +176,9 @@ function nivelDeDos(desde, hasta, salida) {
     // desde la altura a la que la caja se haya ido, no desde la línea
     // de la plataforma.
     cede: capitulo.cede,
+    // Y las almohadas se hunden, por lo mismo: en el capítulo de Nico
+    // lo que decide si un tramo se pasa es cuánto tardó en salir.
+    seHunde: capitulo.seHunde,
   }
 }
 
@@ -176,10 +191,16 @@ function nivelDeDos(desde, hasta, salida) {
  * Comparando con la línea, un aterrizaje bueno en la orilla se leía
  * como fallado y el capítulo entero salía cinco puntos más difícil de
  * lo que es. El arnés mintiendo antes que el juego, otra vez.
+ *
+ * En el capítulo de Nico es todavía más grave: la almohada no se queda
+ * a media inclinación, se va bajando 34 px enteros mientras la tortuga
+ * está encima. Comparando con la línea, a los pocos segundos ningún
+ * aterrizaje contaría.
  */
 function estaEncima(escena, p, indiceEnLaPrueba = p.indice, margen = 1) {
   const inclinacion = escena.inclinacion?.[indiceEnLaPrueba] ?? 0
-  const suelo = alturaDeLaCaja(p, escena.x, inclinacion)
+  const hundido = escena.hundido?.[indiceEnLaPrueba] ?? 0
+  const suelo = superficieDe(p, escena.x, inclinacion, hundido)
   return (
     Math.abs(escena.y - suelo) < margen && escena.x >= p.x - 2 && escena.x <= p.x + p.ancho + 2
   )
@@ -198,6 +219,16 @@ function probarTramo(desde, hasta) {
   let logrados = 0
   let cargaMinima = 1
   let cargaMaxima = 0
+  /**
+   * Lo más tarde que se puede salir y todavía llegar, en milisegundos
+   * desde que aparece en la plataforma de abajo.
+   *
+   * Solo dice algo en el capítulo de Nico, donde la almohada se está
+   * hundiendo todo ese rato: es lo que separa un tramo que pide prisa
+   * de uno que no. En los otros dos capítulos sale siempre el ciclo
+   * entero, porque esperar no cuesta nada.
+   */
+  let esperaMaxima = 0
 
   for (let espera = 0; espera < framesDelCiclo; espera += paso) {
     for (let c = 0; c <= 20; c += 1) {
@@ -206,7 +237,12 @@ function probarTramo(desde, hasta) {
 
       for (let i = 0; i < espera; i += 1) frame()
       motor.presionar()
-      const framesDeCarga = Math.round((SALTO.msDeCarga * carga) / FRAME)
+      // Cuánto hay que aguantar para llegar a esa barra depende de
+      // dónde está parada: en una cobija enredada la barra sube más
+      // lento. Aguantando siempre `SALTO.msDeCarga` el arnés probaría
+      // una barra al 60 % creyendo que la tiene al tope, y daría por
+      // imposible un tramo que se pasa perfectamente.
+      const framesDeCarga = Math.round((msDeCargaEn(desde) * carga) / FRAME)
       for (let i = 0; i < framesDeCarga; i += 1) frame()
       motor.soltar()
 
@@ -224,6 +260,7 @@ function probarTramo(desde, hasta) {
           logrados += 1
           cargaMinima = Math.min(cargaMinima, carga)
           cargaMaxima = Math.max(cargaMaxima, carga)
+          esperaMaxima = Math.max(esperaMaxima, espera * FRAME)
           break
         }
 
@@ -240,6 +277,7 @@ function probarTramo(desde, hasta) {
             logrados += 1
             cargaMinima = Math.min(cargaMinima, carga)
             cargaMaxima = Math.max(cargaMaxima, carga)
+            esperaMaxima = Math.max(esperaMaxima, espera * FRAME)
           }
           break
         }
@@ -248,7 +286,7 @@ function probarTramo(desde, hasta) {
     }
   }
 
-  return { intentos, logrados, cargaMinima, cargaMaxima }
+  return { intentos, logrados, cargaMinima, cargaMaxima, esperaMaxima }
 }
 
 console.log(`\n  Capítulo ${capitulo.numero}: ${capitulo.id}, tramo por tramo`)
@@ -261,7 +299,9 @@ const especiales = [
   ['de impulso', cuantasSon('impulso')],
   ['forradas de cinta', cuantasSon('resbala')],
   ['de peluches', cuantasSon('rebote')],
+  ['enredadas de cobija', cuantasSon('enreda')],
   ['al tope', cuantasSon('alTope')],
+  ['a prisa', cuantasSon('aPrisa')],
 ].filter(([, cuantas]) => cuantas > 0)
 console.log(
   especiales.length
@@ -273,8 +313,19 @@ console.log('   ─────   ─────   ───────   ─�
 
 let imposibles = 0
 let apretados = 0
-/** Huecos marcados «al tope» que en realidad se pasan con menos. */
+/** Huecos marcados «al tope» o «a prisa» que en realidad no lo piden. */
 let flojos = 0
+
+/**
+ * Hasta cuándo puede salir un hueco marcado «a prisa» y seguir
+ * llamándose así.
+ *
+ * Dos segundos y medio es aproximadamente lo que tarda una vuelta de
+ * la caminata en una almohada de las del capítulo, que es la unidad
+ * con la que se juega: o salís en la pasada en que llegaste, o ya no
+ * llegás.
+ */
+const MS_DE_PRISA = 2500
 
 /**
  * Un tramo de impulso no se salta: se cae en él y lanza solo, siempre
@@ -339,6 +390,17 @@ for (let i = 0; i < nivel.plataformas.length - 1; i += 1) {
     // comprobar es que de verdad pida el tope y no se pase a medias.
     nota = r.cargaMinima >= 0.9 ? '  ← al tope, a propósito' : '  ⚠ NO PIDE EL TOPE'
     if (r.cargaMinima < 0.9) flojos += 1
+  } else if (hasta.aPrisa) {
+    // Y este es el de Nico: se pasa saliendo pronto y no se pasa
+    // dejando que la almohada se hunda. Lo que hay que comprobar es
+    // que de verdad se cierre a tiempo, porque un «a prisa» que se
+    // pasa igual a los cuatro segundos es una plataforma normal con
+    // un rótulo puesto.
+    const aTiempo = r.esperaMaxima <= MS_DE_PRISA
+    nota = aTiempo
+      ? `  ← a prisa, a propósito (hasta ${(r.esperaMaxima / 1000).toFixed(1)}s)`
+      : `  ⚠ NO PIDE PRISA (se pasa hasta a los ${(r.esperaMaxima / 1000).toFixed(1)}s)`
+    if (!aTiempo) flojos += 1
   } else if (porcentaje < 4) {
     nota = '  ← apretadísimo'
     apretados += 1
@@ -353,7 +415,15 @@ for (let i = 0; i < nivel.plataformas.length - 1; i += 1) {
 
   // Un rótulo de dos letras para saber de qué se habla sin contar
   // plataformas a mano en `luna.ts`.
-  const que = hasta.rebote ? ' pel' : hasta.resbala ? ' cin' : hasta.hito ? ' ★' : ''
+  const que = hasta.rebote
+    ? ' pel'
+    : hasta.resbala
+      ? ' cin'
+      : hasta.enreda
+        ? ' cob'
+        : hasta.hito
+          ? ' ★'
+          : ''
 
   console.log(
     `   ${String(i + 1).padStart(2)}→${String(i + 2).padStart(2)}   ${String(sube).padStart(4)}   ${porcentaje.toFixed(1).padStart(5)}%   ${rango}${que}${nota}`,
@@ -365,8 +435,8 @@ if (imposibles > 0) {
   console.log(`  ⚠ Hay ${imposibles} tramo(s) que no se pasan ni a barra llena.`)
   console.log('    Acercá esas plataformas en CAPITULOS, en src/content/luna.ts.\n')
 } else if (flojos > 0) {
-  console.log(`  ⚠ Hay ${flojos} hueco(s) marcados «al tope» que se pasan con menos barra.`)
-  console.log('    O se alejan un poco, o se les quita el alTope en src/content/luna.ts.\n')
+  console.log(`  ⚠ Hay ${flojos} hueco(s) marcados que no piden lo que dicen pedir.`)
+  console.log('    O se alejan un poco, o se les quita la marca en src/content/luna.ts.\n')
 } else if (apretados > 0) {
   console.log(`  ✓ Se puede pasar entero, pero ${apretados} tramo(s) salen apretadísimos.`)
   console.log('    Está bien si es a propósito; si no, acercalos un poco.\n')
@@ -376,6 +446,115 @@ if (imposibles > 0) {
 
 
 /* ── 3. Jugarlo de punta a punta ───────────────────────────────── */
+
+/* ── La puntería, que usan los dos robots ──────────────────────
+   Estaban adentro de `jugarNivel` y el trepador de la sección 4
+   tenía su propia copia, más tonta. Cada vez que el juego aprendía
+   algo —la cinta que arrastra, la almohada que se hunde, la cobija
+   que frena la barra— había que acordarse de enseñárselo a las dos
+   copias, y las tres veces me olvidé de la segunda. La prueba de los
+   hitos decía «no se pudo probar» y lo que no se podía era ella. */
+
+const grados = (g) => (g * Math.PI) / 180
+
+/**
+ * Desde dónde va a salir de verdad, contando lo que la caja forrada
+ * de cinta la va a arrastrar mientras carga.
+ *
+ * Sin esto el robot apuntaba desde donde estaba al empezar a cargar
+ * y soltaba desde treinta píxeles más allá, así que fallaba todos
+ * los saltos que salen de una caja con cinta y se quedaba dando
+ * vueltas sin caerse ni llegar. Una jugadora aprende esto al
+ * segundo intento; el robot tiene que saberlo para que lo que mida
+ * sea el nivel y no su propia ingenuidad.
+ */
+function dondeSaldra(escena, donde, carga) {
+  if (!donde?.resbala) return escena.x
+  const medio = donde.x + donde.ancho / 2
+  const lado = Math.max(-1, Math.min(1, (escena.x - medio) / (donde.ancho / 2)))
+  // Entre la inclinación que la caja tiene ahora y la que va a tener
+  // cuando termine de irse hacia ella. Tomar solo la segunda
+  // sobrestimaba el arrastre, porque la caja tarda su cuarto de
+  // segundo en asentarse y en una carga corta ni llega.
+  const ahora = escena.inclinacion?.[donde.indice] ?? 0
+  const media = (ahora + lado) / 2
+  return escena.x + CINTA.arrastre * media * ((msDeCargaEn(donde) * carga) / 1000)
+}
+
+/**
+ * Y desde qué altura va a salir de verdad, contando lo que la
+ * almohada se va a hundir mientras carga.
+ *
+ * La misma trampa que la cinta de Ovi, en el otro eje: el robot
+ * apuntaba desde la altura que tenía al empezar a cargar y soltaba
+ * veinte píxeles más abajo, así que fallaba justo los saltos que el
+ * capítulo entero está pidiendo y lo que quedaba medido era su
+ * ingenuidad, no el nivel. Una jugadora aprende esto en el segundo
+ * salto.
+ */
+function alturaDeSalida(escena, donde, carga) {
+  if (!donde?.hunde) return escena.y
+  const ahora = escena.hundido?.[donde.indice] ?? 0
+  // Con `msDeCargaEn` y no con `SALTO.msDeCarga`: encima de una
+  // cobija la misma barra cuesta más tiempo, y ese tiempo de más lo
+  // paga la almohada hundiéndose. Es justo lo que la cobija hace.
+  const alSoltar = Math.min(1, ahora + (msDeCargaEn(donde) * carga) / ALMOHADAS.msParaElFondo)
+  return escena.y + (alSoltar - ahora) * ALMOHADAS.seHunde
+}
+
+/**
+ * Dónde caería con esta carga, o null si ni siquiera sube lo
+ * suficiente. Devuelve la x para poder elegir la carga que cae más
+ * al centro y no la primera que entra por los pelos.
+ */
+function puntoDeCaida(escena, destino, carga, donde) {
+  const v = SALTO.impulsoMinimo + (SALTO.impulsoMaximo - SALTO.impulsoMinimo) * carga
+  const vx = Math.cos(grados(SALTO.angulo)) * v * escena.mirando
+  const vy = -Math.sin(grados(SALTO.angulo)) * v
+  const g = SALTO.gravedad
+  const dy = destino.y - alturaDeSalida(escena, donde, carga)
+  const salida = dondeSaldra(escena, donde, carga)
+
+  // Que suba de sobra y no de milagro. Justo en el punto más alto
+  // del salto la tortuga va parada en el aire, y el motor solo la
+  // deja aterrizar mientras baja: apuntar al ápice es fallar.
+  const alturaMaxima = (vy * vy) / (2 * g)
+  if (alturaMaxima < -dy + 15) return null
+
+  // y(t) = vy·t + g·t²/2 = dy, quedándose con la raíz de la bajada.
+  const disc = vy * vy + 2 * g * dy
+  if (disc < 0) return null
+  const t = (-vy + Math.sqrt(disc)) / g
+  return salida + vx * t
+}
+
+/**
+ * La carga que cae más al centro del destino, o null si ninguna
+ * entra. Antes se cogía la primera que entraba, y con el suelo
+ * resbalando eso quería decir apuntar al borde de la plataforma con
+ * una cuenta aproximada: fallaba y se quedaba dando vueltas.
+ *
+ * El margen de 12 px es porque la física va por pasos y el robot
+ * calcula con fórmula: apuntar al borde justo es pedirle una
+ * puntería que no le va a dar.
+ */
+function mejorCarga(escena, destino, donde) {
+  const centro = destino.x + destino.ancho / 2
+  let mejor = null
+  let masCerca = Infinity
+  for (let c = 0; c <= 40; c += 1) {
+    const carga = c / 40
+    const x = puntoDeCaida(escena, destino, carga, donde)
+    if (x === null) continue
+    if (x <= destino.x + 12 || x >= destino.x + destino.ancho - 12) continue
+    const lejos = Math.abs(x - centro)
+    if (lejos < masCerca) {
+      masCerca = lejos
+      mejor = carga
+    }
+  }
+  return mejor
+}
 
 /**
  * Un robot que juega el nivel entero.
@@ -392,92 +571,25 @@ if (imposibles > 0) {
  * donde tienen que devolver.
  */
 function jugarNivel() {
-  const grados = (g) => (g * Math.PI) / 180
   const { motor, frame, eventos, ver } = banco(nivel)
-
-  /**
-   * Desde dónde va a salir de verdad, contando lo que la caja forrada
-   * de cinta la va a arrastrar mientras carga.
-   *
-   * Sin esto el robot apuntaba desde donde estaba al empezar a cargar
-   * y soltaba desde treinta píxeles más allá, así que fallaba todos
-   * los saltos que salen de una caja con cinta y se quedaba dando
-   * vueltas sin caerse ni llegar. Una jugadora aprende esto al
-   * segundo intento; el robot tiene que saberlo para que lo que mida
-   * sea el nivel y no su propia ingenuidad.
-   */
-  function dondeSaldra(escena, donde, carga) {
-    if (!donde?.resbala) return escena.x
-    const medio = donde.x + donde.ancho / 2
-    const lado = Math.max(-1, Math.min(1, (escena.x - medio) / (donde.ancho / 2)))
-    // Entre la inclinación que la caja tiene ahora y la que va a tener
-    // cuando termine de irse hacia ella. Tomar solo la segunda
-    // sobrestimaba el arrastre, porque la caja tarda su cuarto de
-    // segundo en asentarse y en una carga corta ni llega.
-    const ahora = escena.inclinacion?.[donde.indice] ?? 0
-    const media = (ahora + lado) / 2
-    return escena.x + CINTA.arrastre * media * ((SALTO.msDeCarga * carga) / 1000)
-  }
-
-  /**
-   * Dónde caería con esta carga, o null si ni siquiera sube lo
-   * suficiente. Devuelve la x para poder elegir la carga que cae más
-   * al centro y no la primera que entra por los pelos.
-   */
-  function dondeCae(escena, destino, carga, donde) {
-    const v = SALTO.impulsoMinimo + (SALTO.impulsoMaximo - SALTO.impulsoMinimo) * carga
-    const vx = Math.cos(grados(SALTO.angulo)) * v * escena.mirando
-    const vy = -Math.sin(grados(SALTO.angulo)) * v
-    const g = SALTO.gravedad
-    const dy = destino.y - escena.y
-    const salida = dondeSaldra(escena, donde, carga)
-
-    // Que suba de sobra y no de milagro. Justo en el punto más alto
-    // del salto la tortuga va parada en el aire, y el motor solo la
-    // deja aterrizar mientras baja: apuntar al ápice es fallar.
-    const alturaMaxima = (vy * vy) / (2 * g)
-    if (alturaMaxima < -dy + 15) return null
-
-    // y(t) = vy·t + g·t²/2 = dy, quedándose con la raíz de la bajada.
-    const disc = vy * vy + 2 * g * dy
-    if (disc < 0) return null
-    const t = (-vy + Math.sqrt(disc)) / g
-    return salida + vx * t
-  }
-
-  /**
-   * La carga que cae más al centro del destino, o null si ninguna
-   * entra. Antes se cogía la primera que entraba, y con el suelo
-   * resbalando eso quería decir apuntar al borde de la plataforma con
-   * una cuenta aproximada: fallaba y se quedaba dando vueltas.
-   *
-   * El margen de 12 px es porque la física va por pasos y el robot
-   * calcula con fórmula: apuntar al borde justo es pedirle una
-   * puntería que no le va a dar.
-   */
-  function mejorCarga(escena, destino, donde) {
-    const centro = destino.x + destino.ancho / 2
-    let mejor = null
-    let masCerca = Infinity
-    for (let c = 0; c <= 40; c += 1) {
-      const carga = c / 40
-      const x = dondeCae(escena, destino, carga, donde)
-      if (x === null) continue
-      if (x <= destino.x + 12 || x >= destino.x + destino.ancho - 12) continue
-      const lejos = Math.abs(x - centro)
-      if (lejos < masCerca) {
-        masCerca = lejos
-        mejor = carga
-      }
-    }
-    return mejor
-  }
 
   let objetivo = 1
   let frames = 0
   let cargando = false
   let framesCargando = 0
   let cargaElegida = 0
+  /**
+   * Desde qué plataforma está cargando ahora mismo.
+   *
+   * Hace falta porque cuánto hay que apretar para una barra dada
+   * depende de dónde está parada: en una cobija enredada la barra
+   * sube más lento. Sin esto el robot soltaba a los
+   * `SALTO.msDeCarga × carga` creyendo que tenía la barra que había
+   * pedido, salía con el 60 % de ella, fallaba todos los saltos que
+   * salen de una cobija y se quedaba dando vueltas sin caerse ni
+   * llegar. El arnés mintiendo antes que el juego, van siete.
+   */
+  let saliendoDe = null
 
   /**
    * Cuántos frames pasó parado en cada plataforma. Cuando el robot no
@@ -511,11 +623,12 @@ function jugarNivel() {
         cargaElegida = carga
         cargando = true
         framesCargando = 0
+        saliendoDe = donde
         motor.presionar()
       }
     } else if (cargando) {
       framesCargando += 1
-      if (framesCargando * FRAME >= SALTO.msDeCarga * cargaElegida) {
+      if (framesCargando * FRAME >= msDeCargaEn(saliendoDe) * cargaElegida) {
         motor.soltar()
         cargando = false
       }
@@ -578,7 +691,6 @@ console.log('')
  * lo único que no se puede ver en una foto.
  */
 function probarCaida() {
-  const grados = (g) => (g * Math.PI) / 180
   const { motor, frame, eventos } = banco(nivel)
 
   let hitosVistos = 0
@@ -586,6 +698,8 @@ function probarCaida() {
   let framesCargando = 0
   let cargaElegida = 0
   let ultimoHito = null
+  /** Desde qué plataforma carga, que decide cuánto tarda la barra. */
+  let saliendoDe = null
 
   for (let f = 0; f < 60 * 60 * 4; f += 1) {
     const e = frame()
@@ -625,28 +739,29 @@ function probarCaida() {
       const objetivo = donde.indice + 1
       if (objetivo >= nivel.plataformas.length) break
       const destino = nivel.plataformas[objetivo]
-      for (let c = 0; c <= 40; c += 1) {
-        const carga = c / 40
-        const v = SALTO.impulsoMinimo + (SALTO.impulsoMaximo - SALTO.impulsoMinimo) * carga
-        const vx = Math.cos(grados(SALTO.angulo)) * v * e.mirando
-        const vy = -Math.sin(grados(SALTO.angulo)) * v
-        const g = SALTO.gravedad
-        const dy = destino.y - e.y
-        if ((vy * vy) / (2 * g) < -dy + 15) continue
-        const disc = vy * vy + 2 * g * dy
-        if (disc < 0) continue
-        const x = e.x + vx * ((-vy + Math.sqrt(disc)) / g)
-        if (x > destino.x + 12 && x < destino.x + destino.ancho - 12) {
-          cargaElegida = carga
-          cargando = true
-          framesCargando = 0
-          motor.presionar()
-          break
-        }
+      // La misma puntería del robot de la sección 3, no una copia más
+      // tonta. Tenía la suya, con la cuenta de la balística escrita a
+      // mano y sin lo que la cinta arrastra ni lo que la almohada se
+      // hunde. Servía mientras los dos primeros hitos de Nico
+      // estuvieran a nueve plataformas del suelo; en cuanto el
+      // capítulo pasó a guardar tres veces y le entraron cobijas, este
+      // se quedó dando vueltas y la prueba se declaró imposible de
+      // correr. Por eso ahora la cuenta es una sola.
+      const carga = mejorCarga(e, destino, donde)
+      if (carga !== null) {
+        cargaElegida = carga
+        cargando = true
+        framesCargando = 0
+        saliendoDe = donde
+        motor.presionar()
       }
     } else if (cargando) {
       framesCargando += 1
-      if (framesCargando * FRAME >= SALTO.msDeCarga * cargaElegida) {
+      // Con `msDeCargaEn`, por lo mismo que el robot de arriba: en una
+      // cobija la barra tarda más, y soltando a destiempo este trepador
+      // no llegaba nunca a pisar dos hitos en el capítulo de Nico. La
+      // prueba decía «no se pudo probar» y lo que no se podía era esto.
+      if (framesCargando * FRAME >= msDeCargaEn(saliendoDe) * cargaElegida) {
         motor.soltar()
         cargando = false
       }
@@ -779,10 +894,16 @@ function mundoQueSeBorra() {
   })
 }
 
-/** Salta desde donde esté con la carga que se le diga. */
-function saltarCon(motor, frame, carga) {
+/**
+ * Salta desde donde esté con la carga que se le diga.
+ *
+ * `msDeCarga` es cuánto tarda la barra en llenarse **en el sitio desde
+ * donde sale**: en una cobija enredada tarda más. Por omisión, lo
+ * normal.
+ */
+function saltarCon(motor, frame, carga, msDeCarga = SALTO.msDeCarga) {
   motor.presionar()
-  for (let i = 0; i < Math.round((SALTO.msDeCarga * carga) / FRAME); i += 1) frame()
+  for (let i = 0; i < Math.round((msDeCarga * carga) / FRAME); i += 1) frame()
   motor.soltar()
 }
 
@@ -1107,6 +1228,10 @@ function mundoDeCajas({ conEstrella = false } = {}) {
     ...capitulo,
     seDesvanece: false,
     cede: true,
+    // Estas pruebas son del cuarto de Ovi. Aunque se corran con el
+    // capítulo de Nico puesto, aquí no se hunde nada: si no, lo que
+    // quedaría medido sería la almohada y no la caja.
+    seHunde: false,
     plataformas: [
       { x: 30, ancho: 140, altura: 0, hito: true },
       { x: 30, ancho: 120, altura: 80, hito: conEstrella },
@@ -1262,6 +1387,10 @@ function esperarA(frame, quieroQue, tope = 900) {
     ...capitulo,
     seDesvanece: false,
     cede: true,
+    // Estas pruebas son del cuarto de Ovi. Aunque se corran con el
+    // capítulo de Nico puesto, aquí no se hunde nada: si no, lo que
+    // quedaría medido sería la almohada y no la caja.
+    seHunde: false,
     plataformas: [
       { x: 30, ancho: 140, altura: 0, hito: true },
       { x: 30, ancho: 120, altura: 80 },
@@ -1310,6 +1439,10 @@ function mundoDeCinta(conCinta) {
     ...capitulo,
     seDesvanece: false,
     cede: true,
+    // Estas pruebas son del cuarto de Ovi. Aunque se corran con el
+    // capítulo de Nico puesto, aquí no se hunde nada: si no, lo que
+    // quedaría medido sería la almohada y no la caja.
+    seHunde: false,
     plataformas: [
       { x: 30, ancho: 140, altura: 0, hito: true },
       { x: 30, ancho: 120, altura: 80, resbala: conCinta },
@@ -1398,6 +1531,10 @@ function mundoDePeluches(ancho = 340) {
     ...capitulo,
     seDesvanece: false,
     cede: true,
+    // Estas pruebas son del cuarto de Ovi. Aunque se corran con el
+    // capítulo de Nico puesto, aquí no se hunde nada: si no, lo que
+    // quedaría medido sería la almohada y no la caja.
+    seHunde: false,
     plataformas: [
       { x: 30, ancho: 140, altura: 0, hito: true },
       { x: (MUNDO.ancho - ancho) / 2, ancho, altura: 90, rebote: true },
@@ -1521,6 +1658,451 @@ function mundoDePeluches(ancho = 340) {
 }
 console.log('')
 
+/* ── 9d. Las almohadas que se hunden ───────────────────────────
+   La traba del capítulo de Nico, y la única de las tres que ataca
+   la mecánica central: la barra. A ojo se ve que la almohada baja,
+   pero eso no es lo que importa. Lo que importa es que **esperar
+   cueste altura de verdad**, que el precio se pueda pagar (no que
+   te deje encerrada) y que la estrella siga siendo el sitio donde
+   se respira. Las tres cosas pasan despacio y en pantalla no se
+   juzgan: se miden. */
+
+console.log('  Las almohadas que se hunden')
+
+/** Una almohada sola y ancha, para pararse encima y mirarla bajar. */
+function mundoDeAlmohadas({ conEstrella = false } = {}) {
+  const suyo = construirNivel({
+    ...capitulo,
+    seDesvanece: false,
+    cede: false,
+    seHunde: true,
+    plataformas: [
+      { x: 30, ancho: 140, altura: 0, hito: true },
+      { x: 30, ancho: 150, altura: 80, hito: conEstrella },
+    ],
+  })
+  const almohada = suyo.plataformas[1]
+  suyo.salida = { x: almohada.x + almohada.ancho / 2, y: almohada.y }
+  return suyo
+}
+
+{
+  // (a) Cuánto baja y en cuánto tiempo. Se mira la altura de la
+  // tortuga contra la línea de la almohada, que es lo que el salto
+  // siguiente va a pagar.
+  const suyo = mundoDeAlmohadas()
+  const almohada = suyo.plataformas[1]
+  const { motor, frame } = banco(suyo)
+
+  const alSegundo = []
+  for (let s = 1; s <= 5; s += 1) {
+    for (let i = 0; i < 60; i += 1) frame()
+    alSegundo.push(frame().y - almohada.y)
+  }
+  motor.detener()
+
+  console.log(
+    `   parada encima baja ${alSegundo.map((y) => y.toFixed(0)).join(' → ')} px al pasar los segundos`,
+  )
+  const fondo = alSegundo[alSegundo.length - 1]
+  console.log(
+    alSegundo[0] < ALMOHADAS.seHunde * 0.4 && fondo > ALMOHADAS.seHunde - 1.5
+      ? `   ✓ se hunde despacio y para en el fondo, a ${fondo.toFixed(0)} px de la línea`
+      : `   ⚠ o se hunde de golpe (${alSegundo[0].toFixed(0)} px al primer segundo) o no llega al fondo (${fondo.toFixed(0)} de ${ALMOHADAS.seHunde})`,
+  )
+}
+
+{
+  // (b) Y eso tiene que verse en el salto: la misma barra llena,
+  // saliendo en seguida y saliendo tarde. Es la traba entera.
+  const alturaTras = (esperarSegundos) => {
+    const suyo = mundoDeAlmohadas()
+    const almohada = suyo.plataformas[1]
+    const { motor, frame, ver } = banco(suyo)
+
+    for (let i = 0; i < Math.round(esperarSegundos * 60); i += 1) frame()
+
+    saltarCon(motor, frame, 1)
+    let masAlto = ver().y
+    for (let i = 0; i < 120; i += 1) masAlto = Math.min(masAlto, frame().y)
+    motor.detener()
+
+    // Contado desde la línea de la almohada entera, que es lo que
+    // decide si alcanza la plataforma de arriba o se queda corta.
+    return almohada.y - masAlto
+  }
+
+  const enSeguida = alturaTras(0)
+  const tarde = alturaTras(5)
+  const perdido = enSeguida - tarde
+
+  console.log(
+    `   a barra llena sube ${enSeguida.toFixed(0)} px saliendo en seguida y ${tarde.toFixed(0)} px tras cinco segundos encima`,
+  )
+  console.log(
+    perdido > 20
+      ? `   ✓ demorarse cuesta ${perdido.toFixed(0)} px de altura, que es la traba del capítulo`
+      : `   ⚠ demorarse cuesta ${perdido.toFixed(1)} px: la traba no se siente`,
+  )
+
+  // Y lo que cuesta la barra por su cuenta, que es la otra mitad de
+  // la decisión: cargar entero paga 900 ms de hundimiento.
+  const conBarra = (carga) => {
+    const suyo = mundoDeAlmohadas()
+    const almohada = suyo.plataformas[1]
+    const { motor, frame, ver } = banco(suyo)
+    frame()
+    saltarCon(motor, frame, carga)
+    let masAlto = ver().y
+    for (let i = 0; i < 120; i += 1) masAlto = Math.min(masAlto, frame().y)
+    motor.detener()
+    return almohada.y - masAlto
+  }
+  console.log(
+    `   la barra sola: media sube ${conBarra(0.5).toFixed(0)} px y llena ${conBarra(1).toFixed(0)}, ya descontado lo que se hunde cargando`,
+  )
+}
+
+{
+  // (c) Que el precio se pueda pagar. Una almohada en el fondo no
+  // puede dejarla encerrada: si desde ahí ya no se llega a ninguna
+  // parte, no es una traba, es una trampa con espera. Se mide sobre
+  // los tramos del capítulo de verdad: cuántos se siguen pasando
+  // desde la almohada del todo hundida.
+  const desdeElFondo = []
+  for (let i = 0; i < nivel.plataformas.length - 1; i += 1) {
+    const desde = nivel.plataformas[i]
+    const hasta = nivel.plataformas[i + 1]
+    if (!desde.hunde || desde.impulso) continue
+
+    const nivelTramo = nivelDeDos(desde, hasta)
+    let logrado = false
+
+    // Cinco segundos encima antes de empezar a probar: en el fondo.
+    const recorrido = Math.max(1, desde.ancho - TORTUGA.ancho)
+    const framesDelCiclo = Math.ceil(((2 * recorrido) / TORTUGA.velocidad) * 60)
+    const paso = Math.max(4, Math.round(framesDelCiclo / 20))
+
+    for (let espera = 300; espera < 300 + framesDelCiclo && !logrado; espera += paso) {
+      for (let c = 0; c <= 10 && !logrado; c += 1) {
+        const { motor, frame, eventos } = banco(nivelTramo)
+        for (let f = 0; f < espera; f += 1) frame()
+        saltarCon(motor, frame, c / 10, msDeCargaEn(desde))
+        for (let f = 0; f < 240; f += 1) {
+          const e = frame()
+          if (e.cayendo) break
+          if (hasta.rebote && eventos.includes('rebote')) {
+            logrado = true
+            break
+          }
+          if (f > 3 && e.enSuelo) {
+            frame()
+            if (estaEncima(frame(), hasta, 1)) logrado = true
+            break
+          }
+        }
+        motor.detener()
+      }
+    }
+
+    desdeElFondo.push({ indice: i, logrado, aPrisa: hasta.aPrisa === true })
+  }
+
+  if (desdeElFondo.length === 0) {
+    console.log('   · este capítulo no tiene almohadas')
+  } else {
+    const encerrada = desdeElFondo.filter((t) => !t.logrado && !t.aPrisa)
+    const cerrados = desdeElFondo.filter((t) => !t.logrado && t.aPrisa)
+    console.log(
+      `   de ${desdeElFondo.length} tramos que salen de una almohada, ${desdeElFondo.length - encerrada.length - cerrados.length} se siguen pasando desde el fondo`,
+    )
+    console.log(
+      encerrada.length === 0
+        ? `   ✓ ninguno la deja encerrada: los ${cerrados.length} que se cierran son los marcados «a prisa»`
+        : `   ⚠ ${encerrada.length} tramo(s) sin marcar se vuelven imposibles desde el fondo: ${encerrada.map((t) => `${t.indice + 1}→${t.indice + 2}`).join(', ')}`,
+    )
+  }
+}
+
+{
+  // (d) La estrella no se hunde nunca, aunque el capítulo se hunda.
+  // Es lo mismo que la caja de la estrella en el cuarto de Ovi, y por
+  // lo mismo: tiene que haber un sitio donde el suelo se quede quieto
+  // mientras una piensa.
+  const suyo = mundoDeAlmohadas({ conEstrella: true })
+  const estrella = suyo.plataformas[1]
+  const { motor, frame } = banco(suyo)
+
+  let e = null
+  for (let i = 0; i < 300; i += 1) e = frame()
+  motor.detener()
+
+  console.log(
+    estrella.hunde === false && e && Math.abs(e.y - estrella.y) < 0.5
+      ? '   ✓ la estrella no se hunde ni tras cinco segundos parada encima'
+      : `   ⚠ la estrella se hunde (${e ? (e.y - estrella.y).toFixed(1) : '?'} px)`,
+  )
+}
+
+{
+  // (e) Al irse, la almohada vuelve a inflarse sola; y al caerse y
+  // volver al hito, están todas enteras. Reaparecer sobre una hundida
+  // de antes de la caída es empezar con la altura ya gastada.
+  //
+  // La almohada va **al lado** del hito y no encima, y eso no es un
+  // detalle: la primera versión de esta prueba la ponía encima, así
+  // que el salto de irse volvía a caer en la misma almohada y la
+  // hundía de nuevo antes de que nadie mirara. Decía que el motor no
+  // la inflaba y el motor la inflaba perfectamente. El arnés mintiendo
+  // antes que el juego, van cinco.
+  //
+  // Y van seis: **hacia arriba y no hacia el lado**. Saltar a una
+  // plataforma de al lado, aunque estuviera a la misma altura,
+  // contaba como caerse: la caída se mide contra el sitio donde
+  // reapareció, que era la almohada sin hundir, y para entonces
+  // estaba 34 px más abajo. Que es justamente el aviso de la prueba
+  // (f), aquí abajo, en el nivel de verdad.
+  const nivelVecina = construirNivel({
+    ...capitulo,
+    seDesvanece: false,
+    cede: false,
+    seHunde: true,
+    plataformas: [
+      { x: 30, ancho: 100, altura: 0 },
+      { x: 180, ancho: 150, altura: 0 },
+      // Un techo de pared a pared: lo único que se le pide es que sea
+      // imposible fallarlo, para que lo que quede medido sea la
+      // almohada quedándose sola y no la puntería.
+      { x: 0, ancho: 360, altura: 90, hito: true },
+    ],
+  })
+  const almohada = nivelVecina.plataformas[1]
+  nivelVecina.salida = { x: almohada.x + almohada.ancho / 2, y: almohada.y }
+
+  const { motor, frame, ver } = banco(nivelVecina)
+
+  const hundida = esperarA(frame, (e) => (e.hundido?.[1] ?? 0) > 0.9, 400)
+  saltarCon(motor, frame, 1)
+  esperarA(frame, (e) => e.enSuelo && e.y < almohada.y - 40, 300)
+
+  let inflada = false
+  for (let i = 0; i < Math.ceil(ALMOHADAS.msParaInflarse / FRAME) + 120; i += 1) {
+    const e = frame()
+    if ((e.hundido?.[1] ?? 0) < 0.02) inflada = true
+  }
+  motor.detener()
+
+  console.log(
+    hundida && inflada
+      ? '   ✓ en cuanto se va, la almohada vuelve a inflarse sola'
+      : `   ⚠ la almohada se queda hundida (le quedó ${(ver()?.hundido?.[1] ?? 0).toFixed(2)})`,
+  )
+
+  // Y ahora la caída, con saltitos flojos desde la almohada de arriba.
+  const nivelCaida = mundoDeAlmohadas()
+  const caida = banco(nivelCaida)
+  esperarA(caida.frame, (x) => (x.hundido?.[1] ?? 0) > 0.5, 400)
+
+  let ultima = null
+  for (let i = 0; i < 900 && !caida.eventos.includes('reaparicion'); i += 1) {
+    ultima = caida.frame()
+    if (ultima.enSuelo && !ultima.cargando && !ultima.cayendo) {
+      saltarCon(caida.motor, caida.frame, 0)
+    }
+  }
+  caida.motor.detener()
+
+  const volvio = caida.eventos.includes('reaparicion')
+  const enteras = volvio && ultima.hundido.every((h) => h < 0.02)
+  console.log(
+    enteras
+      ? '   ✓ al volver de una caída, las almohadas están otra vez enteras'
+      : volvio
+        ? `   ⚠ volvió con una almohada hundida (${ultima.hundido.map((h) => h.toFixed(2)).join(', ')})`
+        : '   ⚠ no llegó a caerse, la prueba no dice nada',
+  )
+}
+
+{
+  // (f) Y la regla que salió de escribir la prueba de arriba, que es
+  // de las que no se ven jugando hasta el día que pasan.
+  //
+  // Caerse es bajar del último hito más de `margenBajoElLazo`. Una
+  // almohada hundida baja 34 px sola, sin que nadie se equivoque en
+  // nada. Así que una almohada que esté a menos de 34 + 24 de su
+  // estrella deja a la tortuga por debajo del umbral **estando
+  // parada encima**, y el primer salto que dé desde ahí se cuenta
+  // como caída aunque llegue perfecto a la plataforma de arriba.
+  //
+  // No es un caso raro de laboratorio: pasó a la primera, escribiendo
+  // el mundo de dos plataformas de la prueba de al lado.
+  const seguro = ALMOHADAS.seHunde + CAIDA.margenBajoElLazo
+  const cerca = []
+
+  let estrella = null
+  for (const p of nivel.plataformas) {
+    if (p.hito) {
+      estrella = p
+      continue
+    }
+    if (!p.hunde || !estrella) continue
+    const sobreLaEstrella = estrella.y - p.y
+    if (sobreLaEstrella < seguro) {
+      cerca.push({ indice: p.indice, sobreLaEstrella })
+    }
+  }
+
+  console.log(
+    cerca.length === 0
+      ? `   ✓ ninguna almohada está a menos de ${seguro} px de su estrella, así que hundirse nunca cuenta como caerse`
+      : `   ⚠ ${cerca.length} almohada(s) demasiado cerca de su estrella (hace falta ${seguro} px): ${cerca
+          .map((c) => `${c.indice + 1} a ${Math.round(c.sobreLaEstrella)}`)
+          .join(', ')}`,
+  )
+}
+console.log('')
+
+/* ── 9e. Las cobijas enredadas ─────────────────────────────────
+   La segunda traba del capítulo de Nico, y la única de todo el juego
+   que le mete mano a la barra en vez de al suelo. La almohada cobra
+   por esperar; la cobija cobra por apurarse.
+
+   Nada de esto se juzga mirando: la barra sube igual de lisa en los
+   dos sitios, solo que más despacio en uno. Lo único que se ve es que
+   el dedo lleva más rato apretado, y eso a ojo no se mide. */
+
+console.log('  Las cobijas enredadas')
+
+/** Una cobija sola y ancha, o la misma almohada sin enredar. */
+function mundoDeCobijas({ enreda = true } = {}) {
+  const suyo = construirNivel({
+    ...capitulo,
+    seDesvanece: false,
+    cede: false,
+    seHunde: true,
+    plataformas: [
+      { x: 30, ancho: 140, altura: 0, hito: true },
+      { x: 30, ancho: 150, altura: 80, enreda },
+    ],
+  })
+  const encima = suyo.plataformas[1]
+  suyo.salida = { x: encima.x + encima.ancho / 2, y: encima.y }
+  return suyo
+}
+
+{
+  // (a) Lo primero y lo único que hace: la barra sube más lento. Se
+  // aprieta el mismo tiempo en las dos y se mira dónde quedó.
+  const cargaTras = (ms, enreda) => {
+    const { motor, frame, ver } = banco(mundoDeCobijas({ enreda }))
+    frame()
+    motor.presionar()
+    for (let i = 0; i < Math.round(ms / FRAME); i += 1) frame()
+    const donde = ver().carga
+    motor.detener()
+    return donde
+  }
+
+  const normal = cargaTras(SALTO.msDeCarga, false)
+  const cobija = cargaTras(SALTO.msDeCarga, true)
+  console.log(
+    `   apretando ${SALTO.msDeCarga} ms la barra llega al ${(normal * 100).toFixed(0)} % en una almohada y al ${(cobija * 100).toFixed(0)} % en una cobija`,
+  )
+  console.log(
+    normal > 0.98 && cobija < 0.75
+      ? '   ✓ encima de la cobija la barra se arrastra, y solo encima de la cobija'
+      : `   ⚠ la cobija no frena la barra como debe (${(cobija * 100).toFixed(0)} % contra ${(normal * 100).toFixed(0)} %)`,
+  )
+}
+
+{
+  // (b) El precio tiene que poder pagarse. Si el tope no llega nunca
+  // sin desmayarse, la cobija deja de ser una decisión y pasa a ser
+  // una prohibición: sería una plataforma desde la que no se puede
+  // dar un salto entero, y eso no es una traba, es una pared.
+  //
+  // Se mide de verdad, apretando hasta que la barra se llene o hasta
+  // que se desmaye, lo que pase primero.
+  const { motor, frame, ver, eventos } = banco(mundoDeCobijas())
+  frame()
+  motor.presionar()
+  let ms = 0
+  for (let i = 0; i < 300 && ver().carga < 0.999 && !eventos.includes('agotada'); i += 1) {
+    frame()
+    ms += FRAME
+  }
+  const llena = ver().carga >= 0.999
+  const desmayada = eventos.includes('agotada')
+  motor.detener()
+
+  const margen = CANSANCIO.msDeAguante - COBIJAS.msDeCarga
+  const margenNormal = CANSANCIO.msDeAguante - SALTO.msDeCarga
+  console.log(
+    `   el tope llega a los ${Math.round(ms)} ms y el desmayo a los ${CANSANCIO.msDeAguante}: quedan ${margen} ms de aguante contra los ${margenNormal} de siempre`,
+  )
+  console.log(
+    llena && !desmayada && margen > 0 && margen <= margenNormal / 2
+      ? '   ✓ el salto entero desde una cobija se puede pagar, y cuesta la mitad del aguante o más'
+      : !llena || desmayada
+        ? '   ⚠ el tope no llega desde una cobija: eso no es una traba, es una pared'
+        : `   ⚠ la cobija sale barata: deja ${margen} ms de los ${margenNormal} normales`,
+  )
+
+  // Y el aviso rojo, que es lo que la hace justa: empieza a los
+  // msDeAguante − msDeAviso. Desde una cobija tiene que llegar
+  // pegado al tope, no mucho después, o el castigo no se ve venir.
+  const empiezaElRojo = CANSANCIO.msDeAguante - CANSANCIO.msDeAviso
+  const desdeElTope = empiezaElRojo - COBIJAS.msDeCarga
+  console.log(
+    Math.abs(desdeElTope) < 400
+      ? `   ✓ la barra llena y el aviso rojo llegan casi juntos (${Math.round(desdeElTope)} ms de diferencia): el castigo se ve venir`
+      : `   ⚠ el aviso rojo llega ${Math.round(desdeElTope)} ms del tope, que es demasiado lejos para avisar de algo`,
+  )
+}
+
+{
+  // (c) La cobija se hunde como cualquier almohada. Si no se hundiera
+  // sería un descanso con la barra lenta, o sea lo contrario de lo
+  // que se quiso: se cobra en tiempo **y** en altura, no en una sola
+  // de las dos.
+  const suyo = mundoDeCobijas()
+  const cobija = suyo.plataformas[1]
+  const { motor, frame } = banco(suyo)
+  let e = null
+  for (let i = 0; i < 300; i += 1) e = frame()
+  motor.detener()
+  const bajo = e ? e.y - cobija.y : 0
+  console.log(
+    cobija.hunde === true && bajo > ALMOHADAS.seHunde - 1.5
+      ? `   ✓ la cobija también se hunde: ${bajo.toFixed(0)} px, igual que una almohada`
+      : `   ⚠ la cobija no se hunde (${bajo.toFixed(1)} px): sería un descanso con la barra lenta`,
+  )
+}
+
+{
+  // (d) La regla de las cobijas, comprobada en los tres capítulos:
+  // ninguna va justo antes de un hueco marcado «a prisa». El hueco
+  // pide salir en la pasada en que se llegó y la cobija pide cargar
+  // largo; juntas piden dos cosas que se contradicen. Es la misma
+  // lección que dejaron las forradas y los huecos al tope en el
+  // cuarto de Ovi, y por eso se comprueba en vez de recordarse.
+  const contraLaRegla = []
+  for (const c of CAPITULOS) {
+    const suyo = construirNivel(c)
+    for (let i = 0; i < suyo.plataformas.length - 1; i += 1) {
+      if (suyo.plataformas[i].enreda && suyo.plataformas[i + 1].aPrisa) {
+        contraLaRegla.push(`${c.id} ${i + 1}→${i + 2}`)
+      }
+    }
+  }
+  console.log(
+    contraLaRegla.length === 0
+      ? '   ✓ ninguna cobija va justo antes de un hueco a prisa, en ningún capítulo'
+      : `   ⚠ ${contraLaRegla.length} cobija(s) justo antes de un hueco a prisa: ${contraLaRegla.join(', ')}`,
+  )
+}
+console.log('')
+
 /* ── 10. Con qué capítulo se entra ─────────────────────────────
    El juego entra siempre por el primero que ella no haya ganado. Si
    esta cuenta se equivoca no se rompe nada en pantalla: simplemente
@@ -1544,16 +2126,21 @@ console.log('  Con qué capítulo entra')
       : `   ⚠ entra mal: sin ganar nada va al ${con(0)}, con uno ganado al ${con(1)}, con todos al ${con(ultimo)}`,
   )
 
-  // Y cada capítulo escrito tiene que construirse y tener sus cinco
-  // estrellas: escribir uno nuevo y olvidarse una es fácil.
+  // Y cada capítulo escrito tiene que construirse con las estrellas
+  // que le tocan: cinco el primero y una menos por capítulo, con la
+  // cima siempre marcada. Escribir uno nuevo y olvidarse una es fácil,
+  // y quitar una de más deja un trecho impasable sin que se note.
+  const lasQueTocan = (c) => 6 - c.numero
   const flojos = CAPITULOS.filter((c) => {
     const suyo = construirNivel(c)
-    return suyo.hitos.length !== 5 || suyo.cima.hito !== true
+    return suyo.hitos.length !== lasQueTocan(c) || suyo.cima.hito !== true
   })
   console.log(
     flojos.length === 0
-      ? '   ✓ los dos se construyen, con cinco estrellas cada uno y la cima marcada'
-      : `   ⚠ mal armados: ${flojos.map((c) => c.id).join(', ')}`,
+      ? `   ✓ los ${CAPITULOS.length} se construyen, con ${CAPITULOS.map(lasQueTocan).join(', ')} estrellas y la cima marcada`
+      : `   ⚠ mal armados: ${flojos
+          .map((c) => `${c.id} (${construirNivel(c).hitos.length} estrellas, tocan ${lasQueTocan(c)})`)
+          .join('; ')}`,
   )
 }
 console.log('')

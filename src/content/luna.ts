@@ -311,6 +311,115 @@ export const PELUCHES = {
 }
 
 /**
+ * Las almohadas que se hunden, que es la traba del capítulo de Nico.
+ *
+ * Una almohada no es una tabla: aguanta un rato y se va rindiendo bajo
+ * el peso. Mientras la tortuga está apoyada, la almohada baja; en
+ * cuanto despega, vuelve a inflarse sola, más despacio de lo que se
+ * hundió.
+ *
+ * Es la traba que ataca la mecánica central del juego, y por eso este
+ * capítulo va al final. Aquí **esperar cuesta**. En los otros dos, una
+ * plataforma es un sitio donde pensar: la tortuga va y viene, se la
+ * deja pasar de largo dos veces y se salta en la pasada buena, con la
+ * carga buena, sin que eso valga nada. Sobre una almohada esa
+ * comodidad tiene precio. Cada vuelta de la caminata que se deja
+ * pasar, y cada milisegundo de barra, sale de la altura del salto
+ * siguiente.
+ *
+ * De ahí la decisión que el capítulo pide todo el rato: **el salto
+ * seguro o el salto bueno**. Salir ya, desde arriba, aunque no sea el
+ * punto ideal ni la carga ideal; o esperar la pasada buena y salir
+ * desde más abajo.
+ *
+ * Y de paso da vuelta una costumbre de los otros dos capítulos: aquí
+ * una plataforma ancha es peor que una angosta, porque una ancha son
+ * más segundos de caminata para volver al punto de salida.
+ *
+ * No la traga y no la tira. Al llegar al fondo se queda ahí: el
+ * castigo es haber perdido la altura, y con eso alcanza. Una regla que
+ * castiga no puede castigar dos veces — eso ya lo enseñó la caja
+ * forrada de cinta, que empezó tirando a la tortuga y era una trampa.
+ *
+ * No se hunden todas. El suelo, las estrellas y los tramos de impulso
+ * van firmes por la misma regla que en el cuarto de Ovi: la estrella
+ * tiene que ser el sitio donde se respira.
+ */
+export const ALMOHADAS = {
+  /**
+   * Cuánto baja la almohada del todo hundida, en unidades del mundo.
+   *
+   * A barra llena la tortuga sube 161 px desde el suelo firme; desde
+   * el fondo de una almohada, 127. Esos 34 son la diferencia entre
+   * pasar un tramo de 140 y quedarse corta, que es exactamente lo que
+   * se está pidiendo decidir.
+   */
+  seHunde: 34,
+
+  /**
+   * Cuánto tarda en llegar al fondo, apoyada encima.
+   *
+   * Va **a ritmo parejo** y no frenando al final como las cajas de
+   * Ovi. La caja se asienta y se acabó; la almohada tiene que decir
+   * «seguís bajando» todo el rato, porque lo que enseña es que el
+   * tiempo cuesta.
+   *
+   * Y va lento a propósito. Con 1600 ms una vuelta de la caminata la
+   * hundía entera y ya no había nada que decidir: todos los saltos
+   * salían del fondo. Con 3600, aterrizar y salir en seguida no cuesta
+   * casi nada, dejar pasar una vuelta cuesta unos 20 px, y quedarse a
+   * mirar cuesta los 34. Llenar la barra entera, por su cuenta, cuesta
+   * 8: la barra pesa, pero lo que de verdad se paga es la espera.
+   */
+  msParaElFondo: 3600,
+
+  /**
+   * Y cuánto tarda en volver a estar entera, ya sin nadie encima.
+   *
+   * Más lento que hundirse, como cualquier cosa blanda. Y a propósito
+   * más lento todavía que eso: volver a caer en una almohada que
+   * acaba de pisar la encuentra a medio inflar, así que rebotar entre
+   * dos no sirve para descansar.
+   */
+  msParaInflarse: 2400,
+}
+
+/**
+ * Las cobijas enredadas, entre las almohadas de Nico.
+ *
+ * La almohada cobra por esperar. La cobija cobra por apurarse: parada
+ * encima de una, la barra se llena más lento —primero hay que
+ * desenredarse para tomar impulso— y el aguante antes del desmayo no
+ * cambia ni un milisegundo.
+ *
+ * Sale la cuenta: llegar al tope desde una cobija son 1500 ms de los
+ * 2100 que aguanta, y el aviso rojo empieza a los 1550. La barra llena
+ * y la barra en rojo llegan casi juntas, y eso es todo el asunto: un
+ * salto entero desde una cobija se paga mirando cómo se pone roja. Y
+ * mientras tanto la cobija se hunde igual que una almohada, así que la
+ * altura que se gana cargando se va yendo por abajo.
+ *
+ * **La regla de las cobijas:** ninguna va justo antes de un hueco
+ * marcado `aPrisa`. Ese hueco pide salir en la pasada en que se
+ * llegó, y la cobija pide cargar largo; juntas piden dos cosas que se
+ * contradicen, y eso ya no es difícil, es injusto. Es la misma
+ * lección que dejaron las cajas forradas y los huecos al tope en el
+ * cuarto de Ovi. El probador la comprueba.
+ */
+export const COBIJAS = {
+  /**
+   * Cuánto tarda la barra en llenarse parada en una cobija, en
+   * milisegundos. En cualquier otro sitio tarda `SALTO.msDeCarga`.
+   *
+   * De dónde sale: con 1200 quedarían 900 ms de aguante de los 1200
+   * de siempre, o sea la cobija sin cobija. Con 1800 quedarían 300, y
+   * el aviso rojo empezaría 250 ms antes de que la barra llegue al
+   * tope: eso ya no es una decisión, es una prohibición con adorno.
+   */
+  msDeCarga: 1500,
+}
+
+/**
  * Los tramos de impulso: al caer ahí sale disparada sola, sin dedo.
  *
  * La tortuga se centra en el tramo antes de salir, así que el salto
@@ -358,11 +467,20 @@ export const LUNA = {
  *            suelo mismo y los números crecen hacia arriba
  *   hito     si es un lazo, o sea un punto de guardado
  *   impulso  'derecha' o 'izquierda' si es un tramo de impulso
+ *   enreda   si es una cobija de las de Nico, donde la barra carga
+ *            más lento
  *
  * Para tantear: el salto más flojo avanza unos 95 y sube unos 50, el
  * más fuerte avanza unos 290 y sube unos 155. O sea que **dos
  * plataformas nunca deberían estar a más de 150 de altura una de
  * otra**, y conviene dejarlas más cerca que eso.
+ *
+ * **Cada capítulo guarda menos que el anterior.** Boo tiene cinco
+ * estrellas, Ovi cuatro y Nico tres, y en los tres la cima es una de
+ * ellas. No es un número suelto: la estrella va firme siempre, así que
+ * quitar una no alarga solo el trecho que hay que rehacer al caerse —
+ * también convierte ese descanso en una caja que cede o en una
+ * almohada que se hunde. El probador comprueba la cuenta.
  *
  * Antes de dar por bueno un cambio, comprobalo sin abrir el navegador:
  *
@@ -381,6 +499,7 @@ const BOO: CapituloEscrito = {
   material: 'pista',
   seDesvanece: true,
   cede: false,
+  seHunde: false,
   presentacion: {
     titulo: 'Capítulo uno: Boo',
     texto: [
@@ -463,6 +582,7 @@ const OVI: CapituloEscrito = {
   material: 'cajas',
   seDesvanece: false,
   cede: true,
+  seHunde: false,
   presentacion: {
     titulo: 'Capítulo dos: Ovi',
     texto: [
@@ -532,7 +652,14 @@ const OVI: CapituloEscrito = {
     { x: 40, ancho: 95, altura: 1394, resbala: true },
     { x: 195, ancho: 120, altura: 1494 },
     { x: 55, ancho: 90, altura: 1556, resbala: true },
-    { x: 190, ancho: 130, altura: 1656, hito: true },
+
+    // Acá había una estrella y se le quitó: Ovi guarda una vez menos
+    // que Boo. El trecho pasa a ir de 1170 a 2307 de un tirón, o sea
+    // el desparejo entero más el segundo hueco al tope. Se puede pedir
+    // porque encima de la estrella de abajo está la caja de peluches:
+    // lo que se cae de acá rebota en ella y no baja más. Y la caja que
+    // servía de descanso ahora cede como las demás.
+    { x: 190, ancho: 130, altura: 1656 },
 
     // ── Ya pesa ───────────────────────────────────────────────
     // Las cajas más chicas del capítulo, dos de ellas forradas, y el
@@ -560,13 +687,134 @@ const OVI: CapituloEscrito = {
   ],
 }
 
-/**
- * Los capítulos, en orden de llegada de los peluches.
- *
- * Falta Nico, que es el primogénito y va al final. Es otra variación
- * del mismo molde y entra aquí mismo cuando le toque.
- */
-export const CAPITULOS: CapituloEscrito[] = [BOO, OVI]
+/** El capítulo tres: la cama deshecha de donde nunca se fue Nico. */
+const NICO: CapituloEscrito = {
+  id: 'nico',
+  nombre: 'Nico',
+  numero: 3,
+  material: 'almohadas',
+  seDesvanece: false,
+  cede: false,
+  seHunde: true,
+  presentacion: {
+    titulo: 'Capítulo tres: Nico',
+    texto: [
+      'Nico es el primero de los tres, el que te compraron para que no durmieras sola. Rosa pálido y de pelo rizado. Va al final porque es el más viejo, y porque es el capítulo que más me costó.',
+      'Su mundo es la cama de madrugada, con las sábanas revueltas y las cobijas colgando. Desde acá la luna ya se ve grande.',
+      'Y las almohadas se hunden mientras estás parada encima. Despacio, pero sin parar. Cada vuelta que dejás pasar caminando y cada rato que aguantás la barra salen de la altura del salto siguiente. Aquí esperar cuesta.',
+      'Algunas de esas cobijas están tiradas entre las almohadas. Parada en una, la barra se llena más lento, porque primero hay que desenredarse. Pero te cansás igual de rápido que siempre, así que el salto entero desde una cobija te llega con la barra ya en rojo. Esperar cuesta y apurarse también.',
+    ],
+    boton: 'subir con Nico',
+  },
+  cierre: {
+    titulo: 'Ganaste a Nico',
+    texto:
+      'Se sube al caparazón y se acomoda entre Boo y Ovi, que ya venían ahí. Tres de tres. Arriba ya no queda nada más que la luna.',
+  },
+  plataformas: [
+    // La cama, ancha y firme. Aquí no se hunde nada: la primera de
+    // todas va firme por regla, igual que en los otros dos.
+    { x: 25, ancho: 315, altura: 0 },
+
+    // ── Las almohadas se presentan ────────────────────────────
+    // Sube de 74 en 78 y van anchas. La subida es floja a propósito:
+    // lo que hay que aprender aquí no es el salto, es que el suelo
+    // baja mientras una se lo piensa. Y va anchas también a
+    // propósito, que es donde más se nota: una almohada ancha son
+    // tres segundos de caminata para volver al punto de salida, y
+    // esos tres segundos se ven bajar.
+    { x: 200, ancho: 135, altura: 74 },
+    { x: 40, ancho: 135, altura: 150 },
+    { x: 195, ancho: 130, altura: 228 },
+    { x: 45, ancho: 130, altura: 306 },
+    { x: 200, ancho: 125, altura: 384 },
+    { x: 40, ancho: 125, altura: 462 },
+    // En Boo y en Ovi acá había una estrella; en Nico no. El primer
+    // tramo entero se sube sin nada que guarde, y la almohada ancha
+    // que servía de descanso ahora se hunde como las demás — siendo la
+    // más ancha del tramo, son tres segundos de caminata viéndola
+    // bajar.
+    { x: 190, ancho: 145, altura: 540 },
+
+    // ── Y ahora sí ────────────────────────────────────────────
+    // Se achican y suben de 86 en 90. Al final del tramo, el primer
+    // hueco de los que solo se pasan **saliendo en seguida**: se
+    // llega corta dos veces, y a la tercera se entiende que la
+    // pasada buena es la primera y no la mejor.
+    //
+    // **La regla de los huecos a prisa:** van siempre hacia el lado
+    // al que la tortuga ya viene mirando cuando aterriza, y la
+    // almohada de la que salen va angosta. Pedir prisa y encima
+    // pedir esperar media vuelta de caminata para darse vuelta es
+    // pedir dos cosas que se contradicen, y eso ya no es difícil,
+    // es injusto.
+    { x: 45, ancho: 115, altura: 624 },
+    { x: 205, ancho: 115, altura: 710 },
+    { x: 50, ancho: 100, altura: 796 },
+    { x: 195, ancho: 130, altura: 924, aPrisa: true },
+    { x: 50, ancho: 115, altura: 1010 },
+    { x: 190, ancho: 145, altura: 1096, hito: true },
+
+    // ── El tramo desparejo ────────────────────────────────────
+    // Una sube 64 y la siguiente 96, así que no se puede repetir la
+    // misma carga dos veces; y como cada tanteo cuesta altura, medir
+    // a ojo sale más caro que en los otros dos capítulos.
+    // La primera cobija, sola y perdonando. Lo que hay que saltar
+    // desde ella son 64 px, el tramo más corto del capítulo entero: la
+    // primera vez que la barra se arrastra no puede ser también la vez
+    // que hace falta el tope. Se aprende qué hace, no se paga por
+    // aprenderlo.
+    { x: 45, ancho: 110, altura: 1184, enreda: true },
+    { x: 200, ancho: 110, altura: 1248 },
+    { x: 55, ancho: 115, altura: 1344 },
+    // Y la segunda, ya en medio del desparejo y ya cobrando: de acá
+    // hay que subir 88 con la barra lenta.
+    { x: 210, ancho: 100, altura: 1408, enreda: true },
+    { x: 60, ancho: 105, altura: 1496 },
+    // La otra estrella que Nico no tiene. Le deja tres: 1096, 2156 y
+    // la cima, o sea un hueco a prisa por trecho y ninguno de los tres
+    // con dos. Caerse en el desparejo cuesta mil píxeles de vuelta,
+    // que es el precio de ser el último capítulo.
+    { x: 185, ancho: 145, altura: 1584 },
+
+    // ── Ya pesa ───────────────────────────────────────────────
+    // Las almohadas más angostas del capítulo, que aquí es un regalo
+    // y no un castigo: menos camino que desandar para volver al
+    // punto de salida. Y el segundo hueco a prisa, este sin aviso.
+    { x: 40, ancho: 105, altura: 1672 },
+    // Cobija, y dos plataformas más arriba el hueco a prisa. Dos, no
+    // una: la regla de las cobijas es que ninguna va justo antes de un
+    // «a prisa», porque el hueco pide salir ya y la cobija pide cargar
+    // largo. Separadas por una almohada normal se leen como lo que
+    // son, dos trabas distintas, en vez de como una zancadilla.
+    { x: 205, ancho: 100, altura: 1762, enreda: true },
+    { x: 45, ancho: 100, altura: 1852 },
+    { x: 200, ancho: 110, altura: 1980, aPrisa: true },
+    { x: 45, ancho: 110, altura: 2068 },
+    { x: 185, ancho: 145, altura: 2156, hito: true },
+
+    // ── El último trecho hasta la luna ────────────────────────
+    // Sin regalo de impulso, que ese es de Boo, y sin red de
+    // peluches, que esa es de Ovi. Lo único que hay aquí es lo que
+    // el capítulo enseña, tres veces seguidas y con el tercero a
+    // prisa.
+    { x: 40, ancho: 105, altura: 2244 },
+    // La última cobija, y la única del trecho final. Con tres estrellas
+    // nada más, caerse acá cuesta volver desde 2156.
+    { x: 200, ancho: 105, altura: 2334, enreda: true },
+    { x: 45, ancho: 100, altura: 2424 },
+    { x: 195, ancho: 120, altura: 2552, aPrisa: true },
+    { x: 50, ancho: 115, altura: 2638 },
+
+    // La cima. Ancha, como las otras dos: el último salto antes del
+    // premio no es el sitio para pedir puntería. Y firme, que es una
+    // estrella: se llega y se respira.
+    { x: 190, ancho: 155, altura: 2726, hito: true },
+  ],
+}
+
+/** Los capítulos, en orden de llegada de los peluches. */
+export const CAPITULOS: CapituloEscrito[] = [BOO, OVI, NICO]
 
 /**
  * La ayuda de abajo.

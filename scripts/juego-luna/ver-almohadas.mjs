@@ -1,0 +1,37 @@
+/**
+ * Le saca una foto al banco de la cama de Nico.
+ *
+ *   npm run dev            (en otra terminal)
+ *   npm run luna:almohadas
+ *
+ * Deja el PNG en private/notas/almohadas.png. Es el hermano de
+ * ver-pista.mjs y ver-cajas.mjs: mirar el mundo sin tener que jugar
+ * hasta el tramo que se está tocando, y sobre todo poder mirar quieta
+ * **una almohada hundiéndose**, que jugando pasa despacio y mientras
+ * una está mirando otra cosa.
+ *
+ * Y para lo otro que este mundo tiene: que **la cobija se distinga de
+ * la almohada de un vistazo**. Van las dos en la misma tira.
+ */
+import { chromium } from 'playwright-core'
+
+const nav = await chromium.launch({ channel: 'chrome' })
+const pag = await nav.newPage({ viewport: { width: 2480, height: 1400 }, deviceScaleFactor: 2 })
+
+const fallos = []
+pag.on('console', (m) => {
+  if (m.type() === 'error') fallos.push(m.text())
+})
+pag.on('pageerror', (e) => fallos.push(String(e)))
+
+const puerto = process.argv[2] ?? 5173
+await pag.goto(`http://localhost:${puerto}/scripts/juego-luna/almohadas-banco.html`, {
+  waitUntil: 'networkidle',
+})
+await pag.waitForTimeout(600)
+
+await pag.locator('#tira').screenshot({ path: 'private/notas/almohadas.png' })
+
+console.log(fallos.length ? '⚠ errores:\n' + fallos.join('\n') : '✓ sin errores en la página')
+console.log('foto en private/notas/almohadas.png')
+await nav.close()
