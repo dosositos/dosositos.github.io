@@ -520,6 +520,12 @@ export interface Nivel {
    * abajo sale el salto. Si es falso, el suelo se queda a su altura.
    */
   seHunde: boolean
+  /**
+   * De qué tamaño se ve la luna en este capítulo. Crece capítulo a
+   * capítulo: en el cuarto de Nico ya se ve grande, que es lo que él
+   * mismo le dice en la presentación.
+   */
+  radioDeLaLuna: number
 }
 
 /**

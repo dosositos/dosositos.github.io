@@ -441,26 +441,73 @@ y chats, y el sobre de apertura. Eso es el regalo.
 
 ---
 
-## La próxima sesión — jugar el prototipo de Nico y después vestirlo
+## La próxima sesión — lo que pasa después de ganar los tres
 
 **Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
 arrancamos por donde diga, sin que tengás que acordarte de nada.
 
 **Lo que toca, y en este orden:**
 
-1. **Jugá el capítulo de Nico otra vez.** Lo jugaste el 1 de septiembre y
-   dijiste que sí se siente que esperar cuesta, pero que para ser el último
-   nivel de todos no alcanzaba. Con lo que salió de ahí el capítulo tiene dos
-   cosas nuevas —las cobijas y menos guardado— y hay que volver a jugarlo con
-   las dos puestas. La pregunta ahora es otra: **¿pesa ya como último
-   capítulo, o se pasó de duro?** El número de la cobija está en `COBIJAS` en
-   `src/content/luna.ts` y se mueve en una línea, igual que el de la almohada.
-2. **Y después vestirlo.** Hoy la almohada es una almohada y la cobija es una
-   cobija, y nada más: falta el cuarto entero. Sábanas revueltas, luz de
-   madrugada y la luna ya grande, más el fondo, que en Boo son las vías con
-   carros y en Ovi las torres de cajas con el polvo. Ahí también entra partir
-   la almohada en dos o tres, como se partieron las cajas de Ovi, y marcarle
-   el hoyo donde están las paticas.
+1. **Jugá el capítulo de Nico ya vestido.** No para volver a medir lo duro que
+   es —eso quedó bueno el 3 de septiembre—, sino para lo único que un decorado
+   puede romper: **que se siga leyendo dónde se pisa**. En este capítulo el
+   suelo se mueve solo, así que cualquier cosa dibujada que confunda la línea
+   de arriba de una almohada se paga con un salto. Mirá sobre todo si la
+   cobija sigue cantando de lejos ahora que tiene un cuarto alrededor.
+2. **Y después, la fase 6: qué pasa al ganar los tres.** Hoy al terminar el de
+   Nico sale «el capítulo que falta todavía lo estoy haciendo», que era verdad
+   con dos capítulos escritos y ahora suena raro. Ahí entra también el enlace
+   al juego desde algún lado —vive en `#/luna` y no lo apunta nada— y llenar
+   los récords, que necesita que juegues los tres de punta a punta: sin eso el
+   rival de ella no existe.
+
+### Lo que cambió el 3 de septiembre: el cuarto, vestido
+
+El capítulo de Nico dejó de ser el prototipo. Lo que se hizo, y por qué cada
+cosa está donde está:
+
+- **La almohada se partió en dos o tres.** Es la misma lección que dejaron las
+  cajas de Ovi: una plataforma de 100 a 155 de ancho por 20 de alto, dibujada
+  de una pieza, es un colchoncito de siete a uno y no la forma de ninguna
+  almohada. Partida y con cada trozo de su grosor, se lee de una que es un
+  montón mal puesto — que es justo lo que explica que la cosa se hunda.
+- **Y la cobija no se partió**, que es un bulto y no un montón. Salió un regalo
+  que no vi venir: ahora las almohadas tienen juntas verticales y la cobija no,
+  o sea que se distingue **por la forma además de por el color**, que era lo
+  que más falta hacía.
+- **La línea que se pisa se dibuja entera y de un trazo**, por encima de las
+  juntas. Es la decisión que hizo posible partir la almohada: la forma puede
+  estar rota en tres, pero en un capítulo donde el suelo se está moviendo
+  mientras una lo mira, a qué altura se pisa no puede tener ni una
+  interrupción. Y entra catorce píxeles por cada lado, porque las esquinas de
+  una almohada son redondas y una línea hasta el borde se quedaba flotando.
+- **El hoyo de las paticas** es solo dibujo, y va más ancho que la tortuga a
+  propósito: debajo de ella no se ve nada, y lo que tiene que leerse es el
+  hundido asomando por los dos lados. La física no se tocó — la almohada se
+  hunde entera y pareja. Hundir distinto según dónde se pare ya es la traba de
+  Ovi, y dos capítulos con la misma traba no son dos capítulos.
+- **Las sábanas colgando** debajo de cada almohada, que son lo que hacen las
+  cajas de abajo en Ovi y las cañas debajo de la pista en Boo: sin ellas la
+  fila entera se lee como un estante flotando.
+- **El fondo son las cortinas y los pliegues.** Las cortinas van a los dos
+  lados y de punta a punta, como el bambú y las torres, y son **lo único vivo
+  del capítulo**: el aire de la madrugada moviendo la tela. Otra lluvia de
+  motas hubiera sido el polvo de Ovi con otro nombre. Los pliegues de la
+  sábana cruzan el fondo de lado a lado, que es el sitio que en Boo ocupan las
+  vías.
+- **La primera plataforma es la cama**, con su colchón y la sábana bajera
+  arremangada, y no lleva almohadas encima: es de donde se sale y tiene que
+  leerse como el sitio firme del capítulo.
+- **La luna crece un capítulo a la vez**: 44 en Boo, 53 en Ovi, 62 en Nico. Era
+  la única forma de que subir tres capítulos se sintiera como acercarse a algo
+  — dentro de un capítulo la luna se acerca sola porque vive en el mundo, pero
+  al empezar el siguiente volvía a estar igual de lejos que al principio de
+  todo. Ahora en el cuarto de Nico se ve casi la mitad más grande, que es
+  exactamente lo que él le dice en la presentación.
+- **Y la luz de la madrugada**, que baja de la luna y se pone más fuerte
+  cuanto más arriba: es la única señal de que se está llegando, en un capítulo
+  donde la luna no se vuelve a ver hasta el final.
+
 
 ### Lo que cambió el 1 de septiembre, con lo que jugaste
 
@@ -521,18 +568,17 @@ a nivel de módulo, y quién decide cuánto tarda la barra es `msDeCargaEn` en
 `src/juego-luna/mundos.ts`, que usan el juego y el arnés. La próxima traba que
 le toque el reloj se enseña en un sitio.
 
-### Cómo está el juego ahora mismo (fase 5, el prototipo de Nico)
+### Cómo está el juego ahora mismo (fase 5, los tres capítulos enteros)
 
 Publicado en `https://dosositos.github.io/#/luna`, sin enlace desde ningún lado
-y detrás del candado. **Los tres capítulos se juegan enteros**, y al ganar uno
-se pasa al siguiente sin salir de la pantalla. El de Nico está **jugable pero
-sin vestir**: la mecánica, el nivel, el cartel y el cierre están; el mundo
-dibujado es lo mínimo para poder juzgarlo.
+y detrás del candado. **Los tres capítulos se juegan enteros y están los tres
+vestidos**, y al ganar uno se pasa al siguiente sin salir de la pantalla.
 
-**Por qué se partió así.** El capítulo de Ovi enseñó que lo caro es la mecánica
-y el nivel, no el material. Y los números de un capítulo se mueven mientras se
-juega: pintar el cuarto antes de saber si la almohada se hunde a buen ritmo es
-pintarlo dos veces.
+**Por qué el de Nico se hizo en dos tandas.** El capítulo de Ovi enseñó que lo
+caro es la mecánica y el nivel, no el material. Y los números de un capítulo se
+mueven mientras se juega: pintar el cuarto antes de saber si la almohada se
+hunde a buen ritmo es pintarlo dos veces. Así que primero se jugó con lo mínimo
+dibujado, y el cuarto entró después, cuando los números ya no se movían.
 
 - **La traba de Nico son dos.** Las almohadas se hunden mientras está parada
   encima: 34 px en 3,6 segundos, a ritmo parejo, y paran en el fondo. No la
@@ -550,7 +596,9 @@ pintarlo dos veces.
   almohada hundida. El probador los comprueba en vez de darlos por error.
 - **La almohada tiene su banco**, `npm run luna:almohadas`: la misma almohada
   entera, a medias y en el fondo, una al lado de la otra y quietas. Hundiéndose
-  jugando pasa despacio y mientras una está mirando otra cosa.
+  jugando pasa despacio y mientras una está mirando otra cosa. Desde que el
+  cuarto está vestido sirve además para mirar quieto el decorado, que jugando
+  pasa detrás de la tortuga.
 
 - **Un solo gesto en todo el juego.** Mantener y soltar. Ni poderes ni
   habilidades: se probaron dos y se tiraron los dos.
@@ -585,6 +633,8 @@ pintarlo dos veces.
 - **El fondo vive:** en Boo, vías de pista con carros corriendo por encima y
   matas de bambú a los lados. En Ovi, torres de cajas contra las dos paredes del
   cuarto y polvo flotando en la luz, con una mota de cada tres del rosa de Ovi.
+  En Nico, las cortinas de los dos lados meciéndose con el aire de la madrugada
+  y los pliegues largos de la sábana cruzando el fondo.
 
 ### El adelanto, para antes de que el juego exista
 
@@ -663,6 +713,13 @@ escribió antes que el capítulo y por eso el capítulo salió en una tarde.
   caja de 100 de ancho por 20 de alto sale una tabla y no una caja. Partida en
   dos, tres o cuatro cajas de hombro con hombro, cada una queda casi cuadrada y
   el material se lee de una.
+- **Nada translúcido y con lados rectos se pone delante de la luna.** Las
+  sábanas que cuelgan debajo de las almohadas de Nico eran paños opacos con los
+  lados a plomo, y en la presentación —donde la luna pasa por detrás, enorme—
+  cada una se recortaba contra ella como un ladrillo gris. Se arreglaron
+  arrancando ya translúcidas, con los lados curvos y el borde de abajo en
+  ondas: una sábana colgando en la penumbra es una sombra con forma, no un
+  objeto. Lo mismo vale para cualquier cosa que se le cruce por delante.
 - **Lo blanco pesa.** La cinta de embalaje y los rótulos, puestos al brillo del
   papel de verdad, eran lo más claro de la pantalla después de la luna. Todo lo
   que no es la tortuga ni el suelo va un punto por debajo de lo que uno cree.

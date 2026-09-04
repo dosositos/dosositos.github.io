@@ -441,8 +441,20 @@ export const IMPULSO = {
  * otra vez, y esa es la excusa para el capítulo siguiente.
  */
 export const LUNA = {
-  /** Su tamaño mientras espera arriba, en unidades del mundo. */
+  /** Su tamaño mientras espera arriba, en el primer capítulo. */
   radio: 44,
+
+  /**
+   * Y cuánto crece por cada capítulo que se sube.
+   *
+   * Es la única forma de que subir tres capítulos se sienta como
+   * acercarse a algo: dentro de un capítulo la luna se acerca sola
+   * porque vive en el mundo, pero al empezar el siguiente volvía a
+   * estar igual de lejos que al principio de todo. En el cuarto de
+   * Nico se ve casi la mitad más grande que en el de Boo, que es
+   * exactamente lo que él le dice en la presentación.
+   */
+  crecePorCapitulo: 9,
 
   /** Cuánto más arriba de la última plataforma está. */
   sobreLaCima: 165,

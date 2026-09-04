@@ -1,4 +1,4 @@
-import { ALMOHADAS, CAJAS, CAPITULOS, COBIJAS, MUNDO, SALTO } from '@/content/luna'
+import { ALMOHADAS, CAJAS, CAPITULOS, COBIJAS, LUNA, MUNDO, SALTO } from '@/content/luna'
 import type { CapituloEscrito, Nivel, Plataforma } from '@/types'
 
 /**
@@ -80,6 +80,7 @@ export function construirNivel(capitulo: CapituloEscrito): Nivel {
     seDesvanece: capitulo.seDesvanece,
     cede: capitulo.cede,
     seHunde: capitulo.seHunde,
+    radioDeLaLuna: LUNA.radio + (capitulo.numero - 1) * LUNA.crecePorCapitulo,
   }
 }
 

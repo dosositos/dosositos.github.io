@@ -1,5 +1,13 @@
 import { LUNA, MUNDO, TORTUGA } from '@/content/luna'
-import { dibujarAlmohada } from '@/juego-luna/mundo-almohadas'
+import {
+  dibujarAlmohada,
+  dibujarCortina,
+  dibujarLuzDeMadrugada,
+  dibujarPliegue,
+  sembrarAlmohadas,
+  sembrarCortinas,
+  sembrarPliegues,
+} from '@/juego-luna/mundo-almohadas'
 import { dibujarEstrellaDePapel } from '@/juego-luna/estrella'
 import {
   dibujarPilaDeCajas,
@@ -275,8 +283,6 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
   // se quedan vacíos, que no cuesta nada y evita un `if` por frame.
   const esDePista = nivel.material === 'pista'
   const esDeCajas = nivel.material === 'cajas'
-  // El cuarto de Nico todavía no tiene decorado: el capítulo va por el
-  // prototipo y lo único dibujado es la almohada. Ver `mundo-almohadas.ts`.
   const esDeAlmohadas = nivel.material === 'almohadas'
 
   const matas = esDePista ? sembrarBambu(nivel.cima.y - 200, nivel.suelo + 200) : []
@@ -286,6 +292,13 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
   const torres = esDeCajas ? sembrarTorres(nivel.cima.y - 260, nivel.suelo + 260) : []
   const polvo = esDeCajas ? sembrarPolvo(60) : []
   const cajas = esDeCajas ? sembrarCajas(nivel) : new Map()
+
+  // Y el cuarto de Nico: las cortinas de los dos lados, los pliegues
+  // largos de la sábana cruzando el fondo, y de qué almohadas está
+  // hecha cada plataforma.
+  const cortinas = esDeAlmohadas ? sembrarCortinas() : []
+  const pliegues = esDeAlmohadas ? sembrarPliegues(nivel.cima.y - 200, nivel.suelo + 200) : []
+  const almohadas = esDeAlmohadas ? sembrarAlmohadas(nivel) : new Map()
 
   let anchoCss = 0
   let altoCss = 0
@@ -365,7 +378,13 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
         ctx.save()
         ctx.translate(margen, golpe)
         ctx.scale(escala, escala)
-        dibujarLunaEntrando(ctx, escena.cineAvance, altoVista, pintor.movimientoReducido)
+        dibujarLunaEntrando(
+          ctx,
+          escena.cineAvance,
+          altoVista,
+          nivel.radioDeLaLuna,
+          pintor.movimientoReducido,
+        )
         ctx.restore()
       }
 
@@ -376,6 +395,12 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
       const arriba = escena.camara - 40
       const abajo = escena.camara + altoVista + 40
 
+      // La luz de la madrugada del cuarto de Nico va debajo de todo,
+      // la luna incluida: es la luz que ella tira, no puede taparla.
+      if (esDeAlmohadas) {
+        dibujarLuzDeMadrugada(ctx, arriba, abajo, nivel.cima.y, nivel.suelo)
+      }
+
       // La luna esperando arriba del último tramo. Solo aparece
       // cuando la cámara llega, que es todo el punto: sale en la
       // cinemática, se va, y no se la vuelve a ver hasta que se la
@@ -383,7 +408,7 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
       // En `espera` tampoco: antes de darle al botón la luna no ha
       // salido todavía y no puede estar ya arriba aguardando.
       if (escena.cine !== 'entrada' && escena.cine !== 'espera') {
-        dibujarLunaEsperando(ctx, dondeEspera, escena)
+        dibujarLunaEsperando(ctx, dondeEspera, escena, nivel.radioDeLaLuna)
       }
 
       // El decorado va detrás de la pista y no se toca: es lo que
@@ -403,6 +428,17 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
       for (const t of torres) dibujarTorre(ctx, t, arriba, abajo)
       if (esDeCajas && !pintor.movimientoReducido) {
         dibujarPolvoDelCuarto(ctx, polvo, arriba, abajo, escena.reloj)
+      }
+
+      // Y el del capítulo de Nico: los pliegues de la sábana cruzando
+      // el fondo, y las cortinas de los dos lados meciéndose, que es lo
+      // único que se mueve solo en este cuarto.
+      for (const pliegue of pliegues) {
+        if (pliegue.y + pliegue.amplitud < arriba || pliegue.y - pliegue.amplitud > abajo) continue
+        dibujarPliegue(ctx, pliegue)
+      }
+      for (const c of cortinas) {
+        dibujarCortina(ctx, c, arriba, abajo, escena.reloj, pintor.movimientoReducido)
       }
 
       for (const p of escena.plataformas) {
@@ -427,13 +463,27 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
         if (esDePista) {
           dibujarPistaNaranja(ctx, p, escena.hitoAlcanzado, escena.reloj, alfa)
         } else if (esDeAlmohadas) {
+          const hundido = escena.hundido[p.indice] ?? 0
+
+          // Dónde están las paticas, si es que están aquí. Se compara
+          // contra la superficie de verdad y no solo contra la `x`:
+          // dos almohadas de alturas distintas se pisan por el mismo
+          // sitio de la pantalla, y sin esto el hoyo salía en las dos.
+          const encima =
+            escena.enSuelo &&
+            escena.x > p.x &&
+            escena.x < p.x + p.ancho &&
+            Math.abs(escena.y - superficieDeVerdad(p, escena.x, 0, hundido)) < 1.5
+
           dibujarAlmohada(
             ctx,
             p,
-            escena.hundido[p.indice] ?? 0,
+            almohadas.get(p.indice),
+            hundido,
             escena.hitoAlcanzado,
             escena.reloj,
             alfa,
+            encima ? escena.x : null,
           )
         } else if (caja) {
           // Si esta es la caja de peluches que acaba de rebotar, se la
@@ -513,6 +563,7 @@ function dibujarLunaEntrando(
   ctx: CanvasRenderingContext2D,
   avance: number,
   altoVista: number,
+  radio: number,
   movimientoReducido: boolean,
 ) {
   /** Los primeros dos quintos se queda, y el resto se va subiendo. */
@@ -525,8 +576,8 @@ function dibujarLunaEntrando(
   const centro = altoVista * 0.42
   const respiro = movimientoReducido ? 0 : Math.sin(seQueda * Math.PI * 2) * 4
 
-  const y = centro + respiro - empuje * (centro + LUNA.radio * 4.4)
-  const r = LUNA.radio * (1.5 - 0.5 * seVa)
+  const y = centro + respiro - empuje * (centro + radio * 4.4)
+  const r = radio * (1.5 - 0.5 * seVa)
 
   // Entra con un halo que se abre: es el «acá estoy» antes de irse.
   ctx.save()
@@ -543,6 +594,7 @@ function dibujarLunaEsperando(
   ctx: CanvasRenderingContext2D,
   donde: { x: number; y: number },
   escena: EscenaLuna,
+  radio: number,
 ) {
   const yendose = escena.cine === 'salida' || escena.cine === 'fin'
   const seVa = yendose ? escena.cineAvance : 0
@@ -557,7 +609,7 @@ function dibujarLunaEsperando(
   dibujarLuna(ctx, {
     x: donde.x,
     y: donde.y - empuje * 620,
-    r: LUNA.radio * latido * (1 - seVa * 0.35),
+    r: radio * latido * (1 - seVa * 0.35),
   })
   ctx.restore()
 }

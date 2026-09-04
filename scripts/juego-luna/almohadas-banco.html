@@ -28,6 +28,13 @@
       ser una sorpresa. Van las dos pegadas, a la misma altura y con la
       misma luz, que es la única forma honesta de mirarlo.
 
+      Desde que el cuarto está vestido sirve además para lo tercero:
+      mirar quieto el decorado —las sábanas colgando, las cortinas de
+      los lados, los pliegues del fondo y la luz de la madrugada—, que
+      jugando pasa detrás de la tortuga y no se le puede prestar
+      atención. Para verlo en movimiento y a tamaño de teléfono está
+      `npm run luna:ver -- 5173 3`, que es otra cosa.
+
       Ojo con lo que este banco NO dice: si el capítulo se pasa. Eso lo
       contesta `npm run luna:probar -- 3`, que además mide lo que cuesta
       demorarse. Aquí solo se mira.
@@ -108,11 +115,15 @@
       const antesDelPrisa = nivel.plataformas[aPrisa.indice - 1]
 
       const paneles = [
-        ['la cama, que es la salida', escenaEn(nivel.plataformas[1], 0)],
+        ['la cama, que es la salida', escenaEn(nivel.plataformas[0], 0)],
+        ['la primera fila de almohadas', escenaEn(nivel.plataformas[1], 0)],
         ['una almohada entera', escenaEn(cualquiera, 0)],
         ['a medio hundir', escenaEn(cualquiera, 0.5)],
         ['en el fondo, 34 px más abajo', escenaEn(cualquiera, 1)],
         ['hundida y en la orilla', escenaEn(cualquiera, 1, 1)],
+        // El hoyo de las paticas no se ve si nadie está parado ahí, y
+        // esa es justo la comprobación: que se lea de dónde salió.
+        ['el hoyo, sin nadie encima', escenaEn(cualquiera, 0.6, 0.5, { enSuelo: false })],
         [
           'la estrella, que no se hunde',
           escenaEn(nivel.hitos[0], 1, 0.5, { hitoAlcanzado: nivel.hitos[0].indice }),
@@ -128,6 +139,16 @@
           escenaEn(cobija, 0.75, 0.5, { cargando: true, carga: 1, agobio: 0.1 }),
         ],
         ['la cima', escenaEn(nivel.cima, 0, 0.5, { hitoAlcanzado: nivel.cima.indice })],
+        // Abajo del todo y arriba del todo, para mirar lo mismo que no
+        // se puede mirar jugando: que la luz de la madrugada va
+        // creciendo conforme se sube. Es la única señal de que se está
+        // llegando, en un capítulo donde la luna no se vuelve a ver
+        // hasta el final.
+        ['la luz, abajo del todo', escenaEn(nivel.plataformas[2], 0)],
+        [
+          'la misma luz, ya en la cima',
+          escenaEn(nivel.plataformas[nivel.plataformas.length - 2], 0),
+        ],
       ]
 
       const tira = document.getElementById('tira')
