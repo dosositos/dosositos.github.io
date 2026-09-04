@@ -35,7 +35,7 @@ import type { EventoLuna, ProgresoLuna } from '@/types'
  * del capítulo, la ayuda de abajo, el aviso de la estrella y el cierre.
  */
 
-/** El último capítulo que está escrito. Hoy dos de tres. */
+/** El último capítulo que está escrito. Hoy los tres. */
 const ULTIMO = CAPITULOS.reduce((mayor, c) => Math.max(mayor, c.numero), 1)
 
 /** Las tres pantallas de antes de jugar, en orden. */

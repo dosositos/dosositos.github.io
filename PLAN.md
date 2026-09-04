@@ -441,27 +441,66 @@ y chats, y el sobre de apertura. Eso es el regalo.
 
 ---
 
-## La próxima sesión — jugar lo que cae, y después la fase 6
+## La próxima sesión — la llegada a la luna, y la carta
 
 **Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
 arrancamos por donde diga, sin que tengás que acordarte de nada.
 
-**Lo que toca, y en este orden:**
+Es **la fase 6, y es el final del juego**: lo que pasa cuando ella gana los tres
+capítulos. Hoy ahí sale «el capítulo que falta todavía lo estoy haciendo», que
+era verdad con dos capítulos escritos y ahora es mentira.
 
-1. **Jugá los tres capítulos con lo que cae puesto.** Es lo primero del juego
-   que no se puede juzgar compilando ni mirando un banco: hay que estar con la
-   cabeza en el salto siguiente y que te caiga algo encima. Tres preguntas
-   concretas: **¿se ve venir a tiempo?** (el arnés dice cinco segundos desde que
-   asoma), **¿se distinguen los dos de un vistazo?** y sobre todo **¿el apagón
-   es difícil o es injusto?** — que es el que quita información en vez de
-   control, y el único de los dos que podría estar pasado. Los números se mueven
-   en `LO_QUE_CAE`, en `src/content/luna.ts`, y todos en una línea.
-2. **Y después la fase 6: qué pasa al ganar los tres.** Hoy al terminar el de
-   Nico sale «el capítulo que falta todavía lo estoy haciendo», que era verdad
-   con dos capítulos escritos y ahora suena raro. Ahí entra también el enlace al
-   juego desde algún lado —vive en `#/luna` y no lo apunta nada— y llenar los
-   récords, que necesita que juegues los tres de punta a punta: sin eso el rival
-   de ella no existe.
+### 1. La llegada
+
+Después de ganar el tercero, la tortuga **llega a la luna de una vez**. En los
+tres capítulos la luna se va cuando ella alcanza la cima: sube y se escapa. Esta
+vez no se escapa.
+
+Lo que hay pensado, para tener de dónde empezar:
+
+- El último salto **no cae**. Sale de la cima y sigue subiendo, y la cámara la
+  sigue mientras el mundo se queda abajo. Los tres peluches van en su caparazón
+  —el cierre de Nico ya lo dice: «se acomoda entre Boo y Ovi, que ya venían
+  ahí»— así que suben los cuatro.
+- Mientras sube, se van quedando atrás **las estrellitas de papel** de los tres
+  capítulos, que son las del frasco. Es lo único que se repite en los tres
+  mundos y aquí es lo que mide el camino recorrido.
+- Llega, se para en la luna y **se sienta**. La cámara se abre y se ve la luna
+  entera, chiquita ella encima, y todo lo demás cielo.
+- Y ahí sale la carta.
+
+**Va con su nombre.** Si ella la bautizó, los textos de la llegada tienen que
+decirlo. Se escriben con `{tortuga}` y `{Tortuga}` en `luna.ts` y los rellena
+`conNombre()` en `src/juego-luna/nombrar.ts`, que ya existe y ya lo hace en los
+tres capítulos. Sin nombre puesto, los huecos dan «la tortuga» y «La tortuga»,
+así que el texto tiene que sonar bien de las dos maneras — eso hay que
+comprobarlo escribiéndolo, no después.
+
+**Que sea poético sin ser una tarjeta.** Vale la regla de siempre: concreto
+antes que tierno, y nada de moraleja al final. Lo que hace bonito este momento
+ya está puesto desde la primera fase y no hay que explicarlo — ella subió a
+pasitos de tortuga, que es de donde salió la frase.
+
+### 2. La carta
+
+Es lo que el juego promete desde su primera línea: «arriba hay una carta que no
+está en ninguna otra parte de la web». Está sin escribir.
+
+- Va **cifrada**, como todo lo que es voz de verdad, y por la misma razón que
+  los chats.
+- Sale **después** de la llegada, no encima: la animación termina, la luna se
+  queda quieta, y la carta se abre sobre eso.
+- Mirar cómo lo hace `src/componentes/Regalo.tsx`, que ya tiene una carta que se
+  abre con sus fases (`cerrada`, `temblando`, `estallando`, `carta`). No hace
+  falta inventar la mecánica dos veces.
+
+### 3. Y lo que va con eso
+
+- **Enlazar el juego desde algún lado.** Vive en `#/luna` y no lo apunta nada.
+  La idea de siempre: la luna de la portada se vuelve tocable.
+- **Llenar los récords**, que necesita que juegues los tres capítulos de punta a
+  punta: sin eso el rival de ella no existe.
+
 
 ### Lo que cae, la traba que es de los tres capítulos
 
@@ -517,11 +556,17 @@ pantalla, ella está mirando el salto siguiente.
   la plataforma cuando llegue, que es la misma decisión que el juego pide todo
   el rato. Saltando a otra se esquiva.
 - **Las plataformas no lo paran.** Va por delante de todo, en primer plano.
-- **Dura tres saltos y se va al caerse**, con todo lo que estuviera bajando. Una
-  regla que castiga no puede castigar dos veces: reaparecer con la barra
-  descompuesta sería empezar de nuevo con una trampa puesta que ella no vio
-  ponerse, que es lo mismo que ya se arregló con las cajas torcidas y las
-  almohadas hundidas.
+- **Dura tres saltos, y hay que gastarlos: caerse no lo quita.** Al principio sí
+  lo quitaba, por la regla de que algo que castiga no castiga dos veces. Estaba
+  mal aplicada — el efecto no es el castigo de la caída, es un estado que se
+  gasta con el uso — y salía algo peor: **tirarse al vacío pasaba a ser la forma
+  barata de quitárselo**, o sea que el juego premiaba lo único que castiga. Con
+  la barra desbocada y un hueco largo por delante, dejarse caer era la jugada
+  buena.
+- **Lo que sí se va al caerse es lo que estuviera bajando**, y el siguiente se
+  hace esperar el intervalo entero. Ahí la regla sí valía: reaparecer con algo ya
+  encima que ella no vio caer es una trampa puesta mientras no miraba, lo mismo
+  que se arregló con las cajas torcidas y las almohadas hundidas.
 - **Nunca dos a la vez**, que de una lluvia no se sale.
 - **El cartel sale una sola vez por cada uno.** El dibujo dice a qué le va a
   pegar; qué hace exactamente hay que decirlo con letras la primera vez, y a la
@@ -840,6 +885,12 @@ escribió antes que el capítulo y por eso el capítulo salió en una tarde.
   capítulos no se veía venir, y no verlo venir rompe la única promesa que esa
   traba hace. La coherencia de un dibujo vale menos que su legibilidad cuando el
   dibujo es una amenaza.
+- **Antes de limpiar algo al reaparecer, preguntá si caerse sale a cuenta.** El
+  efecto de lo que cae se borraba en el checkpoint, razonando que un castigo no
+  castiga dos veces. Con eso, tirarse al vacío era la forma barata de quitárselo:
+  el juego premiaba lo único que castiga. Se limpia lo que ella no pudo ver venir
+  —las cajas torcidas, las almohadas hundidas, lo que estuviera cayendo— y no lo
+  que se gasta con el uso.
 - **Y por lo mismo: un icono se lee o no se lee, no se interpreta.** Lo que cae
   llevó primero la forma de la barra de carga, que era la idea bonita —el objeto
   es la barra que viene a descomponerse—. Había que pensarlo un segundo, y ese
@@ -884,9 +935,8 @@ escribió antes que el capítulo y por eso el capítulo salió en una tarde.
 7. Antes de la última fase, **recordarte que juegues los tres capítulos** para
    llenar los récords: sin eso el rival de ella no existe.
 8. Al ganar el capítulo de Nico sale «el capítulo que falta todavía lo estoy
-   haciendo», que era verdad con dos capítulos escritos y ahora suena raro con
-   los tres. Se arregla en la fase 6, que es la que pone lo que va después de
-   ganar los tres.
+   haciendo», que era verdad con dos capítulos escritos y ahora es mentira. Es
+   lo primero de la fase 6 — ver «La próxima sesión», arriba.
 
 El plan completo del juego, con la mecánica, los tres mundos, los valores de la
 física y las diez fases, vive en **`plan-juego-luna.md`**, en la raíz. Se lee

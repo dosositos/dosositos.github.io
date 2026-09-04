@@ -498,8 +498,13 @@ export const LO_QUE_CAE = {
    *
    * Tres es lo que hay entre dos estrellas en el tramo más corto: dura
    * lo suficiente para que se sienta y se acaba antes de poder costar
-   * una caída entera. Y se va también al caerse, que una regla que
-   * castiga no puede castigar dos veces.
+   * una caída entera.
+   *
+   * Y **hay que gastarlos**: caerse no lo quita. Al principio sí lo
+   * quitaba, y con eso tirarse al vacío pasaba a ser la forma barata de
+   * limpiárselo — el juego premiando lo único que castiga. Lo que sí se
+   * va al caerse es lo que estuviera bajando en ese momento, que eso sí
+   * sería una trampa puesta mientras ella no miraba.
    */
   saltosDeEfecto: 3,
 

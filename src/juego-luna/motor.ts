@@ -582,13 +582,22 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
     t.sinSuelo = 0
     tirada = 0
     rebotesSeguidos = 0
-    // Y se va lo que le hubieran tirado encima, con todo lo que esté
-    // cayendo ahora mismo. Una regla que castiga no puede castigar dos
-    // veces: ya se cayó, ya pagó. Reaparecer con la barra descompuesta
-    // y algo bajándole encima es empezar de nuevo con una trampa
-    // puesta que ella no vio ponerse — lo mismo que se arregló con las
-    // cajas torcidas y las almohadas hundidas.
-    efecto = null
+    // **El efecto no se va al caerse.** Los tres saltos hay que
+    // gastarlos, y no hay otra forma de quitárselo.
+    //
+    // Al principio se limpiaba, por la regla de que algo que castiga no
+    // castiga dos veces. El razonamiento estaba mal aplicado: el efecto
+    // no es el castigo de la caída, es un estado que se gasta con el
+    // uso. Y limpiándolo salía algo peor — **tirarse al vacío pasaba a
+    // ser la forma barata de quitárselo**, o sea que el juego premiaba
+    // lo único que castiga. Con la barra desbocada y un hueco largo por
+    // delante, dejarse caer era la jugada buena.
+    //
+    // Lo que sí se limpia es lo que estuviera bajando, y el siguiente
+    // se hace esperar el intervalo entero: eso es lo otro, y ahí la
+    // regla sí valía. Reaparecer con algo ya encima que ella no vio
+    // caer es una trampa puesta mientras no miraba, lo mismo que se
+    // arregló con las cajas torcidas y las almohadas hundidas.
     loQueCae = []
     paraElSiguiente = LO_QUE_CAE.cadaHasta
     ultimoPiso = Math.max(hitoAlcanzado, 0)

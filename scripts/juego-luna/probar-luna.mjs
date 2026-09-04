@@ -2414,10 +2414,16 @@ function hastaQueLePegue(motor, frame, ver, tope = 9000) {
 }
 
 {
-  // (f) Y se va al caerse, con todo lo que estuviera bajando.
-  // Reaparecer con la barra descompuesta y algo encima es empezar de
-  // nuevo con una trampa puesta que ella no vio ponerse — lo mismo que
-  // ya se arregló con las cajas torcidas y las almohadas hundidas.
+  // (f) Al caerse **el efecto se queda** y lo que estuviera bajando se
+  // va. Son las dos mitades de la misma decisión:
+  //
+  // El efecto se queda porque los tres saltos hay que gastarlos. Si la
+  // caída lo limpiara, tirarse al vacío sería la forma barata de
+  // quitárselo, y el juego estaría premiando lo único que castiga.
+  //
+  // Y lo que estuviera bajando se va porque reaparecer con algo ya
+  // encima que ella no vio caer sí es una trampa puesta mientras no
+  // miraba, igual que las cajas torcidas y las almohadas hundidas.
   const { motor, frame, ver } = banco(mundoDeLoQueCae())
   pisarLaEstrella(motor, frame, ver)
   const tenia = hastaQueLePegue(motor, frame, ver) !== null
@@ -2437,9 +2443,11 @@ function hastaQueLePegue(motor, frame, ver, tope = 9000) {
   console.log(
     !tenia
       ? '   · esta vez no le pegó nada antes de caerse'
-      : despues === null && bajando === 0
-        ? '   ✓ al caerse se va lo que tuviera puesto, y lo que estuviera bajando'
-        : '   ⚠ reaparece con el castigo puesto: eso es castigar dos veces por lo mismo',
+      : despues !== null && bajando === 0
+        ? '   ✓ al caerse el efecto sigue puesto y el cielo queda limpio'
+        : despues === null
+          ? '   ⚠ la caída le quitó el efecto: así tirarse al vacío es la forma barata de limpiárselo'
+          : '   ⚠ reaparece con algo ya cayéndole encima que no vio caer',
   )
 }
 
