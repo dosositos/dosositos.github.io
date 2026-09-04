@@ -482,6 +482,15 @@ export interface ProgresoLuna {
   /** Las veces que se cayó en total. */
   caidas: number
   /**
+   * Lo mejor que ha hecho en cada capítulo, por número de capítulo.
+   *
+   * Aparte del total, porque son dos preguntas distintas: el total es
+   * cuánto le costó subir a la luna, y esto es cómo va contra él en
+   * cada mundo. Se guarda lo mejor y no lo último — un récord que se
+   * pierde por una mala tarde no es un récord.
+   */
+  mejorPorCapitulo: Record<number, { pasitos: number; caidas: number }>
+  /**
    * Cómo le puso ella a la tortuga la primera vez que jugó. Vacío es
    * «todavía no le puso», y mientras esté vacío se le vuelve a
    * preguntar y en los textos sale «la tortuga».
@@ -553,6 +562,12 @@ export interface CapituloEscrito {
     titulo: string
     texto: string
   }
+  /**
+   * En cuántos pasitos lo subió él. Es el rival de ella, y sin esto la
+   * comparación no sale: un capítulo sin récord se juega igual y al
+   * cerrarlo solo enseña lo suyo.
+   */
+  record?: number
   plataformas: PlataformaEscrita[]
 }
 

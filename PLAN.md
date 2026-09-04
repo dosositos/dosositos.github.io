@@ -446,37 +446,34 @@ y chats, y el sobre de apertura. Eso es el regalo.
 **Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
 arrancamos por donde diga, sin que tengás que acordarte de nada.
 
-**El juego está terminado.** Los tres capítulos, la llegada a la luna y la
-carta. Lo que falta no es código: son dos cosas tuyas, y en este orden.
+**El juego está terminado.** Los tres capítulos, la llegada a la luna, la carta
+y los récords. Lo que falta no es código: es la decisión de enseñárselo.
 
-### 1. Jugá los tres capítulos de punta a punta
+### La fase 9, que es la que hace visible el juego
 
-Los récords están vacíos, y sin eso el rival de ella no existe. Hay que subir
-los tres de verdad, no medirlos con el robot: el robot juega perfecto y no se
-demora nunca, así que sus números no son un rival, son una burla.
-
-De paso es la única forma de ver la llegada y la carta como las va a ver ella,
-que es con la clave puesta y después de haber subido. Yo puedo mirar el dibujo
-cuadro por cuadro y el maquetado de la hoja, pero eso no es verlo.
-
-### 2. Y después, decidir cuándo la luna de la portada se vuelve tocable
-
-Esta es la fase 9 y **es la que hace visible el juego**. Hoy vive en `#/luna` y
-no lo apunta nada, así que se puede tocar sin que ella note nada raro. En
-cuanto la luna de la portada se enlace, se acabó: la web ya está en su mano y
-lo va a ver en la siguiente visita.
+Hoy el juego vive en `#/luna` y no lo apunta nada, así que se puede tocar sin
+que ella note nada raro. En cuanto la luna de la portada se enlace, se acabó: la
+web ya está en su mano y lo va a ver en la siguiente visita.
 
 Por eso no la enlacé yo. No es una decisión de código, es decidir qué día se lo
-enseñás, y eso se hace después de los récords.
+enseñás.
 
-### Lo que se cerró el 4 de septiembre: la llegada, y la carta
+### Antes de eso, si querés
+
+- **Jugá Ovi y Nico** para ver la llegada y la carta con la clave puesta y
+  después de haber subido, que es como las va a ver ella. Los récords ya no
+  hacen falta para eso: están puestos.
+- **Leé la carta entera en el teléfono**, que ahora son siete párrafos y ella la
+  va a leer bajando con el pulgar.
+
+### Lo que se cerró el 4 de septiembre: la llegada, la carta y los récords
 
 **La llegada.** Al pisar la cima del último capítulo escrito, la luna ya no se
 escapa. Sale de la cima y sigue subiendo mil ochocientos sesenta píxeles, con
-el cuarto apagándose abajo y las estrellitas de papel quedándose atrás. Se para
-encima, se sienta, y la cámara se abre hasta que queda la luna entera, ella
-chiquita arriba, y todo lo demás cielo. Dura nueve segundos y no se puede
-saltar: es lo que vino a ver.
+el cuarto apagándose abajo y las estrellitas de papel encendiéndose al pasarles
+cerca. Se para encima, se sienta, y la cámara se abre hasta que queda la luna
+entera, ella chiquita arriba, y todo lo demás cielo. Dura nueve segundos y no se
+puede saltar: es lo que vino a ver.
 
 Tres cosas que solo se vieron midiendo, y ninguna se veía a ojo:
 
@@ -487,55 +484,77 @@ Tres cosas que solo se vieron midiendo, y ninguna se veía a ojo:
   luna fuera de la pantalla.
 - **El cuarto no se acaba porque se salga de la pantalla.** Es más alto que
   ella, y las cortinas de Nico subían pegadas a la tortuga hasta la luna y se
-  veían de fondo en el último cuadro, que es cielo y nada más. Hay que apagarlo
-  a mano.
+  veían de fondo en el último cuadro, que es cielo y nada más.
 - **Y ese apagado tiene que viajar como parámetro, nunca como `globalAlpha`.**
-  Envolver el bloque en `ctx.globalAlpha` no hizo absolutamente nada:
-  `dibujarCortina` y sus seis hermanas fijan el suyo adentro y se lo llevan
-  puesto. Es la misma lección que dejó el desvanecimiento de la pista, escrita
-  en la cabecera de `mundo-almohadas.ts` desde hace semanas, y volvió a morder.
+  Envolver el bloque no hizo absolutamente nada: `dibujarCortina` y sus seis
+  hermanas fijan el suyo adentro y se lo llevan puesto. Es la misma lección que
+  dejó el desvanecimiento de la pista, escrita en la cabecera de
+  `mundo-almohadas.ts` desde hace semanas, y volvió a morder.
 
 La cuenta vive en `src/juego-luna/llegada.ts` y no en el motor ni en el pintor,
-porque la necesitan los dos y tienen que estar de acuerdo: el motor sube a la
-tortuga y el pintor pone la luna donde ella la va a pisar. Con la cuenta
-copiada en los dos, cualquier retoque en una la dejaba posándose en el aire.
+porque la necesitan los dos y tienen que estar de acuerdo.
 
-**La carta ya estaba escrita** desde el 27 de agosto, cifrada en
-`carta-luna.enc`, y lo que faltaba era abrirla: no había una sola línea en
-`src/` que la leyera. Ahora sale encima de la llegada y no en vez de ella. El
-canvas se queda congelado en su último cuadro, arriba se ve la luna entera con
-la tortuga sentada, y el papel sube desde abajo. Los `{pasitos}` y `{caidas}`
-se rellenan con lo acumulado de todas las veces, que es lo que mide subir tres
-capítulos, y hay dos aperturas porque una que hable de caídas a quien no se
-cayó ni una vez le está contando la subida de otra.
+**La carta ya estaba escrita** desde el 27 de agosto, y lo que faltaba era
+abrirla: no había una sola línea en `src/` que la leyera. Sale encima de la
+llegada y no en vez de ella, con el canvas congelado en su último cuadro.
 
-Dos cosas que decidí y podés cambiar:
+Y se le cambiaron dos cosas, que las pidió él:
 
-- **El cierre de Nico no sale como cartel**, que taparía la llegada. Se quedó
-  arriba, sobre la luna quieta, encima de la hoja: es lo que cuenta que los tres
-  peluches iban en el caparazón, o sea que subieron los cuatro. Si preferís que
-  no salga, es una línea.
-- **Se acabó «el capítulo que falta todavía lo estoy haciendo».** Era verdad
-  con dos capítulos y dejó de serlo con tres.
+- **Se fue lo del peaje.** Decía «esta carta no está en ninguna otra parte de la
+  web, la única manera de abrirla era subiendo» y «me parecía que había que
+  ganárselo». Leído del otro lado, eso le dice que no se merecía la carta hasta
+  ganar un juego. Ahora dice que no tenía que ganarse nada y que se la dejó
+  arriba porque de subir despacio es de lo que habla.
+- **Dos párrafos nuevos**, sacados del diccionario y no inventados. Uno es que
+  «de aquí a la luna a pasitos de tortuga» no es una frase suelta: es una de sus
+  medidas del infinito, la que tiene camino, y por eso es la que está al final
+  de uno. El otro son los dos rituales de todos los días, el saludo de la mañana
+  y el «soñá con los angelitos» de la noche, que es cómo una promesa así se
+  cumple de verdad: de a poquito.
 
-Y una que es tuya: la apertura dice «te caíste {caidas} veces». Con una sola
-caída va a leerse «te caíste 1 veces». Es tu texto y no lo toqué. Subiendo tres
-capítulos es casi imposible que pase, pero ahí está.
+**Los récords, que eran lo último que faltaba del juego:**
 
-**Los dos bancos nuevos**, que hacen falta porque esto pasa una sola vez en
-todo el juego y dura nueve segundos que no se pueden parar:
+- **Boo: 24**, jugado por él y sin caerse ni una vez, rebotando contra la pared
+  para subirse a un tramo de arriba en vez de seguir el zigzag.
+- **Ovi: 30**, que es el mínimo. Este se empata y no se gana.
+- **Nico: 30**, que es el mínimo más uno. El último es el único que ella puede
+  ganar, y por un pasito.
 
-- `npm run luna:llegada` — los catorce cuadros de la cinemática.
-- `npm run luna:carta` — la hoja en tres teléfonos, con el final scrolleado.
-  Va con relleno de los mismos largos que la carta de verdad y no con la carta
-  de verdad, por dos motivos: hacen falta la clave y tres capítulos ganados para
-  verla, y son palabras de él para ella, que no tienen por qué andar sueltas por
-  un banco.
+Los mínimos salen de `npm run luna:minimos`, una anchura primero sobre el grafo
+de «de qué tramo se llega a qué tramo de un salto», con las aristas sacadas
+simulando el vuelo con la física del motor: rebotes contra las paredes, cajas de
+peluches que devuelven medio salto gratis y tramos de impulso que no cuestan
+pasito. **El buscador se cree porque en Boo saca 24**, que es exactamente lo que
+él hizo jugando, truco de la pared incluido.
 
-Y cuatro comprobaciones más en `npm run luna:probar`: que en el último capítulo
-arranque la llegada y no la despedida, que suba de verdad, que termine posada
-encima de la luna y no flotando al lado, y que avise una sola vez y se quede
-quieta, porque la carta se abre encima de ese cuadro.
+El marcador sale al cerrar cada capítulo, debajo de los pasitos de esa subida, y
+en el último va arriba, sobre la luna quieta, porque ahí abajo ya está la carta.
+Un capítulo sin récord no enseña nada y se cierra igual.
+
+**Y los detalles que se les fueron poniendo encima**, que es lo que hace que se
+note que esto llevó horas y no una tarde:
+
+- Las estrellitas del viaje **se encienden al pasarles cerca** y se apagan
+  detrás. Eso es lo que las hace medir el camino en vez de decorarlo.
+- La tortuga **hace sombra sobre la luna** al pararse encima. Sin ella quedaba
+  pegada como una calcomanía en vez de posada sobre algo. Va gris cálida y no
+  negra: la luna es lo más claro de la pantalla y una sombra negra ahí pesa como
+  un agujero.
+- La carta va **pegada con dos pedacitos de cinta**, torcidos y de distinto
+  largo, sobre un papel con su fibra y la luz cayéndole por arriba. Es el mismo
+  lenguaje del resto de la web, y una hoja perfectamente puesta no la pegó
+  nadie.
+
+**Los bancos nuevos**, que hacen falta porque esto pasa una sola vez en todo el
+juego y dura nueve segundos que no se pueden parar: `npm run luna:llegada` saca
+los catorce cuadros de la cinemática y `npm run luna:carta` la hoja en tres
+teléfonos con el final scrolleado. Y cuatro comprobaciones más en
+`npm run luna:probar`.
+
+**Una regla nueva, que costó un susto:** `scripts/` se publica igual que `src/`.
+El banco de la carta llevaba copiados el título, la apertura y la firma de
+verdad para que el relleno tuviera los largos justos, y eso iba camino del
+repositorio público. Ahora va todo con relleno. Está anotado en `CLAUDE.md`.
 
 ### Lo que cae, la traba que es de los tres capítulos
 
@@ -967,8 +986,6 @@ escribió antes que el capítulo y por eso el capítulo salió en una tarde.
 5. **PWA**: hoy no hay manifest ni ícono.
 6. Los **13 puntos y coma** de `src/content/momentos.ts` y los 5 de
    `src/content/diccionario.ts`, que son de mi redacción y no citas.
-7. Antes de la última fase, **recordarte que juegues los tres capítulos** para
-   llenar los récords: sin eso el rival de ella no existe.
 
 El plan completo del juego, con la mecánica, los tres mundos, los valores de la
 física y las diez fases, vive en **`plan-juego-luna.md`**, en la raíz. Se lee
@@ -1316,8 +1333,6 @@ Ninguna es urgente y todas se pueden tirar a la basura.
   `src/content/diccionario.ts`, que son de mi redacción y no citas.
 - El **momento de Boo** en la línea del tiempo (23 de diciembre de 2024) y
   sacarle su frase comodín de `src/content/peluches.ts`.
-- Antes de la fase 9 hay que **recordarte que juegues los tres capítulos** para
-  llenar los récords: sin eso el rival de ella no existe.
 
 El plan completo —mecánica, los tres mundos, valores de la física y orden de
 trabajo— vive en **`plan-juego-luna.md`**, en la raíz. Se lee antes de escribir

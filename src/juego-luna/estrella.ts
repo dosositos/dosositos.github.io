@@ -45,6 +45,12 @@ export function dibujarEstrellita(
   ganada: boolean,
   reloj: number,
   giro = 0,
+  /**
+   * De 0 a 1, cuánto la tiene encima. Las del viaje a la luna se
+   * encienden al pasarle cerca y se vuelven a apagar detrás, que es
+   * lo que las hace medir el camino en vez de decorarlo.
+   */
+  cerca = 0,
 ) {
   const latido = ganada ? 1 + Math.sin(reloj * 2.2) * 0.07 : 1
 
@@ -54,12 +60,13 @@ export function dibujarEstrellita(
   ctx.scale(latido, latido)
 
   if (ganada) {
-    const halo = ctx.createRadialGradient(0, 0, r * 0.5, 0, 0, r * 3)
-    halo.addColorStop(0, 'rgba(248, 244, 232, 0.3)')
+    const ancho = r * (3 + cerca * 1.6)
+    const halo = ctx.createRadialGradient(0, 0, r * 0.5, 0, 0, ancho)
+    halo.addColorStop(0, `rgba(248, 244, 232, ${(0.3 + cerca * 0.35).toFixed(3)})`)
     halo.addColorStop(1, 'rgba(248, 244, 232, 0)')
     ctx.fillStyle = halo
     ctx.beginPath()
-    ctx.arc(0, 0, r * 3, 0, Math.PI * 2)
+    ctx.arc(0, 0, ancho, 0, Math.PI * 2)
     ctx.fill()
   }
 

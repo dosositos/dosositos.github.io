@@ -1,6 +1,7 @@
 import { useReducedMotion } from 'motion/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { CartaDeLaLuna } from '@/componentes/CartaDeLaLuna'
+import { MarcadorDeLaLuna } from '@/componentes/MarcadorDeLaLuna'
 import { AYUDA, BAUTIZO, CAPITULOS, CARTEL, TEXTOS } from '@/content/luna'
 import { crearPintor } from '@/juego-luna/dibujo'
 import { conectarEntrada } from '@/juego-luna/entrada'
@@ -286,6 +287,13 @@ export function Luna() {
   /** Detrás de este ya no hay otro: acá se llega a la luna y sale la carta. */
   const esElFinal = numero === ULTIMO
 
+  /** Lo mejor que ella ha hecho en este capítulo, ya con esta subida. */
+  const suMejor = totales?.mejorPorCapitulo[capitulo.numero]
+
+  const marcador = llegada ? (
+    <MarcadorDeLaLuna record={capitulo.record} pasitos={llegada.pasitos} mejor={suMejor} />
+  ) : null
+
   /** Guardar el nombre y pasar al cartel. Vacío es «mejor después». */
   const bautizar = (puesto: string) => {
     setGuardado(ponerleNombre(puesto))
@@ -443,6 +451,7 @@ export function Luna() {
           pasitos={totales?.pasitos ?? llegada.pasitos}
           caidas={totales?.caidas ?? llegada.caidas}
           antesala={conElNombre(capitulo.cierre.texto)}
+          marcador={marcador}
         />
       ) : llegada ? (
         <div className="absolute inset-0 overflow-y-auto bg-[#0b1026]/88 px-6 py-10 backdrop-blur-[2px]">
@@ -464,6 +473,8 @@ export function Luna() {
                 {totales.caidas === 1 ? 'caída' : 'caídas'}
               </p>
             ) : null}
+
+            {marcador}
 
             <p className="mt-6 text-left text-[0.95rem] leading-relaxed text-margarita/75">
               {conElNombre(capitulo.cierre.texto)}

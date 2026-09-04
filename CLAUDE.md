@@ -18,7 +18,10 @@ es el idioma del proyecto, no una traducción.
 repositorio. El material sensible (chats, frases del juego, cartas) se publica
 cifrado con AES-GCM vía `scripts/cifrar-contenido.mjs` y se abre en el navegador
 con `src/lib/cripto.ts`. Antes de cualquier commit, verificar que no se coló
-contenido del chat en claro dentro de `src/`.
+contenido del chat en claro dentro de `src/` **ni dentro de `scripts/`**, que se
+publica igual. Los bancos de dibujo son justo donde más tienta copiar contenido
+de verdad para probar con datos reales: van con relleno de los mismos largos, y
+ya pasó una vez con la carta. `npm run revisar` no lo va a pillar.
 
 **Ninguna frase real de la conversación vive en `src/`.** Las conversaciones de
 los momentos están en `private/publicable/chats.json`, con el id del momento como
@@ -146,6 +149,10 @@ npm run luna:pista       # el banco del mundo de Boo: pista, bambú, lazos, impu
 npm run luna:cajas       # el banco del mundo de Ovi: cartón, cinta, peluches, la caja cediendo
 npm run luna:almohadas   # el banco del mundo de Nico: la almohada y la cobija enredada
 npm run luna:cae         # el banco de lo que cae: el apurón y el apagón
+npm run luna:llegada     # el banco de la llegada a la luna, cuadro por cuadro
+npm run luna:carta       # la carta en tres teléfonos (con relleno, no con el texto)
+npm run luna:minimos     # ¿en cuántos pasitos se puede subir cada capítulo?
+                         # (de ahí salen los récords de él; -- 2 enseña la ruta)
 npm run luna:asomo       # el banco del adelanto: la tortuga que se asoma al final de una página
 npm run luna:asomo -- --semana   # ¿en qué página se asoma cada día? (o -- 2026-09-14)
 npm run secretos:cifrar  # private/publicable/ → public/cifrado/ (corre solo por hook)

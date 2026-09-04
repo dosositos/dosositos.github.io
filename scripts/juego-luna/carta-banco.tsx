@@ -10,6 +10,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
 import { HojaDeLaCarta } from '@/componentes/CartaDeLaLuna'
+import { MarcadorDeLaLuna } from '@/componentes/MarcadorDeLaLuna'
 import { CAPITULOS, LLEGADA } from '@/content/luna'
 import { crearPintor } from '@/juego-luna/dibujo'
 import { laLlegada } from '@/juego-luna/llegada'
@@ -37,9 +38,9 @@ function deLargo(n: number) {
  */
 const CARTA = {
   titulo: deLargo(20),
-  apertura: `${deLargo(112)} {caidas} ${deLargo(48)} {pasitos} ${deLargo(30)}`,
-  aperturaSinCaidas: `${deLargo(60)} {pasitos} ${deLargo(50)}`,
-  parrafos: [132, 238, 364, 321, 381].map(deLargo),
+  apertura: `${deLargo(24)} {lasCaidas} ${deLargo(30)} {lasCaidas} ${deLargo(40)} {pasitos} ${deLargo(80)}`,
+  aperturaSinCaidas: `${deLargo(40)} {pasitos} ${deLargo(110)}`,
+  parrafos: [248, 238, 364, 321, 459, 375, 381].map(deLargo),
   cierre: deLargo(46),
   posdata: deLargo(51),
   firma: deLargo(10),
@@ -137,7 +138,19 @@ function Telefono({
           }}
           style={{ position: 'absolute', inset: 0 }}
         >
-          <HojaDeLaCarta carta={CARTA} pasitos={214} caidas={caidas} antesala={ANTESALA} />
+          <HojaDeLaCarta
+            carta={CARTA}
+            pasitos={214}
+            caidas={caidas}
+            antesala={ANTESALA}
+            marcador={
+              <MarcadorDeLaLuna
+                record={CAPITULOS[CAPITULOS.length - 1].record}
+                pasitos={caidas === 0 ? 29 : 34}
+                mejor={{ pasitos: caidas === 0 ? 29 : 32, caidas }}
+              />
+            }
+          />
         </div>
       </div>
       <figcaption style={{ fontSize: 12, opacity: 0.6, padding: '6px 2px', color: '#f8f4e8' }}>

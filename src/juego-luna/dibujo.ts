@@ -499,7 +499,21 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
       if (llegando) {
         for (const e of estrellitasDelViaje) {
           if (e.y < arriba - 80 || e.y > abajo + 80) continue
-          dibujarEstrellita(ctx, e.x, e.y, e.r, true, escena.reloj, e.giro + escena.reloj * e.vuelta)
+          // Se encienden al tenerla encima y se vuelven a apagar
+          // detrás. Es lo que las hace medir el camino en vez de
+          // decorarlo: se nota cuál se acaba de pasar.
+          const lejos = Math.hypot(e.x - escena.x, e.y - escena.y)
+          const cerca = Math.max(0, 1 - lejos / 190)
+          dibujarEstrellita(
+            ctx,
+            e.x,
+            e.y,
+            e.r,
+            true,
+            escena.reloj,
+            e.giro + escena.reloj * e.vuelta,
+            cerca * cerca,
+          )
         }
       }
 
@@ -618,8 +632,11 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
       // la caída se ve entera hasta que sale por abajo. Desaparecer en
       // pleno aire parecería un error del juego.
       if (escena.y < escena.camara + altoVista + 60) {
-        // Subiendo a la luna no hay debajo de qué hacer sombra.
-        if (!llegando) dibujarSombra(ctx, escena)
+        // Subiendo no hay debajo de qué hacer sombra, pero parada en
+        // la luna sí, y hace falta: sin ella queda pegada encima como
+        // una calcomanía en vez de posada sobre algo.
+        if (llegando) dibujarSombraEnLaLuna(ctx, escena, llegando.quieta, llegando.luna)
+        else dibujarSombra(ctx, escena)
         dibujarTortuga(
           ctx,
           escena,
@@ -737,6 +754,39 @@ function dibujarLunaEsperando(
     y: donde.y - empuje * 620,
     r: radio * latido * (1 - seVa * 0.35),
   })
+  ctx.restore()
+}
+
+/**
+ * La sombra que hace parada en la luna.
+ *
+ * La de siempre (`dibujarSombra`) se pega a la plataforma de abajo y
+ * arriba no hay ninguna. Esta se dibuja sobre la curva de la luna, y
+ * hace falta más de lo que parece: sin ella la tortuga queda pegada
+ * encima como una calcomanía en vez de posada sobre algo.
+ *
+ * Va más oscura que la luna y no negra. La luna es lo más claro de la
+ * pantalla, así que ahí una sombra negra pesa como un agujero.
+ */
+function dibujarSombraEnLaLuna(
+  ctx: CanvasRenderingContext2D,
+  escena: EscenaLuna,
+  quieta: number,
+  luna: { x: number; y: number; r: number },
+) {
+  if (quieta <= 0.02) return
+
+  // Sobre la curva de la luna, justo debajo de las paticas.
+  const dx = escena.x - luna.x
+  const dentro = Math.max(0, luna.r * luna.r - dx * dx)
+  const superficie = luna.y - Math.sqrt(dentro)
+
+  ctx.save()
+  ctx.globalAlpha = 0.22 * quieta
+  ctx.fillStyle = '#8d8879'
+  ctx.beginPath()
+  ctx.ellipse(escena.x, superficie + 1.5, 15, 3.6, 0, 0, Math.PI * 2)
+  ctx.fill()
   ctx.restore()
 }
 

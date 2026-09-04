@@ -24,7 +24,13 @@ const LLAVE = 'dosositos:luna'
 /** Lo más largo que se acepta como nombre. Cabe en una línea. */
 export const LARGO_DEL_NOMBRE = 16
 
-const VACIO: ProgresoLuna = { capitulo: 0, pasitos: 0, caidas: 0, nombre: '' }
+const VACIO: ProgresoLuna = {
+  capitulo: 0,
+  pasitos: 0,
+  caidas: 0,
+  mejorPorCapitulo: {},
+  nombre: '',
+}
 
 export function leerProgreso(): ProgresoLuna {
   try {
@@ -35,6 +41,7 @@ export function leerProgreso(): ProgresoLuna {
       capitulo: Number(guardado.capitulo) || 0,
       pasitos: Number(guardado.pasitos) || 0,
       caidas: Number(guardado.caidas) || 0,
+      mejorPorCapitulo: limpiarMejores(guardado.mejorPorCapitulo),
       nombre: limpiarNombre(guardado.nombre),
     }
   } catch {
@@ -55,14 +62,50 @@ export function guardarProgreso(progreso: ProgresoLuna) {
 /** Suma lo de esta subida a lo que ya había. */
 export function anotarCapitulo(capitulo: number, pasitos: number, caidas: number): ProgresoLuna {
   const antes = leerProgreso()
+
+  // Lo mejor de este capítulo: menos pasitos manda, y a igualdad de
+  // pasitos, menos caídas. Subir en los mismos pasitos sin caerse es
+  // mejor subida, y es justo lo que él hizo en el de Boo.
+  const mejorAntes = antes.mejorPorCapitulo[capitulo]
+  const ahoraEsMejor =
+    !mejorAntes || pasitos < mejorAntes.pasitos ||
+    (pasitos === mejorAntes.pasitos && caidas < mejorAntes.caidas)
+
   const ahora: ProgresoLuna = {
     ...antes,
     capitulo: Math.max(antes.capitulo, capitulo),
     pasitos: antes.pasitos + pasitos,
     caidas: antes.caidas + caidas,
+    mejorPorCapitulo: {
+      ...antes.mejorPorCapitulo,
+      [capitulo]: ahoraEsMejor ? { pasitos, caidas } : mejorAntes,
+    },
   }
   guardarProgreso(ahora)
   return ahora
+}
+
+/**
+ * Lo guardado de cada capítulo, dejado en algo usable.
+ *
+ * Se limpia igual que el nombre y por lo mismo: esto sale de
+ * `localStorage`, o sea de un sitio donde cualquiera puede escribir a
+ * mano. Un número que no es número tiene que dar cero, no romper la
+ * pantalla del cierre.
+ */
+function limpiarMejores(crudo: unknown): Record<number, { pasitos: number; caidas: number }> {
+  if (!crudo || typeof crudo !== 'object') return {}
+  const limpio: Record<number, { pasitos: number; caidas: number }> = {}
+  for (const [llave, valor] of Object.entries(crudo as Record<string, unknown>)) {
+    const capitulo = Number(llave)
+    if (!Number.isInteger(capitulo) || capitulo < 1) continue
+    if (!valor || typeof valor !== 'object') continue
+    const { pasitos, caidas } = valor as { pasitos?: unknown; caidas?: unknown }
+    const cuantos = Number(pasitos)
+    if (!Number.isFinite(cuantos) || cuantos <= 0) continue
+    limpio[capitulo] = { pasitos: cuantos, caidas: Math.max(0, Number(caidas) || 0) }
+  }
+  return limpio
 }
 
 /**

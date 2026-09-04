@@ -707,6 +707,18 @@ const BOO: CapituloEscrito = {
     texto:
       'Se te trepa al caparazón y ahí se queda, mirando para abajo lo que subiste. Uno de tres. Los otros dos están más arriba y la luna ya se fue para allá.',
   },
+
+  /**
+   * Jugado, no calculado: él lo subió en 24 y sin caerse ni una vez,
+   * y lo hizo rebotando contra la pared para subirse a un tramo de
+   * arriba en vez de seguir el zigzag.
+   *
+   * Después salió que 24 es también el mínimo que encuentra
+   * `npm run luna:minimos`, o sea que este no se puede superar. Se
+   * queda tal cual: es lo que hizo de verdad, y falsearlo hacia
+   * arriba para dejarle margen sería regalarle la partida.
+   */
+  record: 24,
   plataformas: [
     // El suelo, ancho y tranquilo. Aquí se aprende a saltar.
     { x: 30, ancho: 310, altura: 0 },
@@ -791,6 +803,17 @@ const OVI: CapituloEscrito = {
     texto:
       'Se sube al caparazón y se acomoda al lado de Boo, que ya venía ahí. Dos de tres. El que falta es el más viejo de los tres y está todavía más arriba.',
   },
+
+  /**
+   * El mínimo que encuentra `npm run luna:minimos`, contando los
+   * rebotes contra la pared y las cajas de peluches, que devuelven
+   * medio salto sin gastar pasito.
+   *
+   * Va el mínimo a propósito: este capítulo se puede empatar y no se
+   * puede ganar. El buscador se cree porque en el de Boo saca 24, que
+   * es exactamente lo que él hizo jugando.
+   */
+  record: 30,
   plataformas: [
     // El suelo del cuarto, que es la única caja de verdad ancha. Aquí
     // no cede nada: la primera de todas va firme por regla.
@@ -905,6 +928,13 @@ const NICO: CapituloEscrito = {
     texto:
       'Se sube al caparazón y se acomoda entre Boo y Ovi, que ya venían ahí. Tres de tres. Arriba ya no queda nada más que la luna.',
   },
+
+  /**
+   * El mínimo es 29, y acá va uno más: el último es el único que ella
+   * puede ganar, y por un pasito. Después de dos capítulos que como
+   * mucho se empatan, el final tiene que dejarse.
+   */
+  record: 30,
   plataformas: [
     // La cama, ancha y firme. Aquí no se hunde nada: la primera de
     // todas va firme por regla, igual que en los otros dos.
@@ -1093,6 +1123,22 @@ export const TEXTOS = {
   enTotal: 'en total',
   /** El botón para seguir con el capítulo siguiente, recién ganado el de ahora. */
   seguir: 'seguir con',
+
+  /* ── El marcador contra él ──────────────────────────────────
+     Sale debajo de los pasitos de esta subida, y solo en los
+     capítulos que tienen récord puesto. Sin récord no sale nada y el
+     capítulo se cierra igual. */
+
+  /** Lo suyo, siempre. `{pasitos}` es su número. */
+  recordDeEl: 'a osito le tomó {pasitos} pasitos',
+  /** Y el remate, según cómo le fue. Solo uno de los tres. */
+  leGanaste: 'le ganaste',
+  loEmpataste: 'lo empataste',
+  /** `{cuantos}` viene con su palabra: «un pasito» o «4 pasitos». */
+  teFalta: 'te faltaron {cuantos}',
+  teFaltaUno: 'te faltó un pasito',
+  /** Su mejor de antes, cuando esta subida no fue la mejor. */
+  tuMejor: 'tu mejor acá: {pasitos} pasitos',
   /* Acá vivía «el capítulo que falta todavía lo estoy haciendo».
      Era verdad con dos capítulos escritos y dejó de serlo con tres:
      ahora, al ganar el último, no falta ninguno — se llega a la luna

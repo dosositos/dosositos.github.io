@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { type SobreCartaDeLaLuna, TEXTOS } from '@/content/luna'
 import { abrirSobreUnaVez, claveRecordada } from '@/lib/cripto'
@@ -30,6 +30,7 @@ export function CartaDeLaLuna({
   pasitos,
   caidas,
   antesala,
+  marcador,
 }: {
   pasitos: number
   caidas: number
@@ -41,6 +42,12 @@ export function CartaDeLaLuna({
    * cuatro.
    */
   antesala: string
+  /**
+   * El marcador contra él, que acá tampoco puede salir como cartel.
+   * Va con la antesala, encima de la luna: es la última cuenta del
+   * juego, y arriba el juego ya se acabó.
+   */
+  marcador?: ReactNode
 }) {
   const [carta, setCarta] = useState<SobreCartaDeLaLuna | null>(null)
   const [fallo, setFallo] = useState(false)
@@ -79,7 +86,15 @@ export function CartaDeLaLuna({
   // espera.
   if (!carta) return null
 
-  return <HojaDeLaCarta carta={carta} pasitos={pasitos} caidas={caidas} antesala={antesala} />
+  return (
+    <HojaDeLaCarta
+      carta={carta}
+      pasitos={pasitos}
+      caidas={caidas}
+      antesala={antesala}
+      marcador={marcador}
+    />
+  )
 }
 
 /**
@@ -97,14 +112,25 @@ export function HojaDeLaCarta({
   pasitos,
   caidas,
   antesala,
+  marcador,
 }: {
   carta: SobreCartaDeLaLuna
   pasitos: number
   caidas: number
   antesala: string
+  marcador?: ReactNode
 }) {
+  // `{lasCaidas}` viene con su palabra puesta y `{caidas}` es solo el
+  // número. Hacen falta las dos: «te caíste 1 veces» arruina la única
+  // frase de la carta que la mira a ella de frente, y arreglarlo en el
+  // texto obligaría a escribirlo de una manera que solo funciona con
+  // números grandes.
+  const lasCaidas = caidas === 1 ? 'una vez' : `${caidas} veces`
   const conLosNumeros = (texto: string) =>
-    texto.replaceAll('{pasitos}', String(pasitos)).replaceAll('{caidas}', String(caidas))
+    texto
+      .replaceAll('{pasitos}', String(pasitos))
+      .replaceAll('{lasCaidas}', lasCaidas)
+      .replaceAll('{caidas}', String(caidas))
 
   // Una apertura que hable de caídas a quien no se cayó ni una vez le
   // está contando la subida de otra.
@@ -121,21 +147,45 @@ export function HojaDeLaCarta({
           cuadro congelado tiene la luna justo debajo de la tortuga, y
           un párrafo blanco encima de la luna no se lee. Arriba el
           cielo está limpio. */}
-      <motion.p
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.4, delay: 0.5 }}
-        className="mx-auto h-[44dvh] max-w-sm px-8 pt-7 text-center text-sm leading-relaxed text-margarita/70"
+        className="mx-auto h-[44dvh] max-w-sm px-8 pt-7 text-center"
       >
-        {antesala}
-      </motion.p>
+        <p className="text-sm leading-relaxed text-margarita/70">{antesala}</p>
+        {marcador}
+      </motion.div>
 
       <motion.article
         initial={{ opacity: 0, y: 60 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.1, delay: MS_DE_RESPIRO / 1000, ease: [0.16, 1, 0.3, 1] }}
-        className="mx-auto min-h-[56dvh] max-w-md rounded-t-2xl bg-[#f8f4e8] px-7 pt-9 pb-14 text-[#141a33] shadow-[0_-18px_60px_rgba(0,0,0,0.5)]"
+        className="relative mx-auto min-h-[56dvh] max-w-md rounded-t-2xl bg-[#f8f4e8] px-7 pt-11 pb-14 text-[#141a33] shadow-[0_-18px_60px_rgba(0,0,0,0.5)]"
+        style={{
+          // La fibra del papel y la luz cayéndole por arriba. Van muy
+          // flojas a propósito: se tienen que notar sin que nadie sepa
+          // que están, que es lo que separa una hoja de un rectángulo
+          // de color.
+          backgroundImage: [
+            'repeating-linear-gradient(0deg, rgba(20,26,51,0.016) 0 1px, transparent 1px 3px)',
+            'radial-gradient(130% 70% at 50% 0%, rgba(255,255,255,0.75), rgba(255,255,255,0) 62%)',
+          ].join(','),
+        }}
       >
+        {/* Los dos pedacitos de cinta que la sujetan, torcidos y de
+            distinto largo, que es como los pega uno. Es el mismo
+            lenguaje del resto de la web: papel, cinta y polaroids
+            chuecas. Una hoja perfectamente puesta no la pegó nadie. */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -top-2 left-6 h-6 w-20 -rotate-6 rounded-[2px] bg-[#f3ead2]/70 shadow-[0_1px_3px_rgba(0,0,0,0.18)]"
+        />
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -top-3 right-7 h-6 w-16 rotate-[7deg] rounded-[2px] bg-[#f3ead2]/70 shadow-[0_1px_3px_rgba(0,0,0,0.18)]"
+        />
+
         <h2 className="font-display text-center text-3xl">{carta.titulo}</h2>
 
         <p className="fuente-mano mt-6 text-lg leading-relaxed text-[#2b3358]">{apertura}</p>
