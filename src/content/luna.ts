@@ -451,20 +451,37 @@ export const LO_QUE_CAE = {
    * Cada cuánto cae uno, en segundos, entre estos dos. Nunca dos
    * juntos: lo que se está pidiendo es que se vea venir, y dos a la vez
    * es una lluvia de la que no se puede salir.
+   *
+   * Empezó en 7 a 12 y era demasiado poco: en una subida entera caían
+   * tres o cuatro y le pegaban una vez, o ninguna.
+   *
+   * Y ojo con cómo se mide esto. El robot del arnés termina el
+   * capítulo en un minuto, y ella va a tardar varios: cuenta lo que
+   * pasa **por minuto**, no por subida, o se calibra para un jugador
+   * que no existe. Con 5 a 9 caen unos ocho por minuto y le pegan
+   * entre uno y tres, que es lo que se buscaba. En 2,5 a 5 —que era
+   * lo que hacía falta para que el robot notara algo— a ella le
+   * lloverían dieciséis por minuto.
    */
-  cadaDesde: 7,
-  cadaHasta: 12,
+  cadaDesde: 5,
+  cadaHasta: 9,
 
   /**
    * Lo rápido que baja, en píxeles del mundo por segundo.
    *
-   * De dónde sale: aparece por encima del borde de arriba y la tortuga
-   * anda por el 62 % de la pantalla, o sea unos 400 px más abajo. A 105
-   * eso son casi cuatro segundos de verlo bajar, y la caminata entera
-   * de un lado al otro de una plataforma ancha son tres. Alcanza para
-   * quitarse sin correr.
+   * Aparece por encima del borde de arriba y la tortuga anda por el
+   * 62 % de la pantalla, o sea unos 400 px más abajo. A 190 eso son
+   * poco más de dos segundos de verlo bajar, y la caminata entera de un
+   * lado al otro de una plataforma ancha son tres. Alcanza de sobra
+   * para quitarse sin correr, que es lo único que hay que garantizar.
+   *
+   * Empezó en 105, que daban cinco segundos, y era **demasiado
+   * tiempo**: en cinco segundos ella da dos o tres saltos, así que lo
+   * que salía apuntando a 54 px de ella pasaba por su altura a 111,
+   * 273 y 137. Un objeto que tarda más en llegar que ella en irse no
+   * amenaza nada. Lo lento no era generoso, era inofensivo.
    */
-  velocidad: 105,
+  velocidad: 190,
 
   /** Lo que mide de ancho. La tortuga mide 30. */
   ancho: 26,

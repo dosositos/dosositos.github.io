@@ -304,6 +304,15 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
   /** Segundos que faltan para que caiga el siguiente. */
   let paraElSiguiente = LO_QUE_CAE.cadaHasta
 
+  /**
+   * La última plataforma que pisó, que es a la que apunta lo que cae.
+   *
+   * Aparte de `ultimoPiso`, que se borra al despegar: aquí hace falta
+   * que siga valiendo mientras va por el aire, porque en pleno salto
+   * también puede caerle algo.
+   */
+  let ultimaPisada = 0
+
   /** El efecto puesto y los saltos que le quedan. */
   let efecto: { cual: QueCae; saltos: number } | null = null
 
@@ -436,6 +445,11 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
     // Nada cae durante las cinemáticas, ni mientras se cae o está
     // tirada: en los tres casos ella no puede hacer nada al respecto, y
     // una traba que pega cuando no se puede reaccionar es una trampa.
+    if (t.enSuelo) {
+      const piso = sueloDebajo()
+      if (piso) ultimaPisada = piso.indice
+    }
+
     const jugando = cine === 'jugando' && cayendo <= 0 && tirada <= 0
     const yaAprendio = !LO_QUE_CAE.desdeLaPrimeraEstrella || hitoAlcanzado >= primerLazo
 
@@ -477,33 +491,50 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
         continue
       }
 
-      // Y contra el techo: cualquier plataforma que siga ahí lo para.
-      // Por eso el nivel protege, y meterse debajo de algo es una
-      // decisión que se puede tomar con el gesto de siempre.
-      const contra = plataformas.find(
-        (p) =>
-          sigueAhi(p) &&
-          algo.x + medio > p.x &&
-          algo.x - medio < p.x + p.ancho &&
-          algo.y + medio > alturaEn(p, algo.x) &&
-          algo.y - medio < alturaEn(p, algo.x) + 18,
-      )
-      if (contra) algo.puf = 0.001
+      // Y no lo para nada más. **Las plataformas no lo frenan**, y eso
+      // costó dos vueltas de arnés: la primera versión se deshacía
+      // contra cualquier tramo, con el argumento de que así el nivel
+      // protegía y meterse debajo de algo era una decisión. Medido
+      // jugando los tres capítulos, el techo paraba seis de cada seis.
+      // Con treinta y dos plataformas en zigzag, casi cualquier sitio
+      // donde ella pueda estar tiene algo encima: «el nivel protege» y
+      // «lo que cae amenaza» no pueden ser verdad las dos. Una traba
+      // que el nivel anula no es una traba.
+      //
+      // Lo que sostiene la regla es el dibujo: lo que cae va por
+      // delante de todo, en primer plano, más cerca que el mundo. Algo
+      // que pasa por delante de una plataforma no tiene por qué
+      // chocarse con ella.
     }
   }
 
   /** Soltar uno nuevo, por encima del borde de arriba de la vista. */
   function soltarUno() {
-    // La x se sortea en una franja alrededor de la tortuga y no en todo
-    // el ancho: cayendo en cualquier lado casi nunca amenazaba nada y
-    // la traba no existía; cayéndole siempre encima sería imposible de
-    // esquivar. Una franja de 240 sobre un mundo de 360 deja que a
-    // veces venga a por ella y a veces pase de largo.
-    const franja = 240
-    const x = Math.min(
-      MUNDO.ancho - LO_QUE_CAE.ancho,
-      Math.max(LO_QUE_CAE.ancho, t.x - franja / 2 + sorteo() * franja),
-    )
+    // **Apunta a la plataforma donde anda, no a ella.**
+    //
+    // Al principio se sorteaba en una franja de 240 alrededor de la
+    // tortuga y no le pegaba nunca: medido jugando el capítulo, salían
+    // apuntando a 54 px de ella y pasaban por su altura a 111, 273 y
+    // 137. En los cinco segundos que tarda en bajar, ella ya saltó a
+    // otro sitio — y con los tramos en zigzag, casi siempre al otro
+    // lado de la pantalla. Apuntarle a ella es apuntarle a donde
+    // estaba.
+    //
+    // La plataforma, en cambio, no se mueve, y ella camina de punta a
+    // punta de la suya mientras decide el salto. Así el azar queda
+    // donde tiene que estar: no en si el objeto viene o no, sino en
+    // **dónde va a estar ella dentro de la plataforma cuando llegue**,
+    // que es la misma decisión que el juego pide todo el rato. Y
+    // saltando a otra se sigue esquivando, que era el punto.
+    const suya = sueloDebajo() ?? plataformas[Math.max(0, ultimaPisada)]
+    const orilla = Math.min(LO_QUE_CAE.ancho, suya.ancho / 4)
+    const sortearX = () =>
+      Math.min(
+        MUNDO.ancho - LO_QUE_CAE.ancho / 2,
+        Math.max(LO_QUE_CAE.ancho / 2, suya.x + orilla + sorteo() * Math.max(1, suya.ancho - orilla * 2)),
+      )
+
+    const x = sortearX()
 
     loQueCae.push({
       x,

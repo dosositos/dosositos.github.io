@@ -2367,20 +2367,41 @@ function hastaQueLePegue(motor, frame, ver, tope = 9000) {
 
 {
   // (e) El efecto se gasta en los saltos prometidos, ni uno más.
-  const { motor, frame, ver } = banco(mundoDeLoQueCae())
-  pisarLaEstrella(motor, frame, ver)
+  //
+  // Va en una plataforma sola de pared a pared, y los saltos son
+  // saltitos: la primera versión usaba el mundo de dos plataformas y
+  // se caía a mitad de la cuenta, con lo cual el efecto se iba —bien
+  // ido, por la regla de más abajo— y la prueba decía que duraba dos
+  // saltos. El arnés mintiendo antes que el juego, van ocho.
+  const suelta = construirNivel({
+    ...capitulo,
+    seDesvanece: false,
+    cede: false,
+    seHunde: false,
+    plataformas: [{ x: 0, ancho: 360, altura: 0, hito: true }],
+  })
+  const { motor, frame, ver } = banco(suelta)
+  frame()
+  // La estrella es la de abajo: un saltito y al volver a pisarla se
+  // abre la veda.
+  for (let i = 0; i < 600 && ver().hitoAlcanzado < 0; i += 1) {
+    if (ver().enSuelo && !ver().cargando) saltarCon(motor, frame, 0.1)
+    frame()
+  }
   const puesto = hastaQueLePegue(motor, frame, ver)
 
   const alEmpezar = puesto?.saltos ?? 0
   let saltosDados = 0
   for (let i = 0; i < 40 && ver().efecto; i += 1) {
     while (!ver().enSuelo) frame()
-    saltarCon(motor, frame, 0.35)
+    saltarCon(motor, frame, 0.1)
     saltosDados += 1
     frame()
   }
   const quedaAlgo = ver().efecto !== null
+  const seCayo = ver().caidas > 0
   motor.detener()
+  if (seCayo) console.log('   · se cayó a mitad de la cuenta; el número de abajo no vale')
 
   console.log('   el efecto entra con ' + alEmpezar + ' saltos y se fue tras ' + saltosDados)
   console.log(
@@ -2423,9 +2444,16 @@ function hastaQueLePegue(motor, frame, ver, tope = 9000) {
 }
 
 {
-  // (g) Una plataforma lo para. Es lo que hace que el nivel proteja y
-  // que meterse debajo de algo sea una decisión que se toma con el
-  // gesto de siempre.
+  // (g) **Una plataforma NO lo para**, y esta prueba está aquí para que
+  // no vuelva a pararlo.
+  //
+  // La primera versión sí: se deshacía contra cualquier tramo, con el
+  // argumento de que así el nivel protegía. Medido jugando los tres
+  // capítulos, el techo paraba seis de cada seis y le pegaba cero
+  // veces en toda la subida. Con treinta y dos plataformas en zigzag
+  // casi cualquier sitio donde ella pueda estar tiene algo encima, así
+  // que «el nivel protege» y «lo que cae amenaza» no pueden ser verdad
+  // las dos. Una traba que el nivel anula no es una traba.
   const bajoTecho = construirNivel({
     ...capitulo,
     seDesvanece: false,
@@ -2453,16 +2481,22 @@ function hastaQueLePegue(motor, frame, ver, tope = 9000) {
     if (e.efecto) lePego = true
     for (const algo of e.loQueCae) {
       // Deshecho bastante por encima de la tortuga: lo paró el techo.
-      if (algo.puf > 0 && algo.y < e.y - 60) sePararon += 1
+      //
+      // Noventa y no sesenta: la tortuga mide 50 de alto y el objeto
+      // 13 de medio, así que un golpe en plena cabeza deja el puf a 63
+      // por encima de las paticas. Con el umbral en 60, cada golpe en
+      // la cabeza se contaba como un techo y la prueba avisaba de algo
+      // que no estaba pasando.
+      if (algo.puf > 0 && algo.y < e.y - 90) sePararon += 1
     }
   }
   motor.detener()
   console.log(
-    sePararon > 0 && !lePego
-      ? '   ✓ debajo de una plataforma no le llega nada: el nivel protege'
-      : lePego
-        ? '   ⚠ le pegó algo estando debajo de un techo de pared a pared'
-        : '   · esta vez no cayó nada sobre el techo',
+    lePego && sePararon === 0
+      ? '   ✓ un techo de pared a pared no lo para: pasa por delante y le llega igual'
+      : sePararon > 0
+        ? '   ⚠ las plataformas están frenando lo que cae otra vez, y con eso la traba se anula sola'
+        : '   · esta vez no le pegó nada bajo el techo; se mira en la próxima pasada',
   )
 }
 
@@ -2481,6 +2515,136 @@ function hastaQueLePegue(motor, frame, ver, tope = 9000) {
     vueltas >= 4
       ? '   ✓ la carga que hace falta pasa varias veces: hay que agarrarla, no adivinarla'
       : '   ⚠ solo pasa ' + vueltas.toFixed(1) + ' veces por el punto bueno, y eso ya es azar',
+  )
+}
+
+
+console.log('')
+console.log('  Lo que cae, jugando el capítulo de verdad')
+
+/**
+ * El mismo robot de más arriba, pero contando lo que le cae encima.
+ *
+ * Es la única forma de contestar la pregunta que importa: **cuántas
+ * veces le pega de verdad en una subida entera**. En un banco caen
+ * sobre una plataforma pelada y le pegan casi siempre; en el capítulo
+ * hay treinta y dos plataformas haciendo de techo, así que la mitad se
+ * deshacen antes de llegar. Los números del banco no valen aquí.
+ */
+function lluviaJugando() {
+  const { motor, frame, eventos, ver } = banco(nivel)
+
+  let objetivo = 1
+  let frames = 0
+  let cargando = false
+  let framesCargando = 0
+  let cargaElegida = 0
+  let saliendoDe = null
+
+  /** Los que ya se contaron, por identidad: la lista es la misma. */
+  const vistos = new Set()
+  let soltados = 0
+  let parados = 0
+  let framesHastaLaPrimera = -1
+
+  while (frames < 60 * 60 * 6 && objetivo < nivel.plataformas.length) {
+    const e = frame()
+    frames += 1
+    if (!e) continue
+
+    if (framesHastaLaPrimera < 0 && e.hitoAlcanzado >= 0) framesHastaLaPrimera = frames
+
+    for (const algo of e.loQueCae) {
+      if (!vistos.has(algo)) {
+        vistos.add(algo)
+        soltados += 1
+      }
+      // Deshecho bastante por encima de la tortuga: lo paró un techo.
+      if (algo.puf > 0 && algo.puf < 0.05 && algo.y < e.y - 55) parados += 1
+    }
+
+    if (e.enSuelo && !cargando && !e.cayendo) {
+      const donde = nivel.plataformas.find((p) => estaEncima(e, p, p.indice, 8))
+      if (!donde) continue
+      objetivo = donde.indice + 1
+      if (objetivo >= nivel.plataformas.length) break
+
+      const carga = mejorCarga(e, nivel.plataformas[objetivo], donde)
+      if (carga !== null) {
+        cargaElegida = carga
+        cargando = true
+        framesCargando = 0
+        saliendoDe = donde
+        motor.presionar()
+      }
+    } else if (cargando) {
+      framesCargando += 1
+      if (framesCargando * FRAME >= msDeCargaEn(saliendoDe) * cargaElegida) {
+        motor.soltar()
+        cargando = false
+      }
+    }
+  }
+
+  motor.detener()
+  const golpes = eventos.filter((x) => x === 'apuron' || x === 'apagon').length
+
+  return {
+    soltados,
+    parados,
+    golpes,
+    segundos: frames / 60,
+    hastaLaPrimera: framesHastaLaPrimera / 60,
+    llego: eventos.includes('cima'),
+  }
+}
+
+{
+  const l = lluviaJugando()
+  const jugables = Math.max(0, l.segundos - l.hastaLaPrimera)
+  console.log(
+    '   la subida entera dura ' +
+      l.segundos.toFixed(0) +
+      ' s, y la primera estrella llega a los ' +
+      l.hastaLaPrimera.toFixed(0) +
+      ' s: quedan ' +
+      jugables.toFixed(0) +
+      ' s en los que puede caer algo',
+  )
+  console.log(
+    '   cayeron ' +
+      l.soltados +
+      ', los paró un techo ' +
+      l.parados +
+      ' y le pegaron ' +
+      l.golpes,
+  )
+
+  // **Se mide por minuto, no por subida.** El robot termina el
+  // capítulo en poco más de un minuto porque juega perfecto y no se
+  // demora nunca; ella va a tardar varios, entre lo que piensa cada
+  // salto y lo que se cae. Contar por subida calibra el juego para un
+  // jugador que no existe.
+  //
+  // Uno o dos por minuto es lo que se busca: cada golpe le descompone
+  // tres saltos, así que a tres por minuto ya estaría jugando con la
+  // barra rota más tiempo que con la barra buena, y el capítulo
+  // dejaría de ser el capítulo para pasar a ser esquivar.
+  const porMinuto = (l.golpes / Math.max(1, jugables)) * 60
+  const caenPorMinuto = (l.soltados / Math.max(1, jugables)) * 60
+  console.log(
+    '   o sea ' +
+      caenPorMinuto.toFixed(1) +
+      ' que caen y ' +
+      porMinuto.toFixed(1) +
+      ' golpes por minuto de juego',
+  )
+  console.log(
+    porMinuto >= 0.8 && porMinuto <= 3
+      ? '   ✓ le pega ' + porMinuto.toFixed(1) + ' veces por minuto, que es lo que se buscaba'
+      : porMinuto < 0.8
+        ? '   ⚠ solo ' + porMinuto.toFixed(1) + ' golpes por minuto: así puede terminar el capítulo sin enterarse de que esto existe'
+        : '   ⚠ ' + porMinuto.toFixed(1) + ' golpes por minuto: pasaría más tiempo con la barra rota que con la barra buena',
   )
 }
 

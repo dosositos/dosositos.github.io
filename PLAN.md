@@ -496,13 +496,16 @@ corte en medio.
 
 **Lo que lo hace justo**, que es todo lo que hay que cuidar aquí:
 
-- **Se ve venir.** Asoma por encima del borde de arriba y tarda cinco segundos
-  en llegar a la altura de las paticas. La caminata entera de una plataforma
-  ancha son tres. Está medido en `npm run luna:probar`.
+- **Se ve venir.** Asoma por encima del borde de arriba y tarda 2,7 segundos en
+  llegar a la altura de las paticas. Reaccionar es cuestión de uno. Está medido
+  en `npm run luna:probar`.
 - **No cae nada hasta pasada la primera estrella**, igual que la pista de Boo no
   se borra hasta entonces: los primeros saltos son para aprender.
-- **Cualquier plataforma lo para**, así que el nivel protege y meterse debajo de
-  algo es una decisión.
+- **Apunta a la plataforma donde anda, no a ella.** Así el azar queda donde
+  tiene que estar: no en si viene o no, sino en dónde va a estar ella dentro de
+  la plataforma cuando llegue, que es la misma decisión que el juego pide todo
+  el rato. Saltando a otra se esquiva.
+- **Las plataformas no lo paran.** Va por delante de todo, en primer plano.
 - **Dura tres saltos y se va al caerse**, con todo lo que estuviera bajando. Una
   regla que castiga no puede castigar dos veces: reaparecer con la barra
   descompuesta sería empezar de nuevo con una trampa puesta que ella no vio
@@ -512,6 +515,36 @@ corte en medio.
 - **El cartel sale una sola vez por cada uno.** El dibujo dice a qué le va a
   pegar; qué hace exactamente hay que decirlo con letras la primera vez, y a la
   segunda ya lo sabe.
+
+### Y lo que costó tres vueltas de arnés: que le pegara alguna vez
+
+La primera versión estaba puesta y no le pegaba **nunca**. Armando lo jugó y
+preguntó si el ritmo estaba bajo o si los objetos se deshacían contra algo.
+Medido con el robot jugando los tres capítulos, eran tres cosas a la vez, y
+ninguna se veía sin medirla:
+
+- **Apuntaba a donde ella estaba, no a donde iba a estar.** Salían apuntando a
+  54 px de ella y pasaban por su altura a 111, 273 y 137: en los cinco segundos
+  que tardaban en bajar, ella ya había saltado a otro tramo, y con el zigzag,
+  casi siempre al otro lado de la pantalla. Ahora apuntan a la plataforma, que
+  no se mueve.
+- **El techo los paraba todos.** Se deshacían contra cualquier tramo, para que
+  el nivel protegiera. Con treinta y dos plataformas en zigzag, casi cualquier
+  sitio donde ella pueda estar tiene algo encima: paraba seis de cada seis. **Una
+  traba que el nivel anula no es una traba**, así que se quitó. Lo que sostiene
+  la regla nueva es el dibujo: lo que cae va en primer plano, más cerca que el
+  mundo, y algo que pasa por delante de una plataforma no tiene por qué chocarse
+  con ella.
+- **Y caía demasiado despacio.** Cinco segundos de vuelo parecían generosos y
+  eran inofensivos: en cinco segundos ella da dos o tres saltos. A 190 px/s son
+  2,7 segundos, que siguen siendo de sobra para quitarse.
+
+**Y una lección de cómo se mide, que vale para cualquier cosa que pase por
+tiempo:** el robot del arnés termina el capítulo en un minuto porque juega
+perfecto y no se demora nunca. Ella va a tardar varios, entre lo que piensa cada
+salto y lo que se cae. Contar golpes **por subida** calibra el juego para un
+jugador que no existe; se cuenta por minuto. Con el ritmo afinado para que el
+robot notara algo, a ella le habrían llovido dieciséis por minuto.
 
 **El primer intento del apagón no se veía.** Iba todo ceniza oscura, con el
 argumento de que un objeto brillante no puede anunciar que algo se apaga. Se
@@ -781,6 +814,15 @@ escribió antes que el capítulo y por eso el capítulo salió en una tarde.
   caja de 100 de ancho por 20 de alto sale una tabla y no una caja. Partida en
   dos, tres o cuatro cajas de hombro con hombro, cada una queda casi cuadrada y
   el material se lee de una.
+- **Lo que pasa por tiempo se mide por minuto, no por partida.** El robot del
+  arnés termina un capítulo en un minuto y ella va a tardar varios. Cualquier
+  cosa que caiga, aparezca o expire con el reloj, calibrada contra la carrera
+  del robot, sale cuatro veces más frecuente de lo que parece.
+- **Una traba que el nivel anula no es una traba.** Lo que cae se deshacía
+  contra cualquier plataforma para que el nivel protegiera, y en un zigzag de
+  treinta y dos tramos el techo paraba seis de cada seis: la traba no existía.
+  Antes de dar por buena una regla que «el nivel modula», medí cuánto queda de
+  ella con el nivel de verdad puesto.
 - **Un objeto que hay que esquivar se dibuja para verse; el motivo poético va
   después.** El apagón se dibujó primero todo ceniza oscura, razonando que algo
   brillante no puede anunciar que la luz se apaga. Contra el cielo de los tres
