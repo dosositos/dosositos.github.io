@@ -74,6 +74,17 @@ const COLOR = {
   torreCanto: '#3a3147',
   torreJunta: '#191521',
 
+  /* Los estantes del fondo llevan tonos propios y no los de las
+     torres: con el violeta de silueta puesto encima del cielo, la
+     tabla se mezclaba con el fondo y lo que quedaba en pantalla eran
+     los bultos flotando sueltos. Están más lejos que una caja del
+     camino y más cerca que una torre pegada a la pared, y el color
+     tiene que decir eso. */
+  estante: '#38304a',
+  estanteCanto: '#544869',
+  estanteBulto: '#2b2438',
+  estanteSombra: '#191322',
+
   /* El polvo del cuarto, flotando en la luz. Lleva el rosa de Ovi
      porque es su capítulo y porque un cuarto cerrado sí tiene el aire
      de un color. */
@@ -434,6 +445,155 @@ export function dibujarTorre(
     // Y la junta de las solapas, una raya vertical corta en el medio.
     ctx.fillStyle = COLOR.torreJunta
     ctx.fillRect(x + caja.ancho / 2 - 0.5, caja.y + 2.4, 1, Math.min(9, caja.alto - 2.4))
+  }
+
+  ctx.restore()
+}
+
+export interface Estante {
+  y: number
+  /** Cuánto se comba la tabla en el medio. Ninguna está a nivel. */
+  comba: number
+  /** Los bultos de encima, en silueta. */
+  bultos: { x: number; ancho: number; alto: number; conTapa: boolean }[]
+  /** Las tiras de cinta que cuelgan del canto y se mecen. */
+  tiras: { x: number; largo: number; fase: number }[]
+}
+
+/**
+ * Los estantes del fondo: tablas que cruzan el cuarto de lado a lado,
+ * con cosas encima y tiras de cinta colgando.
+ *
+ * Es la capa que le faltaba a este capítulo. Las torres de cajas están
+ * pegadas a las dos paredes y el polvo flota por delante, pero entre
+ * una pared y la otra no había nada: el medio del cuarto era cielo
+ * pelado. Boo tiene sus vías cruzando el fondo y Nico los pliegues de
+ * la sábana; esto es lo mismo aquí — lo que dice que el cuarto tiene
+ * profundidad y no es un pozo entre dos montones.
+ *
+ * Cruzan enteros, de un borde al otro y saliéndose por los dos lados,
+ * que es lo que los separa de una plataforma: nada de lo que se pisa
+ * mide 360 de ancho. Y van muy apagados, por lo mismo de siempre.
+ */
+export function sembrarEstantes(desde: number, hasta: number): Estante[] {
+  const estantes: Estante[] = []
+
+  let semilla = 20250903
+  const siguiente = () => {
+    semilla = (semilla * 1664525 + 1013904223) % 4294967296
+    return semilla / 4294967296
+  }
+
+  const cuantos = Math.max(3, Math.round((hasta - desde) / 520))
+  for (let i = 0; i < cuantos; i += 1) {
+    const bultos: Estante['bultos'] = []
+    // De dos a cuatro cosas encima, repartidas y sin tocarse. Un
+    // estante lleno de punta a punta se lee como una franja, y lo que
+    // tiene que leerse es «hay cosas guardadas ahí arriba».
+    const cuantosBultos = 2 + Math.floor(siguiente() * 3)
+    for (let b = 0; b < cuantosBultos; b += 1) {
+      const ancho = 22 + siguiente() * 30
+      bultos.push({
+        x: (b / cuantosBultos) * MUNDO.ancho + siguiente() * 40,
+        ancho,
+        alto: 16 + siguiente() * 20,
+        conTapa: siguiente() < 0.6,
+      })
+    }
+
+    const tiras = [0, 1].slice(0, 1 + Math.floor(siguiente() * 2)).map(() => ({
+      x: siguiente() * MUNDO.ancho,
+      largo: 18 + siguiente() * 30,
+      fase: siguiente() * Math.PI * 2,
+    }))
+
+    estantes.push({
+      y: hasta - ((i + 0.5) / cuantos) * (hasta - desde),
+      comba: 3 + siguiente() * 6,
+      bultos,
+      tiras,
+    })
+  }
+
+  return estantes
+}
+
+export function dibujarEstante(
+  ctx: CanvasRenderingContext2D,
+  estante: Estante,
+  reloj: number,
+  quieto: boolean,
+) {
+  const { y, comba } = estante
+
+  ctx.save()
+  ctx.globalAlpha = 0.62
+
+  // Los bultos van primero: están encima de la tabla, o sea detrás de
+  // su canto, y tienen que quedar tapados por él.
+  for (const bulto of estante.bultos) {
+    const alturaAqui = y - comba * Math.sin((bulto.x / MUNDO.ancho) * Math.PI)
+    ctx.fillStyle = COLOR.estanteBulto
+    ctx.beginPath()
+    ctx.roundRect(bulto.x, alturaAqui - bulto.alto, bulto.ancho, bulto.alto, 2)
+    ctx.fill()
+
+    if (bulto.conTapa) {
+      ctx.fillStyle = COLOR.estante
+      ctx.fillRect(bulto.x, alturaAqui - bulto.alto, bulto.ancho, 2.4)
+    }
+  }
+
+  // La tabla, combada en el medio: un estante cargado de cajas no se
+  // queda recto, y esa curva es lo que lo separa de una raya.
+  const tabla = (dy: number) => {
+    ctx.moveTo(-20, y + dy)
+    ctx.quadraticCurveTo(MUNDO.ancho / 2, y + comba * 2 + dy, MUNDO.ancho + 20, y + dy)
+  }
+
+  ctx.fillStyle = COLOR.estante
+  ctx.beginPath()
+  tabla(0)
+  ctx.lineTo(MUNDO.ancho + 20, y + 9)
+  ctx.quadraticCurveTo(MUNDO.ancho / 2, y + comba * 2 + 9, -20, y + 9)
+  ctx.closePath()
+  ctx.fill()
+
+  // Su canto iluminado, arriba del todo, y la sombra que deja debajo:
+  // sin la sombra la tabla flota, con ella el estante está colgado de
+  // una pared que no se ve.
+  ctx.strokeStyle = COLOR.estanteCanto
+  ctx.lineWidth = 1.6
+  ctx.beginPath()
+  tabla(0.8)
+  ctx.stroke()
+
+  ctx.strokeStyle = COLOR.estanteSombra
+  ctx.globalAlpha = 0.4
+  ctx.lineWidth = 4
+  ctx.beginPath()
+  tabla(11)
+  ctx.stroke()
+  ctx.globalAlpha = 0.62
+
+  // Y las tiras de cinta colgando, que es lo único que se mueve del
+  // fondo de este capítulo. Cuelgan del canto y se mecen apenas: son
+  // de cinta de embalar, que es el material del cuarto.
+  ctx.strokeStyle = COLOR.cinta
+  ctx.globalAlpha = 0.28
+  ctx.lineWidth = 2.4
+  for (const tira of estante.tiras) {
+    const desde = y + 7 - comba * Math.sin((tira.x / MUNDO.ancho) * Math.PI) + comba
+    const mecido = quieto ? 0 : Math.sin(reloj * 0.7 + tira.fase) * 4
+    ctx.beginPath()
+    ctx.moveTo(tira.x, desde)
+    ctx.quadraticCurveTo(
+      tira.x + mecido * 0.6,
+      desde + tira.largo * 0.6,
+      tira.x + mecido,
+      desde + tira.largo,
+    )
+    ctx.stroke()
   }
 
   ctx.restore()

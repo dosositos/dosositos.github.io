@@ -10,11 +10,13 @@ import {
 } from '@/juego-luna/mundo-almohadas'
 import { dibujarEstrellaDePapel } from '@/juego-luna/estrella'
 import {
+  dibujarEstante,
   dibujarPilaDeCajas,
   dibujarPolvo as dibujarPolvoDelCuarto,
   dibujarTorre,
   loAplastada,
   sembrarCajas,
+  sembrarEstantes,
   sembrarPolvo,
   sembrarTorres,
 } from '@/juego-luna/mundo-cajas'
@@ -291,6 +293,7 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
 
   const torres = esDeCajas ? sembrarTorres(nivel.cima.y - 260, nivel.suelo + 260) : []
   const polvo = esDeCajas ? sembrarPolvo(60) : []
+  const estantes = esDeCajas ? sembrarEstantes(nivel.cima.y, nivel.suelo) : []
   const cajas = esDeCajas ? sembrarCajas(nivel) : new Map()
 
   // Y el cuarto de Nico: las cortinas de los dos lados, los pliegues
@@ -425,6 +428,12 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
 
       // Y el del capítulo de Ovi: las torres apiladas contra las dos
       // paredes del cuarto, y el polvo flotando en la luz de la luna.
+      // Los estantes cruzan el fondo entre las dos paredes de torres,
+      // y van detrás de ellas: es lo que le da hondo al cuarto.
+      for (const e of estantes) {
+        if (e.y + 40 < arriba || e.y - 60 > abajo) continue
+        dibujarEstante(ctx, e, escena.reloj, pintor.movimientoReducido)
+      }
       for (const t of torres) dibujarTorre(ctx, t, arriba, abajo)
       if (esDeCajas && !pintor.movimientoReducido) {
         dibujarPolvoDelCuarto(ctx, polvo, arriba, abajo, escena.reloj)
