@@ -4,50 +4,52 @@ import type { AlgoCayendo, EscenaLuna, QueCae } from '@/types'
 /**
  * Lo que cae, dibujado. La única traba que es de los tres capítulos.
  *
- * **Cada objeto es su propio efecto, dibujado.** No hay un carrito en
- * Boo, una caja en Ovi y una almohada en Nico: son los dos mismos en
- * los tres mundos, y los dos tienen la forma de la barra de carga —la
- * misma cápsula de 42 × 5 que ella lleva sobre la cabeza cada vez que
- * aprieta. Un objeto que se pareciera al mundo por donde cae contaría
- * de dónde salió, que no importa; contando en cambio a qué le va a
- * pegar, se entiende sin una sola palabra de explicación.
+ * **Cada objeto es un icono, y el icono es su efecto.** No hay un
+ * carrito en Boo, una caja en Ovi y una almohada en Nico: son los dos
+ * mismos en los tres mundos. Un objeto que se pareciera al mundo por
+ * donde cae contaría de dónde salió, que no importa; lo que hace falta
+ * saber es a qué le va a pegar, y eso se dice con una silueta.
  *
- * - **El apurón** va lleno de dorado y vibrando, con las rayas de
- *   velocidad detrás. Dice «esto va rápido».
- * - **El apagón** va ceniza y vacío, con la luz partida por la mitad.
- *   Dice «esto se apaga».
+ * - **El apurón** es un rayo dorado. Nadie necesita que le expliquen
+ *   que un rayo significa que algo va a ir rápido.
+ * - **El apagón** es un ojo tachado. El mismo de mostrar y ocultar la
+ *   contraseña que ella ha visto mil veces en cualquier formulario.
  *
- * Y los dos bajan girando y meciéndose, no en plomada: algo que se
- * soltó de arriba, no algo que le tiraron.
+ * **Se bambolean, no giran en redondo.** Es la diferencia entre una
+ * silueta que se lee al vuelo y una que hay que perseguir con la
+ * mirada. Bajar dando tumbos quedaba bonito y costaba lo único que
+ * este dibujo tiene que hacer.
+ *
+ * Antes los dos tenían la forma de la barra de carga, con el argumento
+ * de que el objeto era la barra. Se leía después de pensarlo, y un
+ * icono que hay que interpretar ya llegó tarde: cuando uno de estos
+ * entra en pantalla, ella está mirando el salto siguiente.
  */
 
 const COLOR = {
-  /* El dorado del tulipán, que es el de la barra de carga. Es el
-     mismo a propósito: el objeto es la barra. */
-  barra: '#f5c451',
-  barraOscura: '#a8802a',
-  marco: 'rgba(11, 16, 38, 0.55)',
+  /* El rayo va en el dorado del tulipán, que es el de la barra de
+     carga: lo que descompone es esa. */
+  rayo: '#f5c451',
+  rayoClaro: '#ffe8a8',
+  rayoOscuro: '#a8802a',
 
-  /* La ceniza del apagón.
-     
-     El primer intento iba apagado de verdad, todo ceniza oscura, con
-     el argumento de que un objeto brillante no puede anunciar que algo
-     se apaga. Se perdía contra el cielo: no se veía venir, y no verlo
-     venir rompe la única promesa que esta traba hace. Ahora lleva un
-     resto de dorado agonizando en una punta —es una barra
-     apagándose, no una piedra— y el contorno claro que le da silueta
-     contra cualquiera de los tres fondos. */
-  ceniza: '#7d7c6e',
-  cenizaOscura: '#45443c',
-  cenizaFilo: '#a8a596',
-  raja: '#cfc6b0',
+  /* Y el ojo en un gris azulado, frío y apagado, que es lo contrario
+     del dorado y se distingue de él a media pantalla de distancia. No
+     va oscuro: el primer apagón se dibujó en ceniza de verdad y se
+     perdía contra el cielo de los tres capítulos. No verlo venir rompe
+     la única promesa que esta traba hace. */
+  ojo: '#b9c2d6',
+  ojoClaro: '#e4e9f2',
+  ojoOscuro: '#4a5268',
+
+  /** El contorno oscuro que le da silueta a los dos, contra cualquier fondo. */
+  filo: 'rgba(11, 16, 38, 0.75)',
 
   estela: 'rgba(248, 244, 232, 0.5)',
 }
 
-/** Lo que mide el objeto: la barra de carga, un poco más chica. */
+/** Lo que mide el icono de ancho. La tortuga mide 30. */
 const ANCHO = LO_QUE_CAE.ancho
-const ALTO = 9
 
 export function dibujarLoQueCae(
   ctx: CanvasRenderingContext2D,
@@ -68,7 +70,10 @@ export function dibujarLoQueCae(
   dibujarEstela(ctx, algo)
 
   ctx.translate(algo.x, algo.y)
-  ctx.rotate(algo.giro)
+  // Se bambolea entre un cuarto de vuelta y el otro, sin llegar nunca
+  // a ponerse de cabeza: un icono que da vueltas enteras deja de ser
+  // un icono a media caída.
+  ctx.rotate(Math.sin(algo.giro) * 0.42)
 
   // El apurón vibra y el apagón no: es la primera diferencia que se
   // nota, antes todavía que el color.
@@ -95,115 +100,124 @@ function dibujarEstela(ctx: CanvasRenderingContext2D, algo: AlgoCayendo) {
 }
 
 /**
- * El apurón: la barra llena, con sus rayas de velocidad.
+ * El halo que llevan los dos detrás.
+ *
+ * Es lo que los hace saltar del fondo en los tres mundos sin tener que
+ * pintarlos de blanco, que es la trampa que este juego ya aprendió a no
+ * usar: lo blanco pesa. Un resplandor del color del propio icono lo
+ * despega del cielo y no le roba protagonismo a nada.
+ */
+function halo(ctx: CanvasRenderingContext2D, color: string) {
+  const luz = ctx.createRadialGradient(0, 0, ANCHO * 0.2, 0, 0, ANCHO * 1.1)
+  luz.addColorStop(0, color)
+  luz.addColorStop(1, 'rgba(0, 0, 0, 0)')
+  ctx.fillStyle = luz
+  ctx.beginPath()
+  ctx.arc(0, 0, ANCHO * 1.1, 0, Math.PI * 2)
+  ctx.fill()
+}
+
+/**
+ * El apurón: un rayo.
  *
  * Va dibujado en el sitio, ya rotado, con el centro en el (0, 0).
  */
 function dibujarApuron(ctx: CanvasRenderingContext2D) {
-  // El marco, igual que el de la barra de verdad.
-  ctx.fillStyle = COLOR.marco
-  ctx.beginPath()
-  ctx.roundRect(-ANCHO / 2 - 1, -ALTO / 2 - 1, ANCHO + 2, ALTO + 2, 5)
-  ctx.fill()
-
-  // Y el relleno, lleno de punta a punta: es una barra al tope.
-  const lleno = ctx.createLinearGradient(0, -ALTO / 2, 0, ALTO / 2)
-  lleno.addColorStop(0, COLOR.barra)
-  lleno.addColorStop(1, COLOR.barraOscura)
-  ctx.fillStyle = lleno
-  ctx.beginPath()
-  ctx.roundRect(-ANCHO / 2, -ALTO / 2, ANCHO, ALTO, 4)
-  ctx.fill()
-
-  // Las rayas de velocidad, a los dos lados y saliéndose: es lo que
-  // dice «rápido» sin escribirlo.
-  ctx.strokeStyle = COLOR.barra
-  ctx.lineWidth = 1.6
-  ctx.lineCap = 'round'
-  ctx.globalAlpha = 0.55
-  for (let i = -1; i <= 1; i += 1) {
-    const y = i * 4.5
-    const largo = i === 0 ? 9 : 6
-    ctx.beginPath()
-    ctx.moveTo(-ANCHO / 2 - 3, y)
-    ctx.lineTo(-ANCHO / 2 - 3 - largo, y)
-    ctx.stroke()
-    ctx.beginPath()
-    ctx.moveTo(ANCHO / 2 + 3, y)
-    ctx.lineTo(ANCHO / 2 + 3 + largo, y)
-    ctx.stroke()
-  }
+  ctx.save()
+  ctx.globalAlpha = 0.28
+  halo(ctx, COLOR.rayo)
   ctx.globalAlpha = 1
+
+  // El rayo de toda la vida: baja, corta hacia atrás y vuelve a bajar.
+  // Siete puntos, que son los que hacen falta y ni uno más — a este
+  // tamaño, un rayo con más picos es una mancha.
+  const a = ANCHO / 2
+  ctx.beginPath()
+  ctx.moveTo(a * 0.35, -a)
+  ctx.lineTo(-a * 0.7, a * 0.12)
+  ctx.lineTo(-a * 0.05, a * 0.12)
+  ctx.lineTo(-a * 0.35, a)
+  ctx.lineTo(a * 0.7, -a * 0.16)
+  ctx.lineTo(a * 0.05, -a * 0.16)
+  ctx.closePath()
+
+  const lleno = ctx.createLinearGradient(0, -a, 0, a)
+  lleno.addColorStop(0, COLOR.rayoClaro)
+  lleno.addColorStop(0.5, COLOR.rayo)
+  lleno.addColorStop(1, COLOR.rayoOscuro)
+  ctx.fillStyle = lleno
+  ctx.fill()
+
+  ctx.strokeStyle = COLOR.filo
+  ctx.lineWidth = 1.6
+  ctx.lineJoin = 'round'
+  ctx.stroke()
+
+  ctx.restore()
 }
 
 /**
- * El apagón: la misma barra, **partida en dos y apagándose**.
+ * El apagón: un ojo tachado.
  *
- * Las dos mitades van separadas de verdad, con el cielo pasando por el
- * medio: es lo que lo hace inconfundible con el apurón a mitad de un
- * salto, que es cuando de verdad hay que distinguirlos. En la mitad de
- * atrás le queda un resto de dorado agonizando —una barra que se
- * apaga, no una piedra— y las dos llevan contorno claro, que es lo que
- * les da silueta contra los tres fondos.
+ * El de mostrar y ocultar la contraseña, que es de los pocos iconos
+ * que todo el mundo ya sabe leer. Dice lo que hace sin una palabra: a
+ * partir de ahora no vas a ver.
  */
 function dibujarApagon(ctx: CanvasRenderingContext2D) {
-  const mitad = ANCHO * 0.44
-  const hueco = 3
+  const a = ANCHO / 2
 
-  // La mitad de atrás, con el último dorado.
-  const agonizando = ctx.createLinearGradient(-ANCHO / 2, 0, -ANCHO / 2 + mitad, 0)
-  agonizando.addColorStop(0, COLOR.barraOscura)
-  agonizando.addColorStop(1, COLOR.cenizaOscura)
-
-  media(ctx, -ANCHO / 2, mitad, agonizando, -0.09)
-  // Y la de adelante, ya ceniza del todo y caída un poco: son dos
-  // pedazos sueltos, no una barra con una raya pintada.
-  media(ctx, ANCHO / 2 - mitad + hueco, mitad, COLOR.cenizaOscura, 0.13)
-
-  // El chispazo del corte, en el hueco: lo único claro que lleva, y va
-  // justo donde se partió.
-  ctx.strokeStyle = COLOR.raja
-  ctx.lineWidth = 1.3
-  ctx.lineCap = 'round'
-  ctx.globalAlpha = 0.7
-  ctx.beginPath()
-  ctx.moveTo(1, -ALTO / 2 - 4)
-  ctx.lineTo(-2.5, 0)
-  ctx.lineTo(1.5, ALTO / 2 + 4)
-  ctx.stroke()
-  ctx.globalAlpha = 1
-}
-
-/** Una de las dos mitades del apagón, ladeada lo suyo. */
-function media(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  ancho: number,
-  relleno: string | CanvasGradient,
-  ladeo: number,
-) {
   ctx.save()
-  ctx.translate(x + ancho / 2, 0)
-  ctx.rotate(ladeo)
-  ctx.translate(-(x + ancho / 2), 0)
-
-  ctx.fillStyle = COLOR.marco
-  ctx.beginPath()
-  ctx.roundRect(x - 1, -ALTO / 2 - 1, ancho + 2, ALTO + 2, 5)
-  ctx.fill()
-
-  ctx.fillStyle = relleno
-  ctx.beginPath()
-  ctx.roundRect(x, -ALTO / 2, ancho, ALTO, 4)
-  ctx.fill()
-
-  ctx.strokeStyle = COLOR.cenizaFilo
-  ctx.lineWidth = 1
-  ctx.globalAlpha = 0.8
-  ctx.beginPath()
-  ctx.roundRect(x, -ALTO / 2, ancho, ALTO, 4)
-  ctx.stroke()
+  ctx.globalAlpha = 0.26
+  halo(ctx, COLOR.ojo)
   ctx.globalAlpha = 1
+
+  // La almendra: dos arcos que se encuentran en las puntas.
+  ctx.beginPath()
+  ctx.moveTo(-a, 0)
+  ctx.quadraticCurveTo(0, -a * 0.92, a, 0)
+  ctx.quadraticCurveTo(0, a * 0.92, -a, 0)
+  ctx.closePath()
+
+  const lleno = ctx.createLinearGradient(0, -a * 0.6, 0, a * 0.6)
+  lleno.addColorStop(0, COLOR.ojoClaro)
+  lleno.addColorStop(1, COLOR.ojo)
+  ctx.fillStyle = lleno
+  ctx.fill()
+
+  ctx.strokeStyle = COLOR.filo
+  ctx.lineWidth = 1.6
+  ctx.lineJoin = 'round'
+  ctx.stroke()
+
+  // La pupila, gorda: a este tamaño una pequeña desaparece y el ojo se
+  // queda en un limón.
+  ctx.fillStyle = COLOR.ojoOscuro
+  ctx.beginPath()
+  ctx.arc(0, 0, a * 0.34, 0, Math.PI * 2)
+  ctx.fill()
+
+  // Y la tachadura, que es la mitad del icono. Va con su propio filo
+  // oscuro por debajo para que se despegue del ojo en vez de fundirse
+  // con la pupila.
+  //
+  // Fina, y no del blanco de la luna: la primera versión iba gorda y
+  // clarísima y se comía el ojo entero. Lo que quedaba en pantalla era
+  // una raya con algo detrás, y entonces ya no es el icono que todo el
+  // mundo sabe leer, es una raya.
+  ctx.lineCap = 'round'
+  ctx.strokeStyle = COLOR.filo
+  ctx.lineWidth = 4.4
+  ctx.beginPath()
+  ctx.moveTo(-a * 0.86, a * 0.74)
+  ctx.lineTo(a * 0.86, -a * 0.74)
+  ctx.stroke()
+
+  ctx.strokeStyle = COLOR.ojo
+  ctx.lineWidth = 2.2
+  ctx.beginPath()
+  ctx.moveTo(-a * 0.86, a * 0.74)
+  ctx.lineTo(a * 0.86, -a * 0.74)
+  ctx.stroke()
 
   ctx.restore()
 }
@@ -211,7 +225,7 @@ function media(
 /** El puf de deshacerse, contra una plataforma o contra la tortuga. */
 function dibujarPuf(ctx: CanvasRenderingContext2D, algo: AlgoCayendo) {
   const u = algo.puf
-  ctx.fillStyle = algo.cual === 'apuron' ? COLOR.barra : COLOR.ceniza
+  ctx.fillStyle = algo.cual === 'apuron' ? COLOR.rayo : COLOR.ojo
   ctx.globalAlpha = (1 - u) * 0.8
 
   // Seis motas abriéndose en círculo y frenando. Cuesta seis trazos y
@@ -254,7 +268,7 @@ export function dibujarLoQuePusieron(ctx: CanvasRenderingContext2D, escena: Esce
 
   // Los saltos que quedan, en puntitos debajo.
   ctx.save()
-  ctx.fillStyle = cual === 'apuron' ? COLOR.barra : COLOR.ceniza
+  ctx.fillStyle = cual === 'apuron' ? COLOR.rayo : COLOR.ojo
   ctx.globalAlpha = 0.75
   for (let i = 0; i < saltos; i += 1) {
     const px = x - ((saltos - 1) * 5) / 2 + i * 5

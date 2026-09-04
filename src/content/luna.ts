@@ -483,8 +483,15 @@ export const LO_QUE_CAE = {
    */
   velocidad: 190,
 
-  /** Lo que mide de ancho. La tortuga mide 30. */
-  ancho: 26,
+  /**
+   * Lo que mide de ancho. La tortuga mide 30.
+   *
+   * Es también su caja: lo que cae le pega cuando este cuadrado toca a
+   * la tortuga, así que agrandarlo lo hace más vistoso **y** más
+   * certero. Los dos a la vez, y por eso se mide con el arnés cada vez
+   * que se toca.
+   */
+  ancho: 30,
 
   /**
    * Cuántos saltos dura el efecto.

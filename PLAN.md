@@ -486,13 +486,24 @@ gesto de siempre — la tortuga camina sola y se queda quieta mientras carga, as
 que quitarse de abajo es decidir cuándo cargar y cuándo dejarla andar.
 
 **Y son globales, con el mismo dibujo en los tres mundos.** No hay un carrito
-en Boo, una caja en Ovi y una almohada en Nico: los dos tienen **la forma de la
-barra de carga**, la misma cápsula que ella lleva sobre la cabeza al apretar. Un
-objeto que se pareciera al mundo por donde cae contaría de dónde salió, que no
-importa; contando a qué le va a pegar, se entiende sin una palabra. El apurón va
-lleno de dorado, vibrando y con rayas de velocidad; el apagón va partido en dos
-mitades sueltas, con un resto de dorado agonizando en una y el chispazo del
-corte en medio.
+en Boo, una caja en Ovi y una almohada en Nico. Un objeto que se pareciera al
+mundo por donde cae contaría de dónde salió, que no importa; lo que hace falta
+saber es a qué le va a pegar, y eso se dice con una silueta:
+
+- **El apurón es un rayo** dorado. Nadie necesita que le expliquen que un rayo
+  significa que algo va a ir rápido.
+- **El apagón es un ojo tachado**, el mismo de mostrar y ocultar la contraseña
+  que ella ha visto mil veces en cualquier formulario.
+
+Los dos llevan un halo suave del color del propio icono, que es lo que los
+despega del cielo sin tener que pintarlos de blanco, y **se bambolean en vez de
+girar en redondo**: es la diferencia entre una silueta que se lee al vuelo y una
+que hay que perseguir con la mirada.
+
+Antes eran los dos la barra de carga en pequeño, con el argumento de que el
+objeto era la barra que venía a descomponer. Se leía **después de pensarlo**, y
+un icono que hay que interpretar ya llegó tarde: cuando uno de estos entra en
+pantalla, ella está mirando el salto siguiente.
 
 **Lo que lo hace justo**, que es todo lo que hay que cuidar aquí:
 
@@ -829,6 +840,11 @@ escribió antes que el capítulo y por eso el capítulo salió en una tarde.
   capítulos no se veía venir, y no verlo venir rompe la única promesa que esa
   traba hace. La coherencia de un dibujo vale menos que su legibilidad cuando el
   dibujo es una amenaza.
+- **Y por lo mismo: un icono se lee o no se lee, no se interpreta.** Lo que cae
+  llevó primero la forma de la barra de carga, que era la idea bonita —el objeto
+  es la barra que viene a descomponerse—. Había que pensarlo un segundo, y ese
+  segundo no existe: cuando el objeto entra en pantalla, ella está mirando el
+  salto siguiente. Un rayo y un ojo tachado no se piensan.
 - **Nada translúcido y con lados rectos se pone delante de la luna.** Las
   sábanas que cuelgan debajo de las almohadas de Nico eran paños opacos con los
   lados a plomo, y en la presentación —donde la luna pasa por detrás, enorme—
