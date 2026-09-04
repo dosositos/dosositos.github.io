@@ -10,6 +10,11 @@ import {
 } from '@/juego-luna/mundo-almohadas'
 import { dibujarEstrellaDePapel } from '@/juego-luna/estrella'
 import {
+  dibujarLoQueCae,
+  dibujarLoQuePusieron,
+  laBarraSeVe,
+} from '@/juego-luna/lo-que-cae'
+import {
   dibujarEstante,
   dibujarPilaDeCajas,
   dibujarPolvo as dibujarPolvoDelCuarto,
@@ -523,8 +528,20 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
       if (escena.y < escena.camara + altoVista + 60) {
         dibujarSombra(ctx, escena)
         dibujarTortuga(ctx, escena)
-        if (escena.cargando) dibujarBarra(ctx, escena)
+        // Con el apagón puesto la barra no se dibuja, y eso es todo lo
+        // que hace: la carga sigue subiendo igual y el temblor de la
+        // tortuga sigue contándola. Es información lo que quita, no
+        // control.
+        if (escena.cargando && laBarraSeVe(escena.efecto)) dibujarBarra(ctx, escena)
         if (escena.cansancio > 0) dibujarEstrellitas(ctx, escena)
+        dibujarLoQuePusieron(ctx, escena)
+      }
+
+      // Lo que cae va por delante de todo el mundo y de la tortuga: es
+      // lo único que está entre ella y la pantalla, y taparlo con una
+      // plataforma sería esconder justo lo que hay que ver venir.
+      for (const algo of escena.loQueCae) {
+        dibujarLoQueCae(ctx, algo, escena.reloj, pintor.movimientoReducido)
       }
 
       // El fogonazo se queda donde despegó, no donde va la tortuga.

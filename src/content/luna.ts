@@ -420,6 +420,87 @@ export const COBIJAS = {
 }
 
 /**
+ * Lo que cae, que es la única traba de los tres capítulos.
+ *
+ * Cada tanto se cae algo de arriba. Si le pega a la tortuga, le
+ * descompone **la barra** durante los saltos siguientes; si no le pega,
+ * no pasó nada. Son dos cosas y las dos son la misma regla — lo que
+ * cae, cae contra tu barra — porque cada regla de más es una regla que
+ * explicar en un regalo que se juega una vez, y con dos que se explican
+ * solas alcanza:
+ *
+ * - **El apurón** se la desboca: se llena a toda prisa y **no se queda
+ *   en el tope**, se pasa y vuelve a cero. Le quita el control.
+ * - **El apagón** se la apaga: la barra deja de verse. No cambia ni un
+ *   número, le quita la información. Y no deja a ciegas — la tortuga
+ *   tiembla más cuanto más llena está, así que se puede seguir midiendo
+ *   mirándola a ella, que es de lo que se trata.
+ *
+ * **No se esquiva con un gesto nuevo.** La tortuga camina sola y se
+ * queda quieta mientras carga, así que quitarse de abajo es decidir
+ * cuándo cargar y cuándo dejarla andar — el único gesto que este juego
+ * tiene. Por eso esto no es un poder de los que se tiraron: no hay nada
+ * que aprender a usar, solo algo que ver venir.
+ *
+ * Y se ve venir de verdad: cae despacio, desde más arriba del borde de
+ * la pantalla, y se deshace contra cualquier plataforma. O sea que el
+ * nivel protege, y meterse debajo de algo es una decisión.
+ */
+export const LO_QUE_CAE = {
+  /**
+   * Cada cuánto cae uno, en segundos, entre estos dos. Nunca dos
+   * juntos: lo que se está pidiendo es que se vea venir, y dos a la vez
+   * es una lluvia de la que no se puede salir.
+   */
+  cadaDesde: 7,
+  cadaHasta: 12,
+
+  /**
+   * Lo rápido que baja, en píxeles del mundo por segundo.
+   *
+   * De dónde sale: aparece por encima del borde de arriba y la tortuga
+   * anda por el 62 % de la pantalla, o sea unos 400 px más abajo. A 105
+   * eso son casi cuatro segundos de verlo bajar, y la caminata entera
+   * de un lado al otro de una plataforma ancha son tres. Alcanza para
+   * quitarse sin correr.
+   */
+  velocidad: 105,
+
+  /** Lo que mide de ancho. La tortuga mide 30. */
+  ancho: 26,
+
+  /**
+   * Cuántos saltos dura el efecto.
+   *
+   * Tres es lo que hay entre dos estrellas en el tramo más corto: dura
+   * lo suficiente para que se sienta y se acaba antes de poder costar
+   * una caída entera. Y se va también al caerse, que una regla que
+   * castiga no puede castigar dos veces.
+   */
+  saltosDeEfecto: 3,
+
+  /**
+   * Lo que tarda la barra desbocada en dar una vuelta entera, en
+   * milisegundos. Normal son 900.
+   *
+   * Con 320 la vuelta completa entra tres veces en lo que se aguanta
+   * sin desmayarse, así que el salto que se quiere sigue estando —
+   * hay que agarrarlo al pasar en vez de esperarlo arriba. Con 150 era
+   * puro azar, y el azar no es dificultad.
+   */
+  msDeCargaDesbocada: 320,
+
+  /**
+   * No cae nada hasta pasada la primera estrella de cada capítulo.
+   *
+   * La misma regla que la pista que se borra en el capítulo de Boo: los
+   * primeros saltos son para aprender, y aprender con cosas cayendo
+   * encima no se puede.
+   */
+  desdeLaPrimeraEstrella: true,
+}
+
+/**
  * Los tramos de impulso: al caer ahí sale disparada sola, sin dedo.
  *
  * La tortuga se centra en el tramo antes de salir, así que el salto
@@ -897,6 +978,15 @@ export const TEXTOS = {
   ayudaTeclado: 'o la barra espaciadora',
   /** Al pisar una estrella. Discreto y corto: se lee de reojo. */
   hito: 'guardado aquí',
+  /**
+   * Lo que sale la **primera vez** que le pega cada cosa de las que
+   * caen, y solo esa vez. El dibujo del objeto ya dice a qué le va a
+   * pegar, pero lo que hace exactamente hay que decirlo con letras una
+   * vez — igual que la estrella, que se enciende y late y aun así hay
+   * que escribir «guardado aquí».
+   */
+  golpeApuron: 'se te desbocó la barra, ya no para en el tope',
+  golpeApagon: 'te apagó la barra, guiate por el temblor',
   llegada: 'llegaste',
   /** Lo acumulado de todas las veces, debajo de lo de esta subida. */
   enTotal: 'en total',

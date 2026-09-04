@@ -5,6 +5,7 @@ import {
   CANSANCIO,
   CINTA,
   IMPULSO,
+  LO_QUE_CAE,
   LUNA,
   MUNDO,
   PELUCHES,
@@ -13,7 +14,7 @@ import {
   TORTUGA,
 } from '@/content/luna'
 import { msDeCargaEn, superficieDe } from '@/juego-luna/mundos'
-import type { EscenaLuna, EventoLuna, Nivel, Plataforma } from '@/types'
+import type { AlgoCayendo, EscenaLuna, EventoLuna, Nivel, Plataforma, QueCae } from '@/types'
 
 /**
  * El motor del juego de la luna: el bucle, la física y las colisiones.
@@ -293,6 +294,33 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
   /** El hito más alto pisado. -1 es «todavía ninguno». */
   let hitoAlcanzado = -1
 
+  /* ── Lo que cae ─────────────────────────────────────────────────
+     Cada tanto se cae algo de arriba y, si le pega, le descompone la
+     barra durante unos saltos. Ver `LO_QUE_CAE` en `luna.ts`. */
+
+  /** Lo que está bajando ahora mismo, con lo que se está deshaciendo. */
+  let loQueCae: AlgoCayendo[] = []
+
+  /** Segundos que faltan para que caiga el siguiente. */
+  let paraElSiguiente = LO_QUE_CAE.cadaHasta
+
+  /** El efecto puesto y los saltos que le quedan. */
+  let efecto: { cual: QueCae; saltos: number } | null = null
+
+  /**
+   * De dónde salen el cuándo, el qué y el dónde.
+   *
+   * Sembrado y no `Math.random`: el arnés tiene que poder jugar la
+   * misma partida dos veces y que caigan las mismas cosas en el mismo
+   * sitio. Una prueba que no se puede repetir no prueba nada, y este
+   * juego ya lleva siete veces en que el mentiroso era el arnés.
+   */
+  let semillaDeLoQueCae = 20260824
+  const sorteo = () => {
+    semillaDeLoQueCae = (semillaDeLoQueCae * 1664525 + 1013904223) % 4294967296
+    return semillaDeLoQueCae / 4294967296
+  }
+
   /** Cuántos saltos dio y cuántas veces se cayó, en esta subida. */
   let pasitos = 0
   let caidas = 0
@@ -388,6 +416,107 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
     )
   }
 
+  /**
+   * Sembrar, mover y chocar lo que cae. Una vez por paso.
+   *
+   * Aparece **por encima del borde de arriba de la pantalla**, no a una
+   * altura del mundo: lo que se está prometiendo es que se ve venir, y
+   * eso solo se cumple si entra por arriba de la vista con la caída
+   * entera por delante.
+   */
+  function moverLoQueCae() {
+    // Se deshacen los que ya hicieron su puf.
+    if (loQueCae.length > 0) {
+      for (const algo of loQueCae) {
+        if (algo.puf > 0) algo.puf = Math.min(1, algo.puf + PASO * 4)
+      }
+      loQueCae = loQueCae.filter((algo) => algo.puf < 1 && algo.y < camara + altoVista + 120)
+    }
+
+    // Nada cae durante las cinemáticas, ni mientras se cae o está
+    // tirada: en los tres casos ella no puede hacer nada al respecto, y
+    // una traba que pega cuando no se puede reaccionar es una trampa.
+    const jugando = cine === 'jugando' && cayendo <= 0 && tirada <= 0
+    const yaAprendio = !LO_QUE_CAE.desdeLaPrimeraEstrella || hitoAlcanzado >= primerLazo
+
+    if (jugando && yaAprendio) {
+      paraElSiguiente -= PASO
+      if (paraElSiguiente <= 0) {
+        // Nunca dos a la vez: lo que se pide es verlo venir, y de una
+        // lluvia no se sale.
+        if (loQueCae.every((algo) => algo.puf > 0)) soltarUno()
+        paraElSiguiente =
+          LO_QUE_CAE.cadaDesde + sorteo() * (LO_QUE_CAE.cadaHasta - LO_QUE_CAE.cadaDesde)
+      }
+    }
+
+    const medio = LO_QUE_CAE.ancho / 2
+    for (const algo of loQueCae) {
+      if (algo.puf > 0) continue
+
+      algo.y += LO_QUE_CAE.velocidad * PASO
+      algo.giro += PASO * 1.6
+      // El vaivén de lado, que es lo que lo separa de una piedra: baja
+      // meciéndose como algo que se soltó, no como algo que se tiró.
+      algo.x += Math.sin(reloj * 1.7 + algo.fase) * 26 * PASO
+
+      // Contra la tortuga. Su caja es su ancho por su alto, medida
+      // desde las paticas para arriba.
+      const leDio =
+        algo.x + medio > t.x - TORTUGA.ancho / 2 &&
+        algo.x - medio < t.x + TORTUGA.ancho / 2 &&
+        algo.y + medio > t.y - TORTUGA.alto &&
+        algo.y - medio < t.y
+      if (leDio) {
+        algo.puf = 0.001
+        efecto = { cual: algo.cual, saltos: LO_QUE_CAE.saltosDeEfecto }
+        // Cargando con la barra ya arriba, el apurón tiene que notarse
+        // en el acto y no en el salto siguiente.
+        if (algo.cual === 'apuron' && t.cargando) t.carga = Math.min(t.carga, 0.5)
+        avisar(algo.cual)
+        continue
+      }
+
+      // Y contra el techo: cualquier plataforma que siga ahí lo para.
+      // Por eso el nivel protege, y meterse debajo de algo es una
+      // decisión que se puede tomar con el gesto de siempre.
+      const contra = plataformas.find(
+        (p) =>
+          sigueAhi(p) &&
+          algo.x + medio > p.x &&
+          algo.x - medio < p.x + p.ancho &&
+          algo.y + medio > alturaEn(p, algo.x) &&
+          algo.y - medio < alturaEn(p, algo.x) + 18,
+      )
+      if (contra) algo.puf = 0.001
+    }
+  }
+
+  /** Soltar uno nuevo, por encima del borde de arriba de la vista. */
+  function soltarUno() {
+    // La x se sortea en una franja alrededor de la tortuga y no en todo
+    // el ancho: cayendo en cualquier lado casi nunca amenazaba nada y
+    // la traba no existía; cayéndole siempre encima sería imposible de
+    // esquivar. Una franja de 240 sobre un mundo de 360 deja que a
+    // veces venga a por ella y a veces pase de largo.
+    const franja = 240
+    const x = Math.min(
+      MUNDO.ancho - LO_QUE_CAE.ancho,
+      Math.max(LO_QUE_CAE.ancho, t.x - franja / 2 + sorteo() * franja),
+    )
+
+    loQueCae.push({
+      x,
+      y: camara - 30,
+      // Los dos por igual: son la misma regla contada de dos maneras y
+      // ninguno es el raro.
+      cual: sorteo() < 0.5 ? 'apuron' : 'apagon',
+      giro: sorteo() * Math.PI * 2,
+      fase: sorteo() * Math.PI * 2,
+      puf: 0,
+    })
+  }
+
   function volverAlHito() {
     // La pista de arriba del lazo vuelve entera. Sin esto, caerse en
     // el capítulo de Boo sería el final de la partida: el camino que
@@ -422,6 +551,15 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
     t.sinSuelo = 0
     tirada = 0
     rebotesSeguidos = 0
+    // Y se va lo que le hubieran tirado encima, con todo lo que esté
+    // cayendo ahora mismo. Una regla que castiga no puede castigar dos
+    // veces: ya se cayó, ya pagó. Reaparecer con la barra descompuesta
+    // y algo bajándole encima es empezar de nuevo con una trampa
+    // puesta que ella no vio ponerse — lo mismo que se arregló con las
+    // cajas torcidas y las almohadas hundidas.
+    efecto = null
+    loQueCae = []
+    paraElSiguiente = LO_QUE_CAE.cadaHasta
     ultimoPiso = Math.max(hitoAlcanzado, 0)
     previo = { ...t }
     avisar('reaparicion')
@@ -455,6 +593,10 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
     // desmayarse encima de una es seguir apoyada, y se sigue hundiendo.
     moverLasCajas()
     hundirLasAlmohadas()
+    // Y lo que cae, que es de los tres capítulos. También sigue
+    // cayendo mientras ella se cae: el mundo no se para porque ella se
+    // pare. Lo que no pasa es que le pegue, de eso se encarga adentro.
+    moverLoQueCae()
 
     if (cayendo > 0) {
       // Mientras se cae no manda nadie: sigue bajando y no choca con
@@ -504,8 +646,20 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
       // de cuando apretó, que en un capítulo donde el suelo se mueve es
       // la única lectura honesta. En el aire —cargando con el perdón
       // del borde— no hay cobija que valga y carga a lo normal.
-      const msDeCarga = msDeCargaEn(t.enSuelo ? sueloDebajo() : undefined)
-      t.carga = Math.min(1, t.carga + (PASO * 1000) / msDeCarga)
+      // Con el apurón puesto la barra tiene su propio reloj y no le
+      // hace caso ni a la cobija: lo que está descompuesto es la barra
+      // misma, no el suelo.
+      const desbocada = efecto?.cual === 'apuron'
+      const msDeCarga = desbocada
+        ? LO_QUE_CAE.msDeCargaDesbocada
+        : msDeCargaEn(t.enSuelo ? sueloDebajo() : undefined)
+
+      // Y no se queda en el tope: se pasa y vuelve a cero. Es lo único
+      // que hace el apurón, y es todo — el salto que se quiere sigue
+      // estando, pero hay que agarrarlo al pasar en vez de esperarlo
+      // arriba.
+      const subida = t.carga + (PASO * 1000) / msDeCarga
+      t.carga = desbocada ? subida % 1 : Math.min(1, subida)
       t.cargaMs += PASO * 1000
 
       // Pero aguantarla para siempre esperando el momento perfecto sí
@@ -744,6 +898,14 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
 
     rebotesSeguidos = 0
 
+    // El efecto se gasta salto a salto, y se cuenta el que acaba de
+    // salir: lo que se prometió son tres saltos con la barra
+    // descompuesta, y el primero es este.
+    if (efecto) {
+      efecto.saltos -= 1
+      if (efecto.saltos <= 0) efecto = null
+    }
+
     if (nivel.seDesvanece && ultimoPiso > primerLazo && ritmo[ultimoPiso] === 0) {
       ritmo[ultimoPiso] = (PASO * 1000) / loQueDuraLaPista()
     }
@@ -834,6 +996,10 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
       inclinacion,
       hundido,
       rebote: rebotoEn >= 0 ? { indice: rebotoEn, ms: msDelRebote } : null,
+      // El mismo arreglo, sin copiar, igual que la vida de la pista: el
+      // pintor solo lee.
+      loQueCae,
+      efecto: efecto ? { cual: efecto.cual, saltos: efecto.saltos } : null,
       cine,
       cineAvance:
         cine === 'entrada'

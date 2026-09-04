@@ -48,6 +48,7 @@ const {
   PELUCHES,
   ALMOHADAS,
   COBIJAS,
+  LO_QUE_CAE,
   CANSANCIO,
   CAIDA,
   CAPITULOS,
@@ -2143,6 +2144,346 @@ console.log('  Con qué capítulo entra')
           .join('; ')}`,
   )
 }
+
+console.log('')
+console.log('  Lo que cae')
+
+/**
+ * El mundo para mirar lo que cae: dos plataformas anchas, la de arriba
+ * con estrella y corrida a un lado.
+ *
+ * Corrida a propósito: la plataforma de arriba **para lo que cae**, así
+ * que puesta encima de la otra sería un techo y no caería nada sobre la
+ * tortuga. Y con estrella porque hasta pasar la primera no cae nada,
+ * que es la regla que hace falta cumplir para poder probar el resto.
+ */
+function mundoDeLoQueCae() {
+  return construirNivel({
+    ...capitulo,
+    seDesvanece: false,
+    cede: false,
+    seHunde: false,
+    plataformas: [
+      { x: 20, ancho: 150, altura: 0 },
+      { x: 190, ancho: 150, altura: 60, hito: true },
+    ],
+  })
+}
+
+/** Saltar a la estrella de arriba, que es lo que abre la veda. */
+function pisarLaEstrella(motor, frame, ver) {
+  // El primer frame es el que llena la escena: antes de él `ver()` no
+  // devuelve nada todavía.
+  frame()
+  for (let i = 0; i < 900; i += 1) {
+    if (ver().hitoAlcanzado >= 1) return true
+    // Se salta solo mirando a la derecha, que es hacia donde está.
+    if (ver().enSuelo && ver().mirando === 1 && !ver().cargando) {
+      saltarCon(motor, frame, 0.62)
+    }
+    frame()
+  }
+  return false
+}
+
+/** Jugar hasta que le pegue algo, o hasta cansarse de esperar. */
+function hastaQueLePegue(motor, frame, ver, tope = 9000) {
+  frame()
+  for (let i = 0; i < tope && !ver().efecto; i += 1) frame()
+  return ver().efecto
+}
+
+{
+  // (a) Antes de la primera estrella no cae nada. Es la misma regla
+  // que la pista que se borra en el capítulo de Boo: los primeros
+  // saltos son para aprender.
+  const { motor, frame, ver } = banco(mundoDeLoQueCae())
+  let cayoAlgo = false
+  // Bastante más que el intervalo más largo, para que no sea que
+  // simplemente no le dio tiempo.
+  for (let i = 0; i < Math.round((LO_QUE_CAE.cadaHasta * 3 * 1000) / FRAME); i += 1) {
+    frame()
+    if (ver().loQueCae.length > 0) cayoAlgo = true
+  }
+  motor.detener()
+  console.log(
+    !cayoAlgo
+      ? '   ✓ antes de la primera estrella no cae nada, ni en ' +
+          LO_QUE_CAE.cadaHasta * 3 +
+          ' segundos'
+      : '   ⚠ está cayendo cosas antes de la primera estrella, que es cuando todavía se aprende',
+  )
+}
+
+{
+  // (b) Y pasada la estrella sí cae, y **se ve venir**: lo que se está
+  // prometiendo es que da tiempo a reaccionar, y eso es un número que
+  // se puede medir. Se mira cuánto tarda desde que asoma hasta que
+  // llega a la altura de las paticas.
+  const { motor, frame, ver } = banco(mundoDeLoQueCae())
+  const listo = pisarLaEstrella(motor, frame, ver)
+
+  let asomo = -1
+  let llegada = -1
+  for (let i = 0; i < 5000 && llegada < 0; i += 1) {
+    const e = frame()
+    const algo = e.loQueCae.find((x) => x.puf === 0)
+    if (algo && asomo < 0) asomo = i
+    if (algo && asomo >= 0 && algo.y >= e.y) llegada = i
+    // Si se deshizo contra algo antes de llegar, se espera al siguiente.
+    if (asomo >= 0 && !algo) asomo = -1
+  }
+  motor.detener()
+
+  const segundos = ((llegada - asomo) * FRAME) / 1000
+  console.log(
+    '   asoma por arriba y tarda ' +
+      segundos.toFixed(1) +
+      ' s en llegar a la altura de la tortuga',
+  )
+  console.log(
+    listo && llegada > 0 && segundos >= 2
+      ? '   ✓ da tiempo de sobra a quitarse, que es lo único que esta traba promete'
+      : '   ⚠ llega en ' +
+          segundos.toFixed(1) +
+          ' s: no se ve venir, y una traba que no se ve venir es una trampa',
+  )
+}
+
+{
+  // (c) El apurón desboca la barra de verdad: va más rápido **y no se
+  // queda en el tope**. Lo segundo es lo importante — si se quedara
+  // arriba, sería la barra de siempre con prisa y no habría traba.
+  const { motor, frame, ver, eventos } = banco(mundoDeLoQueCae())
+  pisarLaEstrella(motor, frame, ver)
+
+  // Se busca un apurón de verdad: se juega hasta que le pegue uno, que
+  // es de paso la prueba de que la franja donde caen amenaza a alguien.
+  let puesto = null
+  for (let i = 0; i < 4 && !puesto; i += 1) {
+    const cual = hastaQueLePegue(motor, frame, ver)
+    if (cual?.cual === 'apuron') puesto = cual
+    else if (cual) {
+      // Era el otro: se gastan sus saltos y se sigue esperando.
+      for (let s = 0; s < LO_QUE_CAE.saltosDeEfecto + 1; s += 1) {
+        while (!ver().enSuelo) frame()
+        saltarCon(motor, frame, 0.3)
+        frame()
+      }
+    }
+  }
+  const golpes = eventos.filter((e) => e === 'apuron' || e === 'apagon').length
+
+  let seDesboco = false
+  let tope = 0
+  if (puesto) {
+    while (!ver().enSuelo || ver().cargando) frame()
+    motor.presionar()
+    let antes = 0
+    for (let i = 0; i < 120; i += 1) {
+      frame()
+      const ahora = ver().carga
+      tope = Math.max(tope, ahora)
+      // La vuelta a cero: la barra estaba arriba y de pronto está
+      // abajo sin que nadie la haya soltado.
+      if (antes > 0.8 && ahora < 0.2) seDesboco = true
+      antes = ahora
+    }
+    motor.soltar()
+  }
+  motor.detener()
+
+  console.log('   ' + golpes + ' golpe(s) en la partida de prueba')
+  console.log(
+    golpes > 0
+      ? '   ✓ lo que cae acierta alguna vez: la franja donde asoma amenaza de verdad'
+      : '   ⚠ no le pegó nada en toda la prueba: está cayendo donde no le estorba a nadie',
+  )
+  if (puesto) {
+    console.log(
+      seDesboco && tope > 0.95
+        ? '   ✓ con el apurón la barra llega al tope y se pasa: hay que agarrarla al vuelo'
+        : '   ⚠ el apurón no desboca la barra (llegó al ' +
+            (tope * 100).toFixed(0) +
+            ' % y ' +
+            (seDesboco ? 'volvió' : 'no volvió') +
+            ' a cero)',
+    )
+  } else {
+    console.log('   · esta vez no le pegó ningún apurón; se mira en la próxima pasada')
+  }
+}
+
+{
+  // (d) El apagón no toca ni un número: lo único que hace es que la
+  // barra no se dibuje. Si tocara la carga sería dos castigos en uno, y
+  // el juego ya aprendió que una regla que castiga no puede castigar
+  // dos veces.
+  const cargaTrasMedioSegundo = (conApagon) => {
+    const { motor, frame, ver } = banco(mundoDeLoQueCae())
+    frame()
+    if (conApagon) {
+      pisarLaEstrella(motor, frame, ver)
+      let cual = null
+      for (let i = 0; i < 4 && cual?.cual !== 'apagon'; i += 1) {
+        cual = hastaQueLePegue(motor, frame, ver)
+        if (cual && cual.cual !== 'apagon') {
+          for (let s = 0; s < LO_QUE_CAE.saltosDeEfecto + 1; s += 1) {
+            while (!ver().enSuelo) frame()
+            saltarCon(motor, frame, 0.3)
+            frame()
+          }
+        }
+      }
+      if (ver().efecto?.cual !== 'apagon') {
+        motor.detener()
+        return null
+      }
+    }
+    while (!ver().enSuelo || ver().cargando) frame()
+    motor.presionar()
+    for (let i = 0; i < Math.round(SALTO.msDeCarga / 2 / FRAME); i += 1) frame()
+    const donde = ver().carga
+    motor.detener()
+    return donde
+  }
+
+  const sinNada = cargaTrasMedioSegundo(false)
+  const conApagon = cargaTrasMedioSegundo(true)
+  if (conApagon === null) {
+    console.log('   · esta vez no le pegó ningún apagón; se mira en la próxima pasada')
+  } else {
+    console.log(
+      Math.abs(sinNada - conApagon) < 0.03
+        ? '   ✓ el apagón no toca la carga: lo único que quita es poder verla'
+        : '   ⚠ el apagón está cambiando la barra (' +
+            (sinNada * 100).toFixed(0) +
+            ' % contra ' +
+            (conApagon * 100).toFixed(0) +
+            ' %)',
+    )
+  }
+}
+
+{
+  // (e) El efecto se gasta en los saltos prometidos, ni uno más.
+  const { motor, frame, ver } = banco(mundoDeLoQueCae())
+  pisarLaEstrella(motor, frame, ver)
+  const puesto = hastaQueLePegue(motor, frame, ver)
+
+  const alEmpezar = puesto?.saltos ?? 0
+  let saltosDados = 0
+  for (let i = 0; i < 40 && ver().efecto; i += 1) {
+    while (!ver().enSuelo) frame()
+    saltarCon(motor, frame, 0.35)
+    saltosDados += 1
+    frame()
+  }
+  const quedaAlgo = ver().efecto !== null
+  motor.detener()
+
+  console.log('   el efecto entra con ' + alEmpezar + ' saltos y se fue tras ' + saltosDados)
+  console.log(
+    alEmpezar === LO_QUE_CAE.saltosDeEfecto &&
+      saltosDados === LO_QUE_CAE.saltosDeEfecto &&
+      !quedaAlgo
+      ? '   ✓ dura exactamente los ' + LO_QUE_CAE.saltosDeEfecto + ' saltos que promete'
+      : '   ⚠ dura ' + saltosDados + ' saltos y tendría que durar ' + LO_QUE_CAE.saltosDeEfecto,
+  )
+}
+
+{
+  // (f) Y se va al caerse, con todo lo que estuviera bajando.
+  // Reaparecer con la barra descompuesta y algo encima es empezar de
+  // nuevo con una trampa puesta que ella no vio ponerse — lo mismo que
+  // ya se arregló con las cajas torcidas y las almohadas hundidas.
+  const { motor, frame, ver } = banco(mundoDeLoQueCae())
+  pisarLaEstrella(motor, frame, ver)
+  const tenia = hastaQueLePegue(motor, frame, ver) !== null
+
+  // A tirarse al vacío: se salta a lo loco hacia la izquierda hasta
+  // que se cae de verdad.
+  for (let i = 0; i < 1200 && !ver().cayendo; i += 1) {
+    if (ver().enSuelo && ver().mirando === -1) saltarCon(motor, frame, 1)
+    frame()
+  }
+  for (let i = 0; i < 300 && ver().cayendo; i += 1) frame()
+  frame()
+
+  const despues = ver().efecto
+  const bajando = ver().loQueCae.length
+  motor.detener()
+  console.log(
+    !tenia
+      ? '   · esta vez no le pegó nada antes de caerse'
+      : despues === null && bajando === 0
+        ? '   ✓ al caerse se va lo que tuviera puesto, y lo que estuviera bajando'
+        : '   ⚠ reaparece con el castigo puesto: eso es castigar dos veces por lo mismo',
+  )
+}
+
+{
+  // (g) Una plataforma lo para. Es lo que hace que el nivel proteja y
+  // que meterse debajo de algo sea una decisión que se toma con el
+  // gesto de siempre.
+  const bajoTecho = construirNivel({
+    ...capitulo,
+    seDesvanece: false,
+    cede: false,
+    seHunde: false,
+    plataformas: [
+      { x: 20, ancho: 320, altura: 0, hito: true },
+      // El techo, justo encima y de pared a pared.
+      { x: 0, ancho: 360, altura: 150 },
+    ],
+  })
+  const { motor, frame, ver } = banco(bajoTecho)
+  frame()
+  // Aquí la estrella es la de abajo, donde ya está parada: un saltito
+  // y al volver a pisarla se abre la veda.
+  for (let i = 0; i < 600 && ver().hitoAlcanzado < 0; i += 1) {
+    if (ver().enSuelo && !ver().cargando) saltarCon(motor, frame, 0.15)
+    frame()
+  }
+
+  let lePego = false
+  let sePararon = 0
+  for (let i = 0; i < 9000; i += 1) {
+    const e = frame()
+    if (e.efecto) lePego = true
+    for (const algo of e.loQueCae) {
+      // Deshecho bastante por encima de la tortuga: lo paró el techo.
+      if (algo.puf > 0 && algo.y < e.y - 60) sePararon += 1
+    }
+  }
+  motor.detener()
+  console.log(
+    sePararon > 0 && !lePego
+      ? '   ✓ debajo de una plataforma no le llega nada: el nivel protege'
+      : lePego
+        ? '   ⚠ le pegó algo estando debajo de un techo de pared a pared'
+        : '   · esta vez no cayó nada sobre el techo',
+  )
+}
+
+{
+  // (h) Y lo último, que es lo que decide si esto es difícil o
+  // injusto: con el apurón puesto **el salto que se quiere sigue
+  // estando**. La barra da vueltas, así que lo que hay que mirar es
+  // cuántas veces pasa por el punto bueno antes de que se desmaye.
+  const vueltas = CANSANCIO.msDeAguante / LO_QUE_CAE.msDeCargaDesbocada
+  console.log(
+    '   con la barra desbocada da ' +
+      vueltas.toFixed(1) +
+      ' vueltas enteras antes de desmayarse',
+  )
+  console.log(
+    vueltas >= 4
+      ? '   ✓ la carga que hace falta pasa varias veces: hay que agarrarla, no adivinarla'
+      : '   ⚠ solo pasa ' + vueltas.toFixed(1) + ' veces por el punto bueno, y eso ya es azar',
+  )
+}
+
 console.log('')
 
 console.log(

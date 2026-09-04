@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Lo que cae, cuadro por cuadro</title>
+    <style>
+      body { margin: 0; background: #05070f; font-family: system-ui; color: #f8f4e8; }
+      #tira { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; max-width: 2440px; }
+      figure { margin: 0; }
+      figcaption { font-size: 12px; opacity: 0.6; padding: 6px 2px; }
+      canvas { display: block; border-radius: 6px; }
+      h2 { font-size: 14px; font-weight: 500; opacity: 0.5; width: 100%; margin: 14px 0 0 10px; }
+    </style>
+  </head>
+  <body>
+    <!--
+      Banco de lo que cae, hermano de los tres bancos de mundo. No es
+      parte de la web.
+
+      Esto no se puede juzgar jugando, y por dos motivos. El primero es
+      que no cae nada hasta pasada la primera estrella, así que para ver
+      el segundo objeto hay que subir medio capítulo. El segundo es que
+      lo que hay que mirar es **si se entiende sin que nadie lo
+      explique**: que el apurón diga «rápido» y el apagón diga «se
+      apaga» antes de que te toquen, con la cabeza puesta en el salto
+      siguiente y no en ellos.
+
+      Van los dos a la misma altura y con la misma luz, que es la única
+      forma honesta de mirarlo, y encima de los tres mundos: si uno de
+      los dos se pierde contra el cartón de Ovi o contra las almohadas
+      de Nico, no sirve.
+
+      Se mira con el servidor de siempre andando:
+        npm run dev
+        http://localhost:5173/scripts/juego-luna/cae-banco.html
+    -->
+    <div id="tira"></div>
+
+    <script type="module">
+      import { crearPintor } from '/src/juego-luna/dibujo.ts'
+      import { construirNivel } from '/src/juego-luna/mundos.ts'
+      import { CAPITULOS, MUNDO, TORTUGA } from '/src/content/luna.ts'
+
+      /** La escena mínima que le hace falta al pintor. */
+      function escenaBase(nivel, plataforma, extra = {}) {
+        return {
+          x: plataforma.x + plataforma.ancho / 2,
+          y: plataforma.y,
+          mirando: 1,
+          carga: 0,
+          cargando: false,
+          enSuelo: true,
+          caminado: 0.3,
+          vy: 0,
+          reloj: 2.4,
+          desdeSalto: 9999,
+          desdeAterrizaje: 9999,
+          cayendo: false,
+          agobio: 0,
+          cansancio: 0,
+          camara: plataforma.y - MUNDO.alto * 0.62,
+          hitoAlcanzado: -1,
+          vidaDeLaPista: nivel.plataformas.map(() => 1),
+          avisoDeLaPista: 0.4,
+          inclinacion: nivel.plataformas.map(() => 0),
+          hundido: nivel.plataformas.map(() => 0),
+          rebote: null,
+          loQueCae: [],
+          efecto: null,
+          cine: 'jugando',
+          cineAvance: 0,
+          pasitos: 0,
+          caidas: 0,
+          plataformas: nivel.plataformas,
+          ...extra,
+        }
+      }
+
+      /** Uno cayendo, a `subiendo` píxeles por encima de la tortuga. */
+      function cayendo(cual, escena, arriba, extra = {}) {
+        return {
+          x: escena.x,
+          y: escena.y - arriba,
+          cual,
+          giro: 0.5,
+          fase: 1.2,
+          puf: 0,
+          ...extra,
+        }
+      }
+
+      const paneles = []
+
+      for (const capitulo of CAPITULOS) {
+        const nivel = construirNivel(capitulo)
+        // Una plataforma de en medio, que es donde se juega de verdad.
+        const donde = nivel.plataformas[13]
+        const base = escenaBase(nivel, donde)
+
+        paneles.push([`${capitulo.nombre}: el apurón, recién asomando`, nivel,
+          { ...base, loQueCae: [cayendo('apuron', base, 330)] }])
+        paneles.push([`${capitulo.nombre}: el apagón, recién asomando`, nivel,
+          { ...base, loQueCae: [cayendo('apagon', base, 330)] }])
+        paneles.push([`${capitulo.nombre}: los dos, ya encima`, nivel,
+          {
+            ...base,
+            loQueCae: [
+              cayendo('apuron', base, 120, { x: base.x - 46 }),
+              cayendo('apagon', base, 96, { x: base.x + 52, giro: 2.1 }),
+            ],
+          }])
+      }
+
+      // Y lo que pasa después del golpe, que se mira una sola vez.
+      const nivel = construirNivel(CAPITULOS[0])
+      const donde = nivel.plataformas[13]
+      const base = escenaBase(nivel, donde)
+
+      paneles.push(['el puf, a mitad de deshacerse', nivel,
+        { ...base, loQueCae: [cayendo('apuron', base, 40, { puf: 0.45 })] }])
+      paneles.push(['con el apurón puesto: la barra da vueltas', nivel,
+        { ...base, cargando: true, carga: 0.35, efecto: { cual: 'apuron', saltos: 3 } }])
+      paneles.push(['con el apagón puesto: no hay barra que mirar', nivel,
+        { ...base, cargando: true, carga: 0.8, efecto: { cual: 'apagon', saltos: 2 } }])
+      paneles.push(['y el último salto del apagón', nivel,
+        { ...base, cargando: true, carga: 0.8, efecto: { cual: 'apagon', saltos: 1 } }])
+      paneles.push(['sin nada puesto, la barra de siempre', nivel,
+        { ...base, cargando: true, carga: 0.8 }])
+
+      const tira = document.getElementById('tira')
+      for (const [nombre, suNivel, escena] of paneles) {
+        const figura = document.createElement('figure')
+        const lienzo = document.createElement('canvas')
+        const pie = document.createElement('figcaption')
+        pie.textContent = nombre
+        figura.append(lienzo, pie)
+        tira.append(figura)
+
+        const pintor = crearPintor(lienzo, suNivel)
+        pintor.medir(288, 624)
+        pintor.pintar(escena)
+      }
+    </script>
+  </body>
+</html>

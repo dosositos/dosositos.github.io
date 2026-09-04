@@ -569,6 +569,10 @@ export type EventoLuna =
   | 'impulso'
   /** Cayó en una caja de peluches y la devolvió para arriba. */
   | 'rebote'
+  /** Le pegó el apurón: la barra se le desboca unos saltos. */
+  | 'apuron'
+  /** Le pegó el apagón: la barra deja de verse unos saltos. */
+  | 'apagon'
   /** Se acabó la cinemática de irse la luna: el capítulo terminó. */
   | 'fin'
 
@@ -576,6 +580,26 @@ export type EventoLuna =
  * La foto del mundo que recibe el pintor, ya interpolada entre dos
  * pasos de física. Nadie de aquí para afuera toca el estado real.
  */
+/** Cuál de las dos cosas que caen. */
+export type QueCae = 'apuron' | 'apagon'
+
+/** Una de esas cosas, mientras baja. */
+export interface AlgoCayendo {
+  x: number
+  y: number
+  cual: QueCae
+  /** Cuánto lleva girando, en radianes. */
+  giro: number
+  /** Su sitio en el vaivén de lado, para que no baje en plomada. */
+  fase: number
+  /**
+   * Lo que lleva deshaciéndose, de 0 (entero) a 1 (ya no está). Se
+   * deshace contra una plataforma o contra la tortuga, y mientras dura
+   * el puf sigue en la lista para poder dibujarlo.
+   */
+  puf: number
+}
+
 export interface EscenaLuna {
   x: number
   y: number
@@ -636,6 +660,13 @@ export interface EscenaLuna {
    * mientras no haya rebotado ninguna.
    */
   rebote: { indice: number; ms: number } | null
+  /** Lo que hay cayendo ahora mismo, con lo que se está deshaciendo. */
+  loQueCae: AlgoCayendo[]
+  /**
+   * El efecto puesto, si hay uno, y cuántos saltos le quedan. Con
+   * `apagon` el pintor no dibuja la barra: es todo lo que hace.
+   */
+  efecto: { cual: QueCae; saltos: number } | null
   /**
    * En qué momento del capítulo va.
    *

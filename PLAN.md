@@ -441,25 +441,89 @@ y chats, y el sobre de apertura. Eso es el regalo.
 
 ---
 
-## La próxima sesión — lo que pasa después de ganar los tres
+## La próxima sesión — jugar lo que cae, y después la fase 6
 
 **Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
 arrancamos por donde diga, sin que tengás que acordarte de nada.
 
 **Lo que toca, y en este orden:**
 
-1. **Jugá el capítulo de Nico ya vestido.** No para volver a medir lo duro que
-   es —eso quedó bueno el 3 de septiembre—, sino para lo único que un decorado
-   puede romper: **que se siga leyendo dónde se pisa**. En este capítulo el
-   suelo se mueve solo, así que cualquier cosa dibujada que confunda la línea
-   de arriba de una almohada se paga con un salto. Mirá sobre todo si la
-   cobija sigue cantando de lejos ahora que tiene un cuarto alrededor.
-2. **Y después, la fase 6: qué pasa al ganar los tres.** Hoy al terminar el de
+1. **Jugá los tres capítulos con lo que cae puesto.** Es lo primero del juego
+   que no se puede juzgar compilando ni mirando un banco: hay que estar con la
+   cabeza en el salto siguiente y que te caiga algo encima. Tres preguntas
+   concretas: **¿se ve venir a tiempo?** (el arnés dice cinco segundos desde que
+   asoma), **¿se distinguen los dos de un vistazo?** y sobre todo **¿el apagón
+   es difícil o es injusto?** — que es el que quita información en vez de
+   control, y el único de los dos que podría estar pasado. Los números se mueven
+   en `LO_QUE_CAE`, en `src/content/luna.ts`, y todos en una línea.
+2. **Y después la fase 6: qué pasa al ganar los tres.** Hoy al terminar el de
    Nico sale «el capítulo que falta todavía lo estoy haciendo», que era verdad
-   con dos capítulos escritos y ahora suena raro. Ahí entra también el enlace
-   al juego desde algún lado —vive en `#/luna` y no lo apunta nada— y llenar
-   los récords, que necesita que juegues los tres de punta a punta: sin eso el
-   rival de ella no existe.
+   con dos capítulos escritos y ahora suena raro. Ahí entra también el enlace al
+   juego desde algún lado —vive en `#/luna` y no lo apunta nada— y llenar los
+   récords, que necesita que juegues los tres de punta a punta: sin eso el rival
+   de ella no existe.
+
+### Lo que cae, la traba que es de los tres capítulos
+
+Hasta ahora cada capítulo tenía la suya y no había ninguna común. Esta cae del
+cielo en los tres, después de la primera estrella, y en vez de tocar el suelo
+—que es lo que hacen las otras tres— le pega a **la barra**, que es lo único que
+este juego tiene. Son dos cosas, y las dos son la misma regla que explicar:
+
+- **El apurón** desboca la barra: se llena en 320 ms en vez de 900 y **no se
+  queda en el tope**, se pasa y vuelve a cero. Le quita el control. El salto que
+  se quiere sigue estando —la barra da 6,6 vueltas enteras antes del desmayo—
+  pero hay que agarrarlo al pasar en vez de esperarlo arriba.
+- **El apagón** apaga la barra: deja de dibujarse. No toca ni un número, le
+  quita la información. Y no deja a ciegas, que sería injusto: la tortuga
+  tiembla más cuanto más llena está la barra, así que se sigue pudiendo medir
+  mirándola a ella. Eso ya estaba en el juego desde la primera fase y resultó
+  ser lo que hace que este efecto se pueda pagar.
+
+**Por qué no son los poderes otra vez.** Los poderes se tiraron porque eran un
+gesto más que aprender a usar. Esto no se usa: le pasa. Y esquivarlo es el
+gesto de siempre — la tortuga camina sola y se queda quieta mientras carga, así
+que quitarse de abajo es decidir cuándo cargar y cuándo dejarla andar.
+
+**Y son globales, con el mismo dibujo en los tres mundos.** No hay un carrito
+en Boo, una caja en Ovi y una almohada en Nico: los dos tienen **la forma de la
+barra de carga**, la misma cápsula que ella lleva sobre la cabeza al apretar. Un
+objeto que se pareciera al mundo por donde cae contaría de dónde salió, que no
+importa; contando a qué le va a pegar, se entiende sin una palabra. El apurón va
+lleno de dorado, vibrando y con rayas de velocidad; el apagón va partido en dos
+mitades sueltas, con un resto de dorado agonizando en una y el chispazo del
+corte en medio.
+
+**Lo que lo hace justo**, que es todo lo que hay que cuidar aquí:
+
+- **Se ve venir.** Asoma por encima del borde de arriba y tarda cinco segundos
+  en llegar a la altura de las paticas. La caminata entera de una plataforma
+  ancha son tres. Está medido en `npm run luna:probar`.
+- **No cae nada hasta pasada la primera estrella**, igual que la pista de Boo no
+  se borra hasta entonces: los primeros saltos son para aprender.
+- **Cualquier plataforma lo para**, así que el nivel protege y meterse debajo de
+  algo es una decisión.
+- **Dura tres saltos y se va al caerse**, con todo lo que estuviera bajando. Una
+  regla que castiga no puede castigar dos veces: reaparecer con la barra
+  descompuesta sería empezar de nuevo con una trampa puesta que ella no vio
+  ponerse, que es lo mismo que ya se arregló con las cajas torcidas y las
+  almohadas hundidas.
+- **Nunca dos a la vez**, que de una lluvia no se sale.
+- **El cartel sale una sola vez por cada uno.** El dibujo dice a qué le va a
+  pegar; qué hace exactamente hay que decirlo con letras la primera vez, y a la
+  segunda ya lo sabe.
+
+**El primer intento del apagón no se veía.** Iba todo ceniza oscura, con el
+argumento de que un objeto brillante no puede anunciar que algo se apaga. Se
+perdía contra el cielo de los tres capítulos: no se veía venir, y eso rompe la
+única promesa que esta traba hace. Ahora lleva el resto de dorado y el contorno
+claro. **Un objeto que hay que esquivar se dibuja para verse, y el motivo
+poético va después.**
+
+El banco es `npm run luna:cae`, y hace falta por dos razones: jugando no cae
+nada hasta la primera estrella, y lo que hay que juzgar —si se entienden solos—
+se mira con los dos juntos, a la misma luz y encima de los tres mundos.
+
 
 ### Lo que cambió el 3 de septiembre: el cuarto, vestido
 
@@ -601,7 +665,10 @@ dibujado, y el cuarto entró después, cuando los números ya no se movían.
   pasa detrás de la tortuga.
 
 - **Un solo gesto en todo el juego.** Mantener y soltar. Ni poderes ni
-  habilidades: se probaron dos y se tiraron los dos.
+  habilidades: se probaron dos y se tiraron los dos. Lo que cae tampoco añade
+  gesto — no se usa, le pasa, y quitarse de abajo es decidir cuándo cargar.
+- **Y una traba que es de los tres capítulos:** lo que cae. El apurón le desboca
+  la barra y el apagón se la apaga, tres saltos cada uno. Ver más arriba.
 - **Le pregunta el nombre a la tortuga** antes de la primera partida, y ese
   nombre manda en todos los textos de los tres capítulos.
 - **32 plataformas por capítulo, y las estrellas van bajando:** cinco en Boo,
@@ -670,6 +737,7 @@ npm run luna:ver         # fotos del juego andando (-- 5173 3 para el de Nico)
 npm run luna:pista       # el banco del mundo de Boo, sin jugarlo
 npm run luna:cajas       # el banco del mundo de Ovi
 npm run luna:almohadas   # el banco del mundo de Nico: almohada y cobija
+npm run luna:cae         # el banco de lo que cae: el apurón y el apagón
 npm run luna:tortuga     # el banco de poses del personaje
 npm run luna:asomo       # el banco del adelanto (-- --semana: dónde cae cada día)
 ```
@@ -713,6 +781,12 @@ escribió antes que el capítulo y por eso el capítulo salió en una tarde.
   caja de 100 de ancho por 20 de alto sale una tabla y no una caja. Partida en
   dos, tres o cuatro cajas de hombro con hombro, cada una queda casi cuadrada y
   el material se lee de una.
+- **Un objeto que hay que esquivar se dibuja para verse; el motivo poético va
+  después.** El apagón se dibujó primero todo ceniza oscura, razonando que algo
+  brillante no puede anunciar que la luz se apaga. Contra el cielo de los tres
+  capítulos no se veía venir, y no verlo venir rompe la única promesa que esa
+  traba hace. La coherencia de un dibujo vale menos que su legibilidad cuando el
+  dibujo es una amenaza.
 - **Nada translúcido y con lados rectos se pone delante de la luna.** Las
   sábanas que cuelgan debajo de las almohadas de Nico eran paños opacos con los
   lados a plomo, y en la presentación —donde la luna pasa por detrás, enorme—

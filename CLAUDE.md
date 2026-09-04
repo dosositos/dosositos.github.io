@@ -145,6 +145,7 @@ npm run luna:tortuga     # el banco de poses de la tortuga
 npm run luna:pista       # el banco del mundo de Boo: pista, bambú, lazos, impulso, desvanecido
 npm run luna:cajas       # el banco del mundo de Ovi: cartón, cinta, peluches, la caja cediendo
 npm run luna:almohadas   # el banco del mundo de Nico: la almohada y la cobija enredada
+npm run luna:cae         # el banco de lo que cae: el apurón y el apagón
 npm run luna:asomo       # el banco del adelanto: la tortuga que se asoma al final de una página
 npm run luna:asomo -- --semana   # ¿en qué página se asoma cada día? (o -- 2026-09-14)
 npm run secretos:cifrar  # private/publicable/ → public/cifrado/ (corre solo por hook)

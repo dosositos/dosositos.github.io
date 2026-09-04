@@ -139,6 +139,9 @@ export function Luna() {
     let saltos = 0
     let relojDeLaAyuda = 0
 
+    /** De qué cosas de las que caen ya vio el cartel. */
+    const yaLoSabe = new Set<EventoLuna>()
+
     const alEvento = (evento: EventoLuna) => {
       if (evento === 'salto') {
         vibrar(12)
@@ -152,6 +155,17 @@ export function Luna() {
           window.clearTimeout(relojDeLaAyuda)
           setAyudaVisible(false)
           relojDeLaAyuda = window.setTimeout(() => setAyudaVisible(true), AYUDA.msDeOlvido)
+        }
+      } else if (evento === 'apuron' || evento === 'apagon') {
+        // Un golpe seco: algo le cayó encima.
+        vibrar([0, 26, 40, 12])
+        // Y el texto, **una sola vez cada uno**. El dibujo del objeto
+        // ya dice a qué le va a pegar; qué hace exactamente hay que
+        // decirlo con letras la primera vez, y a la segunda ya lo sabe
+        // y un cartel encima del juego solo estorba.
+        if (!yaLoSabe.has(evento)) {
+          yaLoSabe.add(evento)
+          mostrarAviso(evento === 'apuron' ? TEXTOS.golpeApuron : TEXTOS.golpeApagon)
         }
       } else if (evento === 'caida') vibrar([0, 30])
       // Agotada: tres toquecitos, que se sienten como un tropiezo.
