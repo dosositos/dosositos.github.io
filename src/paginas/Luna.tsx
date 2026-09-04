@@ -6,7 +6,7 @@ import { AYUDA, BAUTIZO, CAPITULOS, CARTEL, TEXTOS } from '@/content/luna'
 import { crearPintor } from '@/juego-luna/dibujo'
 import { conectarEntrada } from '@/juego-luna/entrada'
 import { crearMotor, type Motor } from '@/juego-luna/motor'
-import { capituloNumero, construirNivel } from '@/juego-luna/mundos'
+import { capituloNumero, construirNivel, ULTIMO_CAPITULO } from '@/juego-luna/mundos'
 import { conNombre } from '@/juego-luna/nombrar'
 import {
   anotarCapitulo,
@@ -25,10 +25,9 @@ import type { EventoLuna, ProgresoLuna } from '@/types'
  * Una tortuga sube saltando hasta la luna y arriba hay una carta que
  * no está en ninguna otra parte de la web.
  *
- * Esta ruta no se enlaza desde ningún lado y no aparece en el menú.
- * Hasta que la luna de la portada se vuelva tocable (la última fase),
- * el juego no existe para ella y se puede dejar a medias sin que se
- * note nada raro en la web.
+ * Se entra tocando la luna de la portada, y solo después de haber
+ * encontrado a los tres peluches escondidos. No está en el menú y no la
+ * apunta nada más: `LunaDePortada.tsx` es la única puerta.
  *
  * Acá adentro React solo monta el canvas y se aparta: el bucle, la
  * física y el dibujo viven en `src/juego-luna/`, fuera de React. No
@@ -36,9 +35,6 @@ import type { EventoLuna, ProgresoLuna } from '@/types'
  * que va escrito con letras encima del canvas: el bautizo, el cartel
  * del capítulo, la ayuda de abajo, el aviso de la estrella y el cierre.
  */
-
-/** El último capítulo que está escrito. Hoy los tres. */
-const ULTIMO = CAPITULOS.reduce((mayor, c) => Math.max(mayor, c.numero), 1)
 
 /** Las tres pantallas de antes de jugar, en orden. */
 type Fase = 'bautizo' | 'cartel' | 'jugando'
@@ -56,7 +52,7 @@ export function Luna() {
   /** Lo que había guardado al abrir. De aquí sale con cuál se entra. */
   const [guardado, setGuardado] = useState<ProgresoLuna>(() => leerProgreso())
 
-  const [numero, setNumero] = useState(() => conCualEntra(leerProgreso(), ULTIMO))
+  const [numero, setNumero] = useState(() => conCualEntra(leerProgreso(), ULTIMO_CAPITULO))
   const capitulo = useMemo(() => capituloNumero(numero), [numero])
   const nivel = useMemo(() => construirNivel(capitulo), [capitulo])
 
@@ -199,7 +195,7 @@ export function Luna() {
       conCinematica: true,
       // Detrás de este ya no hay otro: la luna no se escapa y ella
       // sube hasta pararse encima. Es lo único que cambia el final.
-      esElFinal: numero === ULTIMO,
+      esElFinal: numero === ULTIMO_CAPITULO,
       pintar: (escena) => {
         pintor.pintar(escena)
 
@@ -285,7 +281,7 @@ export function Luna() {
   const siguiente = CAPITULOS.find((c) => c.numero === capitulo.numero + 1)
 
   /** Detrás de este ya no hay otro: acá se llega a la luna y sale la carta. */
-  const esElFinal = numero === ULTIMO
+  const esElFinal = numero === ULTIMO_CAPITULO
 
   /** Lo mejor que ella ha hecho en este capítulo, ya con esta subida. */
   const suMejor = totales?.mejorPorCapitulo[capitulo.numero]

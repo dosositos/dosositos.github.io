@@ -398,7 +398,7 @@ empieza hasta que lo demás esté cerrado.
 | 7 | El prólogo | El juego con su escuelita delante | Sí |
 | 8 | Teléfono y números | El juego, pero que se sienta bien | Sí |
 | 9 | El colado | Igual, con chiste | Sí |
-| 10 | **La entrada por la luna** | El juego, para ella | Fin |
+| 10 | **La entrada por la luna** (puerta ✓, faltan los accesorios) | El juego, para ella | Fin |
 
 Al cerrar cada fase: `npm run typecheck`, `npm run revisar`, commit propio, y
 dejar apuntada la siguiente en «La próxima sesión» de `PLAN.md`.
@@ -590,17 +590,47 @@ aprietan, se salta entero sin tocar nada más.
 
 ### 10 · La entrada por la luna y cosméticos extras
 
-La luna de la portada tocable, con su brillo lento cada quince o veinte
-segundos; la transición de cámara desde la portada; la luna más llena si ya
-terminó, para releer la carta sin volver a jugar.
+Es la fase que hace visible todo lo anterior, y por eso es la última.
 
-Es la fase que hace visible todo lo anterior, y por eso es la última. Antes de
-empezarla hay que **recordarle que juegue los tres capítulos** para llenar los
-récords: sin eso el rival no existe.
+**La puerta está hecha (4 de septiembre).** La luna vive en el cielo de la
+portada, arriba a la derecha del título, en `LunaDePortada.tsx`, y es lo único
+en toda la web que apunta a `/luna`. Brilla cada dieciocho segundos, y al
+tocarla se agranda hasta comerse la pantalla y aterriza en el azul noche del
+canvas, que es el mismo color, así que no hay corte.
 
-Debes añadir una condición para que la luna funcione como entrada, primero debe encontrar a los 3 peluches (sin el colado o con el colado, eso no importa) para que esta lleve a osita al juego de la tortuga, si trata de entrar sin la condición debes advertirle que le falta hacer algo para entrar o algo así.
+**La condición, tal como se pidió:** no se abre hasta que encuentre a los tres
+peluches. El colado da lo mismo, ese no es hijo de nadie. Tocarla sin tenerlos
+saca un papelito que dice qué le falta, con la pista entera: dónde andan y cómo
+se asoman. Un acertijo que no se puede resolver no es un secreto, es una puerta
+trabada, y la toca dos veces y no la toca nunca más.
 
-Añade un espacio para modificar al personaje, accesorios customizables para el personaje de la tortuga, entre otras cosas que se podrán desbloquear tras ciertos hitos. Puedes entrevistarme más sobre este tema cuando lleguemos a esta fase.
+Tres detalles que costaron más de lo que parecen:
+
+- **La llave se guarda aparte.** Los peluches se olvidan cada noche al mandarlos
+  a dormir, que es lo que hace que mañana vuelvan a esconderse. Haber dado con
+  los tres se anota en `dosositos:peluches:los-tres`, que `olvidarTodo` no toca.
+  Apoyada en las otras llaves, la luna se le habría cerrado esa misma noche.
+- **Se enciende sin recargar.** Ella va a encontrar al tercero en la portada
+  misma. `lib/hallazgos.ts` avisa a quien esté mirando y la luna se prende ahí
+  mismo; cierra el cartel de los peluches y ya está encendida en esa pantalla.
+- **Tiene su propia franja de cielo**, no cuelga del encabezado. Colgada quedaba
+  mejor hasta el día en que se apague el regalo de la portada: sin él el
+  encabezado sube y la luna se le monta al botón del tema.
+
+Y `npm run luna:puerta` fotografía los seis estados y comprueba sola que
+cerrada no deje pasar y que abierta sí.
+
+**Lo que falta de esta fase: los accesorios.**
+
+> Añade un espacio para modificar al personaje, accesorios customizables para el
+> personaje de la tortuga, entre otras cosas que se podrán desbloquear tras
+> ciertos hitos. Puedes entrevistarme más sobre este tema cuando lleguemos a
+> esta fase.
+
+Sin decidir. Se habla con Armando antes de escribir una línea.
+
+**Y antes de enseñárselo** hay que recordarle que juegue los tres capítulos para
+llenar los récords: sin eso el rival no existe. Esos ya están puestos.
 
 ### Aparte, cuando haya un hueco
 

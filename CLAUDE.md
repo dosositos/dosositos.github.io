@@ -155,6 +155,8 @@ npm run luna:minimos     # ¿en cuántos pasitos se puede subir cada capítulo?
                          # (de ahí salen los récords de él; -- 2 enseña la ruta)
 npm run luna:asomo       # el banco del adelanto: la tortuga que se asoma al final de una página
 npm run luna:asomo -- --semana   # ¿en qué página se asoma cada día? (o -- 2026-09-14)
+npm run luna:puerta      # la luna de la portada en sus seis estados
+                         # (necesita npm run dev en otra terminal)
 npm run secretos:cifrar  # private/publicable/ → public/cifrado/ (corre solo por hook)
 npm run revisar          # ¿está todo cifrado y al día? (también antes de build)
 ```

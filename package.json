@@ -27,6 +27,7 @@
     "luna:mapa": "node --import ./scripts/juego-luna/alias-luna.mjs scripts/juego-luna/mapa-saltos.mjs",
     "luna:minimos": "node --import ./scripts/juego-luna/alias-luna.mjs scripts/juego-luna/pasos-minimos.mjs",
     "luna:ver": "node scripts/juego-luna/ver-luna.mjs",
+    "luna:puerta": "node scripts/juego-luna/ver-puerta.mjs",
     "luna:tortuga": "node scripts/juego-luna/ver-tortuga.mjs",
     "luna:pista": "node scripts/juego-luna/ver-pista.mjs",
     "luna:cajas": "node scripts/juego-luna/ver-cajas.mjs",

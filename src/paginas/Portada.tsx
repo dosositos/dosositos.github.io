@@ -1,6 +1,7 @@
 import { motion } from 'motion/react'
 import { Link } from 'react-router-dom'
 import { Contador } from '@/componentes/Contador'
+import { LunaDePortada } from '@/componentes/LunaDePortada'
 // El oso blanco está guardado por ahora, ver más abajo.
 // import { OrigenDelApodo } from '@/componentes/OrigenDelApodo'
 import { QuienAmaMas } from '@/componentes/QuienAmaMas'
@@ -37,8 +38,18 @@ export function Portada() {
           cartelito de abajo se calla, para no decirlo dos veces. */}
       <Regalo />
 
+      {/* ── La luna ──────────────────────────────────────────────
+          Su franja de cielo sobre el título, a la derecha. Es la única
+          puerta al juego de la tortuga, y no se abre hasta que
+          encuentre a los tres peluches escondidos. El margen negativo
+          la acerca al encabezado sin dejar que se le monte encima. */}
+      <div className="-mb-10 flex w-full justify-end pr-2 sm:-mb-6 sm:pr-6">
+        <LunaDePortada />
+      </div>
+
       {/* ── Encabezado ───────────────────────────────────────── */}
       <header className="text-center">
+
         {celebracion && !REGALO.activo && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}

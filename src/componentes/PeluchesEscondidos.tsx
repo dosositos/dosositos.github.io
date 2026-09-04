@@ -10,6 +10,15 @@ import {
 } from '@/content/peluches'
 import type { EsquinaEscondite, Peluche } from '@/content/peluches'
 import { repartoDelDia } from '@/lib/escondites'
+import {
+  anotarLosTres,
+  anotarPremio,
+  guardarEncontrados,
+  leerDormidos,
+  leerEncontrados,
+  olvidarTodo,
+  yaVioElPremio,
+} from '@/lib/hallazgos'
 import { RETRATOS } from '@/lib/retratos'
 import { numeroDelDia } from '@/lib/tiempo'
 
@@ -37,70 +46,17 @@ import { numeroDelDia } from '@/lib/tiempo'
  *
  * Se acuerda en el teléfono (localStorage). Si se borra, vuelven a
  * esconderse, que tampoco es una tragedia.
+ *
+ * Lo que sí queda para siempre es **haberlos encontrado a los tres**:
+ * esa es la llave de la luna de la portada y vive en `lib/hallazgos.ts`,
+ * fuera de aquí, porque la portada tiene que poder preguntarla.
  */
-
-const LLAVE = 'dosositos:peluches'
-const LLAVE_PREMIO = 'dosositos:peluches:premio'
-const LLAVE_DORMIDOS = 'dosositos:peluches:dormidos'
 
 /** Los que sí son hijos. El colado no cuenta para el «1 de 3». */
 const HIJOS = peluches.filter((p) => !p.esImpostor)
 
 /** El que no es hijo. Sale en el resumen igual, encontrado o no. */
 const COLADO = peluches.find((p) => p.esImpostor)
-
-function leerEncontrados(): Set<string> {
-  try {
-    return new Set(JSON.parse(localStorage.getItem(LLAVE) ?? '[]') as string[])
-  } catch {
-    return new Set()
-  }
-}
-
-function guardarEncontrados(ids: Set<string>) {
-  try {
-    localStorage.setItem(LLAVE, JSON.stringify([...ids]))
-  } catch {
-    // Sin localStorage el juego funciona igual, solo que empieza de cero
-    // en cada visita.
-  }
-}
-
-function yaVioElPremio(): boolean {
-  try {
-    return localStorage.getItem(LLAVE_PREMIO) === 'si'
-  } catch {
-    return false
-  }
-}
-
-function anotarPremio() {
-  try {
-    localStorage.setItem(LLAVE_PREMIO, 'si')
-  } catch {
-    // ídem
-  }
-}
-
-/** El día en que los mandó a dormir, o 0 si andan despiertos. */
-function leerDormidos(): number {
-  try {
-    return Number(localStorage.getItem(LLAVE_DORMIDOS) ?? 0)
-  } catch {
-    return 0
-  }
-}
-
-function olvidarTodo(dormirHoy: number) {
-  try {
-    localStorage.removeItem(LLAVE)
-    localStorage.removeItem(LLAVE_PREMIO)
-    if (dormirHoy) localStorage.setItem(LLAVE_DORMIDOS, String(dormirHoy))
-    else localStorage.removeItem(LLAVE_DORMIDOS)
-  } catch {
-    // ídem
-  }
-}
 
 /* ── La cara de cada uno ─────────────────────────────────────────── */
 
@@ -571,6 +527,14 @@ export function PeluchesEscondidos() {
   const hijosLlevados = HIJOS.filter((h) => encontrados.has(h.id)).length
   const completos = hijosLlevados === HIJOS.length
   const durmiendo = dormidosEl === dia
+
+  // Y esto abre la luna de la portada, que es lo único de aquí que no
+  // se olvida al mandarlos a dormir. Va en su propio efecto y no dentro
+  // del premio a propósito: la luna se abre por haberlos encontrado, no
+  // por haber leído el cartel.
+  useEffect(() => {
+    if (completos) anotarLosTres(dia)
+  }, [completos, dia])
 
   // El premio espera a que se cierre el cartel del tercero: encimarlos
   // sería no dejarla ver ninguno de los dos.

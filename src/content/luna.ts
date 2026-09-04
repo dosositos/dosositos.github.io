@@ -1156,6 +1156,42 @@ export const TEXTOS = {
 }
 
 /**
+ * La luna de la portada, que es la puerta del juego.
+ *
+ * Está a la vista desde el primer día y se hace notar, pero no se abre
+ * de gratis: primero tiene que encontrar a los tres peluches
+ * escondidos por la madriguera. El colado da lo mismo, ese no es hijo
+ * de nadie.
+ *
+ * Que se pueda tocar estando cerrada es a propósito. Lo primero que va
+ * a pasar es que la toque y le salga el aviso de abajo, y a partir de
+ * ahí buscar a Ovi, a Boo y a Nico deja de ser un juego suelto y pasa a
+ * ser el camino a otra cosa.
+ */
+export const ENTRADA_POR_LA_LUNA = {
+  /** Lo que dice el lector de pantalla mientras está cerrada. */
+  etiqueta: 'la luna',
+  /** Y cuando ya se puede subir. */
+  etiquetaAbierta: 'la luna, a pasitos de tortuga',
+
+  /**
+   * El aviso de tocarla sin tenerlos a los tres.
+   *
+   * Da la pista entera. Un acertijo que no se puede resolver no es un
+   * secreto, es una puerta trabada: si no le dice dónde buscar, la
+   * toca dos veces y no la vuelve a tocar nunca.
+   */
+  cerrada: {
+    titulo: 'Todavía no',
+    texto:
+      'Antes de irte tan lejos los quiero a los tres en casa. Andan escondidos por la madriguera, con medio cuerpo afuera en alguna esquina.',
+  },
+
+  /** Y lo que le sale debajo cuando ya subió hasta arriba. */
+  llena: 'la carta sigue allá arriba',
+}
+
+/**
  * La carta que espera arriba, y que es lo que el juego promete desde
  * su primera línea.
  *

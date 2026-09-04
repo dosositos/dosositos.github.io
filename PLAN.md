@@ -441,40 +441,44 @@ y chats, y el sobre de apertura. Eso es el regalo.
 
 ---
 
-## La próxima sesión — la fase 9, que es lo único que falta
+## La próxima sesión — los accesorios de la tortuga
 
 **Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
 arrancamos por donde diga, sin que tengás que acordarte de nada.
 
-**El juego está terminado.** Los tres capítulos, la llegada a la luna, la carta
-y los récords. Lo que falta no es código: es la decisión de enseñárselo.
+**La puerta ya está puesta.** La luna de la portada se toca y lleva al juego,
+pero solo con los tres peluches encontrados. Lo que queda de la fase 9 es lo
+otro que pediste: **poder vestir a la tortuga**, con accesorios que se
+desbloquean al pasar hitos. Eso todavía no está decidido y hay que hablarlo:
+pediste que te entrevistara cuando llegáramos aquí, y aquí estamos.
 
-### La fase 9, que es la que hace visible el juego
+**Y falta la decisión que no es de código.** El juego ya es visible: en cuanto
+esto se suba, ella lo va a ver en la siguiente visita en cuanto encuentre a los
+tres. Si querés esperar a una fecha, decímelo y no subimos todavía.
 
-Hoy el juego vive en `#/luna` y no lo apunta nada, así que se puede tocar sin
-que ella note nada raro. En cuanto la luna de la portada se enlace, se acabó: la
-web ya está en su mano y lo va a ver en la siguiente visita.
+### La puerta, hecha el 4 de septiembre
 
-Por eso no la enlacé yo. No es una decisión de código, es decidir qué día se lo
-enseñás.
+La luna está en el cielo de la portada, arriba a la derecha del título, con un
+brillo que pasa cada dieciocho segundos. Tiene tres caras: apagada mientras le
+falten peluches, encendida con los tres, y llena y más grande cuando ya subió,
+con la línea «la carta sigue allá arriba» debajo.
 
-**Y la luna no se abre sola: primero hay que encontrar a los tres peluches.**
-Estaba anotado desde el principio en `plan-juego-luna.md`, al final, y va aquí
-para que no se pierda:
+Tocarla sin los tres saca un papelito que dice qué le falta, con la pista
+entera. Un acertijo que no se puede resolver no es un secreto, es una puerta
+trabada.
 
-> Debes añadir una condición para que la luna funcione como entrada. Primero
-> debe encontrar a los 3 peluches (sin el colado o con el colado, eso no
-> importa) para que esta lleve a osita al juego de la tortuga. Si trata de
-> entrar sin la condición debes advertirle que le falta hacer algo para entrar.
+**Se enciende sola, sin recargar.** Ella va a encontrar al tercero en la portada
+misma; cierra el cartel de los peluches y la luna ya está prendida en esa misma
+pantalla. Eso salió gratis y no hubo que inventarle ninguna ceremonia.
 
-Lo que hace falta ya existe y no hay que inventar nada: `PeluchesEscondidos.tsx`
-guarda en `localStorage` quiénes se han encontrado y ya calcula `completos`.
-Falta sacar esa cuenta del componente a un sitio que la portada pueda
-preguntar, y el aviso de cuando toca la luna sin tenerlos.
+**Encontrarlos una vez vale para siempre.** Los peluches se olvidan cada noche
+para volver a esconderse mañana, pero la llave de la luna se guarda aparte
+(`dosositos:peluches:los-tres`) y esa no se borra. Si no, la luna se le cerraría
+la misma noche y tendría que buscarlos de nuevo para releer la carta.
 
-Y hay un orden que conviene respetar: la luna se enciende sola cuando ella
-acaba de encontrar al tercero. Ese es el momento, y es gratis — no hay que
-inventarle ninguna ceremonia.
+Para mirarla sin jugar: **`npm run luna:puerta`** (con `npm run dev` en otra
+terminal). Fotografía los seis estados y comprueba sola que cerrada no deje
+pasar y que abierta lleve al juego.
 
 ### Antes de eso, si querés
 

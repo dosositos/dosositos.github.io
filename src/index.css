@@ -229,6 +229,20 @@
   animation: latido 2.4s ease-in-out infinite;
 }
 
+/* El brillo de la luna de la portada.
+   Casi todo el ciclo es quietud a propósito: una luna que late sin
+   parar es un botón, y una que se enciende un momento cada tantos
+   segundos es algo que se mira dos veces antes de tocarlo. Va sobre el
+   halo y no sobre la luna, para que el disco no se mueva de sitio. */
+@keyframes brillo-luna {
+  0%, 84%, 100% { opacity: 0; transform: scale(0.85); }
+  92% { opacity: 1; transform: scale(1.2); }
+}
+
+@utility anima-brillo-luna {
+  animation: brillo-luna 18s ease-in-out infinite;
+}
+
 /* Aparecer desde abajo, para lo que se lee.
    Va en CSS y no en JavaScript a propósito: con `backwards`, el estado
    FINAL es el natural del elemento. Si la animación no llega a correr

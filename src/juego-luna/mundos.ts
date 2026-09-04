@@ -30,6 +30,15 @@ export function msDeCargaEn(p: Plataforma | undefined): number {
 }
 
 /** El capítulo por su número, o el primero si se pide uno que no hay. */
+/**
+ * El último capítulo que está escrito. Hoy los tres.
+ *
+ * Vive aquí y no en la página porque hay dos que lo preguntan: el juego,
+ * para saber cuál es el final, y la luna de la portada, para saber si
+ * ella ya llegó arriba y dibujarse llena.
+ */
+export const ULTIMO_CAPITULO = CAPITULOS.reduce((mayor, c) => Math.max(mayor, c.numero), 1)
+
 export function capituloNumero(numero: number): CapituloEscrito {
   return CAPITULOS.find((c) => c.numero === numero) ?? CAPITULOS[0]
 }
