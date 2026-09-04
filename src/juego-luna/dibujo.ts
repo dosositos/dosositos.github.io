@@ -4,9 +4,13 @@ import {
   dibujarCortina,
   dibujarLuzDeMadrugada,
   dibujarPliegue,
+  dibujarPluma,
+  moverPlumas,
+  type Pluma,
   sembrarAlmohadas,
   sembrarCortinas,
   sembrarPliegues,
+  soltarPlumas,
 } from '@/juego-luna/mundo-almohadas'
 import { dibujarEstrellaDePapel, dibujarEstrellita } from '@/juego-luna/estrella'
 import { laLlegada } from '@/juego-luna/llegada'
@@ -362,6 +366,19 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
   let despegue = { x: 0, y: 0 }
   let ultimoDesdeSalto = 99999
 
+  /**
+   * Las plumas que andan flotando, solo en el cuarto de Nico.
+   *
+   * Viven en el pintor y no en el motor a propósito: no tocan la
+   * física, no deciden nada y el probador no tiene por qué saber que
+   * existen. Si el capítulo no es de almohadas, este arreglo se queda
+   * vacío y no cuesta nada.
+   */
+  let plumas: Pluma[] = []
+  let ultimoDesdeAterrizaje = 99999
+  /** El reloj del cuadro anterior, para saber cuánto pasó. */
+  let relojAntes = -1
+
   const pintor: Pintor = {
     movimientoReducido: false,
 
@@ -652,6 +669,33 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
         if (escena.cansancio > 0) dibujarEstrellitas(ctx, escena)
         dibujarLoQuePusieron(ctx, escena)
       }
+
+      // ── Las plumas del cuarto de Nico ─────────────────────────
+      // Salen del golpe de aterrizar y del empujón de despegar, y
+      // flotan por delante de la tortuga. No tapan nada que haga
+      // falta ver: lo que cae va todavía más adelante.
+      if (esDeAlmohadas && !pintor.movimientoReducido) {
+        const dt = relojAntes < 0 ? 0 : Math.min(0.05, Math.max(0, escena.reloj - relojAntes))
+
+        // Cayó encima de una almohada: el golpe levanta un puñado.
+        if (escena.desdeAterrizaje < ultimoDesdeAterrizaje && escena.cine === 'jugando') {
+          plumas = plumas.concat(soltarPlumas(escena.x, escena.y, 7, 95))
+        }
+        // Y salir disparada arrastra unas pocas más.
+        if (escena.desdeSalto < MS_FOGONAZO && escena.desdeSalto < ultimoDesdeSalto) {
+          plumas = plumas.concat(soltarPlumas(escena.x, escena.y, 4, 70))
+        }
+
+        // Un tope, por si se queda saltando en el mismo sitio: pasado
+        // ahí se van las más viejas, que son las que ya casi no se
+        // ven.
+        if (plumas.length > 70) plumas = plumas.slice(plumas.length - 70)
+
+        if (dt > 0) plumas = moverPlumas(plumas, dt, escena.reloj)
+        for (const pluma of plumas) dibujarPluma(ctx, pluma)
+      }
+      ultimoDesdeAterrizaje = escena.desdeAterrizaje
+      relojAntes = escena.reloj
 
       // Lo que cae va por delante de todo el mundo y de la tortuga: es
       // lo único que está entre ella y la pantalla, y taparlo con una

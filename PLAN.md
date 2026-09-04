@@ -458,6 +458,46 @@ web ya está en su mano y lo va a ver en la siguiente visita.
 Por eso no la enlacé yo. No es una decisión de código, es decidir qué día se lo
 enseñás.
 
+**Y la luna no se abre sola: primero hay que encontrar a los tres peluches.**
+Estaba anotado desde el principio en `plan-juego-luna.md`, al final, y va aquí
+para que no se pierda:
+
+> Debes añadir una condición para que la luna funcione como entrada. Primero
+> debe encontrar a los 3 peluches (sin el colado o con el colado, eso no
+> importa) para que esta lleve a osita al juego de la tortuga. Si trata de
+> entrar sin la condición debes advertirle que le falta hacer algo para entrar.
+
+Lo que hace falta ya existe y no hay que inventar nada: `PeluchesEscondidos.tsx`
+guarda en `localStorage` quiénes se han encontrado y ya calcula `completos`.
+Falta sacar esa cuenta del componente a un sitio que la portada pueda
+preguntar, y el aviso de cuando toca la luna sin tenerlos.
+
+Y hay un orden que conviene respetar: la luna se enciende sola cuando ella
+acaba de encontrar al tercero. Ese es el momento, y es gratis — no hay que
+inventarle ninguna ceremonia.
+
+### Lo que se hizo el 4 de septiembre, segunda vuelta: el cuarto de Nico
+
+El capítulo se leía quieto: estaba bien dibujado y no pasaba nada. Se le
+pusieron dos cosas, y **ninguna toca un solo número de la física**, que era la
+condición.
+
+- **Las plumas.** Salen del golpe de aterrizar y del empujón de despegar,
+  flotan por delante de la tortuga meciéndose y se apagan. Es lo único del
+  capítulo que reacciona a lo que ella hace, y es lo que hace que la almohada se
+  sienta de plumas en vez de ser una forma de color. Solo en el cuarto de Nico:
+  de una pista de Hot Wheels y de una caja de cartón no salen plumas.
+- **Las sábanas de abajo tiemblan mientras hay peso encima**, y cuanto más
+  hundida, más. Esto es lo que más falta hacía: la traba de este capítulo es un
+  suelo que se mueve mientras una lo mira, y con la tela de abajo quieta el
+  hundimiento se leía como que la plataforma cambia de sitio, no como que hay
+  algo cediendo bajo el peso.
+
+**Y se arregló el banco**, que estaba roto desde que se añadió lo que cae: la
+escena de `almohadas-banco.html` no traía `loQueCae` ni `efecto`, el pintor se
+caía en el segundo panel y el banco llevaba semanas enseñando uno solo. Se
+notaba y no se miró.
+
 ### Antes de eso, si querés
 
 - **Jugá Ovi y Nico** para ver la llegada y la carta con la clave puesta y

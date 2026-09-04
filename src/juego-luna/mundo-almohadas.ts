@@ -476,7 +476,7 @@ export function dibujarAlmohada(
   const ancho = p.ancho + ancha * 2
 
   // Las sábanas van primero, que están detrás y por debajo.
-  if (forma) dibujarSabanasColgando(ctx, x, y, ancho, forma, alfa)
+  if (forma) dibujarSabanasColgando(ctx, x, y, ancho, forma, alfa, hundido, reloj)
 
   if (p.enreda) {
     dibujarCobija(ctx, x, y, ancho, altoAhora(ALTO, hundido), hundido, alfa)
@@ -686,10 +686,28 @@ function dibujarSabanasColgando(
   ancho: number,
   forma: Almohada,
   alfa: number,
+  hundido: number,
+  reloj: number,
 ) {
   // Arrancan un poco por debajo de la línea que se pisa: la tela sale
   // de debajo de la almohada, no de encima.
   const arriba = y + 12
+
+  /**
+   * Lo que se mece la punta de abajo mientras hay peso encima.
+   *
+   * Con la almohada entera van quietas. En cuanto se para encima y
+   * empieza a hundirse, la tela de abajo se pone a temblar, y cuanto
+   * más hundida más. Es dibujo y nada más: no toca ni la altura ni el
+   * tiempo de carga.
+   *
+   * Hace falta porque la traba de este capítulo es un suelo que se va
+   * moviendo mientras una lo mira, y hasta ahora eso solo lo contaba
+   * la almohada bajando. Con la tela de abajo quieta, el hundimiento
+   * se leía como que la plataforma cambia de sitio, no como que hay
+   * algo cediendo bajo el peso.
+   */
+  const tiembla = hundido * hundido * 7
 
   ctx.save()
 
@@ -714,24 +732,29 @@ function dibujarSabanasColgando(
     ctx.beginPath()
     ctx.moveTo(desde, arriba)
     ctx.lineTo(hasta, arriba)
+    // El vaivén va solo en la punta de abajo: arriba la tela está
+    // sujeta por la almohada y ahí no se mueve nada.
+    const mece = tiembla === 0 ? 0 : Math.sin(reloj * 4.6 + sabana.dx * 0.21) * tiembla
+    const cuelga = sabana.largo + tiembla * 1.6
+
     ctx.quadraticCurveTo(
-      hasta - sabana.ancho * 0.06,
-      arriba + sabana.largo * 0.45,
-      hasta - sabana.ancho * 0.14,
-      arriba + sabana.largo * 0.78,
+      hasta - sabana.ancho * 0.06 + mece * 0.4,
+      arriba + cuelga * 0.45,
+      hasta - sabana.ancho * 0.14 + mece,
+      arriba + cuelga * 0.78,
     )
     for (let i = 3; i > 0; i -= 1) {
-      const px = desde + sabana.ancho * 0.14 + (sabana.ancho * 0.72 * (i - 1)) / 3
+      const px = desde + sabana.ancho * 0.14 + (sabana.ancho * 0.72 * (i - 1)) / 3 + mece
       ctx.quadraticCurveTo(
-        desde + sabana.ancho * 0.14 + (sabana.ancho * 0.72 * (i - 0.5)) / 3,
-        arriba + sabana.largo * (i % 2 === 0 ? 1 : 0.62),
+        desde + sabana.ancho * 0.14 + (sabana.ancho * 0.72 * (i - 0.5)) / 3 + mece,
+        arriba + cuelga * (i % 2 === 0 ? 1 : 0.62),
         px,
-        arriba + sabana.largo * 0.78,
+        arriba + cuelga * 0.78,
       )
     }
     ctx.quadraticCurveTo(
-      desde + sabana.ancho * 0.06,
-      arriba + sabana.largo * 0.45,
+      desde + sabana.ancho * 0.06 + mece * 0.4,
+      arriba + cuelga * 0.45,
       desde,
       arriba,
     )
@@ -861,6 +884,138 @@ function dibujarCobija(
   ctx.lineTo(x + ancho - 13, y + alto + 8 + hundido * 5)
   ctx.closePath()
   ctx.fill()
+
+  ctx.restore()
+}
+
+/* ══════════════════════════════════════════════════════════════
+   LAS PLUMAS
+
+   Lo que sueltan las almohadas cuando ella cae encima y cuando sale
+   disparada. Es lo único del capítulo que reacciona a lo que ella
+   hace, y por eso se puso: el cuarto estaba bien dibujado y aun así
+   se leía quieto.
+
+   **No tocan la física.** Ni una. Salen del golpe, flotan un rato
+   por delante de la tortuga y se apagan. Lo que hacen es que la
+   almohada se sienta de plumas en vez de ser una forma de color, y
+   que el capítulo parezca más complicado de lo que es, que es
+   exactamente lo que se buscaba.
+
+   Van en este archivo y no en el pintor porque son del mundo de
+   Nico. En el de Boo y en el de Ovi no sale ninguna: de una pista de
+   Hot Wheels y de una caja de cartón no salen plumas.
+   ══════════════════════════════════════════════════════════════ */
+
+/** Los tonos de la pluma, del más claro al más apagado. */
+const COLOR_PLUMA = ['#f6f1e4', '#e4dcd0', '#cfc6be']
+
+export interface Pluma {
+  x: number
+  y: number
+  vx: number
+  vy: number
+  giro: number
+  /** Vueltas por segundo, con su signo. */
+  vueltas: number
+  largo: number
+  /** El vaivén de caer: fase y cuánto se mece. */
+  fase: number
+  mecida: number
+  color: string
+  /** De 1 (recién salida) a 0 (ya no está). */
+  vida: number
+  /** Cuánta vida pierde por segundo. */
+  gasta: number
+}
+
+let semillaDePluma = 24112024
+const alAzar = () => {
+  semillaDePluma = (semillaDePluma * 1664525 + 1013904223) % 4294967296
+  return semillaDePluma / 4294967296
+}
+
+/**
+ * Un puñado de plumas saliendo de un punto.
+ *
+ * `fuerza` es cuánto las avienta: el porrazo de aterrizar las
+ * levanta más que el empujón de despegar. Salen para arriba y
+ * abiertas, porque es lo que hace un golpe sobre algo blando.
+ */
+export function soltarPlumas(x: number, y: number, cuantas: number, fuerza: number): Pluma[] {
+  const plumas: Pluma[] = []
+  for (let i = 0; i < cuantas; i += 1) {
+    const abierta = (alAzar() - 0.5) * 2
+    plumas.push({
+      x: x + abierta * 13,
+      y: y - 2 - alAzar() * 5,
+      vx: abierta * fuerza * (0.5 + alAzar() * 0.6),
+      vy: -fuerza * (0.5 + alAzar() * 0.8),
+      giro: alAzar() * Math.PI * 2,
+      vueltas: (0.5 + alAzar()) * (alAzar() < 0.5 ? -1 : 1),
+      largo: 6 + alAzar() * 5,
+      fase: alAzar() * Math.PI * 2,
+      mecida: 14 + alAzar() * 16,
+      color: COLOR_PLUMA[Math.floor(alAzar() * COLOR_PLUMA.length)] ?? COLOR_PLUMA[0],
+      vida: 1,
+      gasta: 0.34 + alAzar() * 0.22,
+    })
+  }
+  return plumas
+}
+
+/**
+ * Las mueve un ratito y devuelve las que siguen vivas.
+ *
+ * Una pluma no cae, se deja caer: la gravedad es floja y hay una
+ * velocidad de bajada que no pasa nunca, más el vaivén de lado.
+ * Con la gravedad del juego caían como piedritas blancas.
+ */
+export function moverPlumas(plumas: Pluma[], dt: number, reloj: number): Pluma[] {
+  const vivas: Pluma[] = []
+  for (const p of plumas) {
+    p.vida -= p.gasta * dt
+    if (p.vida <= 0) continue
+
+    p.vy = Math.min(p.vy + 190 * dt, 26)
+    p.vx *= 1 - Math.min(1, 2.4 * dt)
+    p.x += (p.vx + Math.sin(reloj * 1.7 + p.fase) * p.mecida) * dt
+    p.y += p.vy * dt
+    p.giro += p.vueltas * dt
+    vivas.push(p)
+  }
+  return vivas
+}
+
+/** Una pluma: el raquis y las dos barbas, que es toda la silueta. */
+export function dibujarPluma(ctx: CanvasRenderingContext2D, p: Pluma) {
+  // Entra de golpe y se va apagando, que es como se apaga algo que
+  // cae: no parpadea, se pierde de vista.
+  const alfa = Math.min(1, p.vida * 2.2) * 0.85
+
+  ctx.save()
+  ctx.globalAlpha = alfa
+  ctx.translate(p.x, p.y)
+  ctx.rotate(p.giro)
+
+  const medio = p.largo / 2
+  const ancho = p.largo * 0.3
+
+  ctx.fillStyle = p.color
+  ctx.beginPath()
+  ctx.moveTo(0, -medio)
+  ctx.quadraticCurveTo(ancho, 0, 0, medio)
+  ctx.quadraticCurveTo(-ancho, 0, 0, -medio)
+  ctx.fill()
+
+  // El canuto, que es lo que la separa de una hojita.
+  ctx.globalAlpha = alfa * 0.45
+  ctx.strokeStyle = COLOR.costura
+  ctx.lineWidth = 0.7
+  ctx.beginPath()
+  ctx.moveTo(0, -medio)
+  ctx.lineTo(0, medio)
+  ctx.stroke()
 
   ctx.restore()
 }
