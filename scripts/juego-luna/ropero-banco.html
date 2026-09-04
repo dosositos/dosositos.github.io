@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>El ropero de la tortuga</title>
+    <style>
+      body { margin: 0; background: #0b1026; font-family: system-ui; }
+      canvas { display: block; }
+    </style>
+  </head>
+  <body>
+    <!--
+      Banco de la ropita. No es parte de la web: sirve para ver cada
+      accesorio puesto sin tener que ganárselo jugando.
+
+      Tres bloques, y hay que mirar los tres:
+
+        1. Cada cosa sola, en la pose de caminar.
+        2. Los cuatro caparazones.
+        3. Todo puesto a la vez, en las poses donde algo se puede
+           despegar del cuerpo: cargando, en el aire, cayendo y
+           desmayada. Un gorro que queda bien parada y se despega en
+           pleno salto no sirve, y eso solo se ve así.
+
+      Se mira con el servidor de siempre andando:
+        npm run dev
+        http://localhost:5173/scripts/juego-luna/ropero-banco.html
+    -->
+    <canvas id="lienzo"></canvas>
+    <script type="module">
+      import { ROPERO } from '/src/content/luna.ts'
+      import { CAPARAZONES } from '/src/juego-luna/accesorios.ts'
+      import { dibujarTortuga } from '/src/juego-luna/tortuga.ts'
+
+      /* Lo que se puede poner encima, sin contar los caparazones, que
+         van en su propia fila porque no son cosas puestas sino el
+         mismo caparazón pintado de otro color. */
+      const ENCIMA = ROPERO.filter((a) => a.ranura !== 'caparazon')
+      const COLORES = ROPERO.filter((a) => a.ranura === 'caparazon')
+
+      /* Todo puesto a la vez, para ver si algo choca con algo. */
+      const TODO = {
+        sombrero: 'lana',
+        cara: 'oscuros',
+        cuello: 'bufanda',
+        caparazon: 'hibisco',
+      }
+
+      const POSES_DIFICILES = [
+        ['parada', {}],
+        ['cargando', { cargando: true, carga: 1 }],
+        ['despega', { enSuelo: false, vy: -420 }],
+        ['cae fuerte', { enSuelo: false, vy: 620 }],
+        ['desmayada', { cansancio: 0.9 }],
+        ['mirando a la izquierda', { mirando: -1 }],
+      ]
+
+      const ESCALA = 3.0
+      const CELDA = { ancho: 78, alto: 92 }
+      const COLUMNAS = 4
+
+      const lienzo = document.getElementById('lienzo')
+      const ctx = lienzo.getContext('2d')
+
+      const filasEncima = Math.ceil(ENCIMA.length / COLUMNAS)
+      const filasColor = Math.ceil(COLORES.length / COLUMNAS)
+      const filasDificiles = Math.ceil(POSES_DIFICILES.length / COLUMNAS)
+      const filas = filasEncima + filasColor + filasDificiles
+
+      const densidad = 2
+      const anchoTotal = COLUMNAS * CELDA.ancho * ESCALA
+      const altoTotal = filas * CELDA.alto * ESCALA
+      lienzo.width = anchoTotal * densidad
+      lienzo.height = altoTotal * densidad
+      lienzo.style.width = `${anchoTotal}px`
+      lienzo.style.height = `${altoTotal}px`
+      ctx.scale(densidad * ESCALA, densidad * ESCALA)
+
+      const escenaBase = (cambios) => ({
+        x: 0, y: 0, mirando: 1, carga: 0, cargando: false, enSuelo: true,
+        caminado: 0.4, vy: 0, reloj: 1.2, desdeSalto: 9999, desdeAterrizaje: 9999,
+        cayendo: false, agobio: 0, cansancio: 0, plataformas: [], ...cambios,
+      })
+
+      /** Una celda con su nombre, su piso y una tortuga vestida. */
+      function celda(i, desplazamiento, nombre, puesto, cambios = {}) {
+        const col = i % COLUMNAS
+        const fila = Math.floor(i / COLUMNAS) + desplazamiento
+        ctx.save()
+        ctx.translate(col * CELDA.ancho, fila * CELDA.alto)
+
+        ctx.fillStyle = '#2a3157'
+        ctx.fillRect(4, CELDA.alto - 14, CELDA.ancho - 8, 5)
+        ctx.fillStyle = 'rgba(248,244,232,0.45)'
+        ctx.font = '5px system-ui'
+        ctx.fillText(nombre, 6, 10)
+
+        const escena = escenaBase({ x: CELDA.ancho / 2, y: CELDA.alto - 14, ...cambios })
+        dibujarTortuga(ctx, escena, undefined, puesto)
+        ctx.restore()
+      }
+
+      // ── Uno por uno ──
+      ENCIMA.forEach((a, i) => celda(i, 0, a.nombre, { [a.ranura]: a.id }))
+
+      // ── Los caparazones. El natural va primero aunque no esté en el
+      //    catálogo: es contra el que hay que comparar los otros tres. ──
+      celda(0, filasEncima, 'caparazón de siempre', {})
+      COLORES.forEach((a, i) => {
+        if (!CAPARAZONES[a.id]) throw new Error(`el caparazón "${a.id}" no tiene colores`)
+        celda(i + 1, filasEncima, a.nombre, { caparazon: a.id })
+      })
+
+      // ── Todo puesto, en las poses donde algo se puede despegar ──
+      POSES_DIFICILES.forEach(([nombre, cambios], i) =>
+        celda(i, filasEncima + filasColor, `todo · ${nombre}`, TODO, cambios),
+      )
+    </script>
+  </body>
+</html>

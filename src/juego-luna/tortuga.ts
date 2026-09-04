@@ -1,5 +1,12 @@
 import { TORTUGA } from '@/content/luna'
-import type { EscenaLuna } from '@/types'
+import {
+  coloresDelCaparazon,
+  dibujarEnLaCara,
+  dibujarEnElCuello,
+  dibujarSombrero,
+} from '@/juego-luna/accesorios'
+import type { ColoresDelCaparazon } from '@/juego-luna/accesorios'
+import type { EscenaLuna, PuestoEnLaTortuga } from '@/types'
 
 /**
  * La tortuga.
@@ -31,9 +38,11 @@ const COLOR = {
   pielOscura: '#527f63',
   panza: '#dcc79a',
   panzaLinea: '#c9b083',
-  caparazon: '#b4763f',
+  // El caparazón se pinta con lo que diga el ropero y sus colores
+  // viven en `accesorios.ts`. Estos dos se quedaron porque no son del
+  // caparazón: son las cejas y las uñitas de las patas, que llevan el
+  // mismo tono desde antes de que hubiera ropero y no cambian con él.
   caparazonOscuro: '#8a5a2f',
-  caparazonClaro: '#d3a06a',
   caparazonBorde: '#e5cba8',
   ojoBlanco: '#f8f4e8',
   ojo: '#1b1b22',
@@ -387,23 +396,29 @@ function dibujarMano(ctx: CanvasRenderingContext2D, x: number, y: number, color:
   ctx.fill()
 }
 
-/** El caparazón: domo con gajos, el reborde de abajo y un brillo. */
-function dibujarCaparazon(ctx: CanvasRenderingContext2D) {
+/**
+ * El caparazón: domo con gajos, el reborde de abajo y un brillo.
+ *
+ * Los colores llegan de fuera porque el ropero los cambia. La forma es
+ * siempre la misma: un caparazón girasol es este mismo caparazón
+ * pintado, no otro dibujo.
+ */
+function dibujarCaparazon(ctx: CanvasRenderingContext2D, colores: ColoresDelCaparazon) {
   ctx.save()
   ctx.translate(-5.2, -10.2)
   ctx.rotate(-0.22)
 
-  ctx.fillStyle = COLOR.caparazon
+  ctx.fillStyle = colores.base
   ctx.beginPath()
   ctx.ellipse(0, 0, 9, 10, 0, 0, Math.PI * 2)
   ctx.fill()
 
-  ctx.strokeStyle = COLOR.caparazonOscuro
+  ctx.strokeStyle = colores.oscuro
   ctx.lineWidth = 1.3
   ctx.stroke()
 
   // Los gajos: uno en el centro y cinco alrededor.
-  ctx.strokeStyle = COLOR.caparazonOscuro
+  ctx.strokeStyle = colores.oscuro
   ctx.lineWidth = 1
   ctx.beginPath()
   ctx.ellipse(-0.5, -1, 4, 4.2, 0, 0, Math.PI * 2)
@@ -418,7 +433,7 @@ function dibujarCaparazon(ctx: CanvasRenderingContext2D) {
   }
 
   // El reborde de abajo, más claro: separa el caparazón del cuerpo.
-  ctx.strokeStyle = COLOR.caparazonBorde
+  ctx.strokeStyle = colores.borde
   ctx.lineWidth = 2.4
   ctx.beginPath()
   ctx.ellipse(0, 0, 9, 10, 0, Math.PI * 0.05, Math.PI * 0.95)
@@ -568,7 +583,13 @@ function dibujarCara(ctx: CanvasRenderingContext2D, pose: Pose) {
  * La tortuga entera, ya con su pose. El origen es la línea que pisa y
  * mira siempre a la derecha: voltearla es cosa de quien la dibuja.
  */
-export function dibujarTortuga(ctx: CanvasRenderingContext2D, escena: EscenaLuna, pose = poseDe(escena)) {
+export function dibujarTortuga(
+  ctx: CanvasRenderingContext2D,
+  escena: EscenaLuna,
+  pose = poseDe(escena),
+  puesto: PuestoEnLaTortuga = {},
+) {
+  const caparazon = coloresDelCaparazon(puesto.caparazon)
   ctx.save()
   ctx.translate(escena.x, escena.y)
   ctx.scale(escena.mirando, 1)
@@ -614,7 +635,7 @@ export function dibujarTortuga(ctx: CanvasRenderingContext2D, escena: EscenaLuna
   // El caparazón va en la espalda y se pinta antes que el cuerpo: se
   // le ve el domo por detrás y por arriba del hombro, como una
   // mochila, y la panza queda al frente sin nada encima.
-  dibujarCaparazon(ctx)
+  dibujarCaparazon(ctx, caparazon)
 
   // El brazo del lado lejano va detrás del cuerpo pero delante del
   // caparazón. Detrás de los dos se veía solo la mano asomando por un
@@ -658,6 +679,19 @@ export function dibujarTortuga(ctx: CanvasRenderingContext2D, escena: EscenaLuna
   ctx.roundRect(2.2, CUERPO.hombro - 4, 6.4, 8, 3.2)
   ctx.fill()
 
+  // Lo del cuello va aquí: encima del cuello ya dibujado y debajo de
+  // la cabeza, que es como se pone una bufanda. Dibujada después, la
+  // punta le pasaba por delante de la cara.
+  if (puesto.cuello) {
+    // El arrastre sale de lo rápido que va subiendo o bajando, y se
+    // recorta a 1 porque en una caída larga la velocidad no para de
+    // crecer. Los 420 son más o menos lo que sale de un salto normal:
+    // con un número más alto la bufanda se quedaba a medio camino todo
+    // el vuelo, que es donde peor se ve, ni colgando ni ondeando.
+    const arrastre = Math.min(1, Math.abs(escena.vy) / 420)
+    dibujarEnElCuello(ctx, puesto.cuello, arrastre, escena.reloj)
+  }
+
   ctx.save()
   ctx.translate(5.2, CUERPO.hombro - 10.4)
   ctx.rotate(pose.cabeza)
@@ -668,6 +702,13 @@ export function dibujarTortuga(ctx: CanvasRenderingContext2D, escena: EscenaLuna
   ctx.fill()
 
   dibujarCara(ctx, pose)
+
+  // Y encima de la cara, dentro del giro de la cabeza: así el gorro se
+  // inclina con ella y los lentes le quedan puestos en vez de flotando
+  // a un lado cuando mira para arriba.
+  if (puesto.cara) dibujarEnLaCara(ctx, puesto.cara)
+  if (puesto.sombrero) dibujarSombrero(ctx, puesto.sombrero, escena.reloj)
+
   ctx.restore()
 
   // ── El brazo de adelante, encima de todo ──

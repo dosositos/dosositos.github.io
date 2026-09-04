@@ -1,4 +1,4 @@
-import type { CapituloEscrito } from '@/types'
+import type { Accesorio, CapituloEscrito } from '@/types'
 
 /**
  * A la luna, a pasitos de tortuga.
@@ -1154,6 +1154,161 @@ export const TEXTOS = {
   /** Para salir del juego cuando ya la leyó. */
   volver: 'volver a la madriguera',
 }
+
+/**
+ * El ropero de la tortuga.
+ *
+ * Ropita de juego, no reliquias: un gorrito de fiesta, unos lentes de
+ * sol, una bufanda. No cuentan nada de nosotros y no tienen por qué.
+ * Lo que hacen es darle un motivo para volver a subir un capítulo que
+ * ya ganó, que es lo único que el juego no tenía.
+ *
+ * Cada cosa se gana haciendo algo, y **lo que se pide se calcula del
+ * progreso guardado**: capítulos ganados, subidas sin caerse y récords
+ * de él igualados. Nada se lleva por separado.
+ *
+ * Se pone una cosa por ranura. La tortuga puede andar con gorro, lentes
+ * y bufanda a la vez, pero no con dos gorros.
+ *
+ * El dibujo de cada uno vive en `src/juego-luna/accesorios.ts`, porque
+ * es canvas y no texto. Acá está lo que se puede leer y cambiar sin
+ * saber dibujar: cómo se llama, qué dice y qué hay que hacer para
+ * ganárselo. Los `id` son los que amarran las dos mitades: si se
+ * inventa uno aquí sin dibujo del otro lado, `npm run luna:ropero` se
+ * queja.
+ */
+export const ROPERO: Accesorio[] = [
+  /* ── En la cabeza ─────────────────────────────────────────────── */
+  {
+    id: 'gorrito',
+    ranura: 'sombrero',
+    nombre: 'gorrito de fiesta',
+    nota: 'Con esto puesto no hay subida que se sienta seria.',
+    llave: { como: 'siempre' },
+  },
+  {
+    id: 'lana',
+    ranura: 'sombrero',
+    nombre: 'gorro de lana',
+    nota: 'Allá arriba hace frío. Alguien tenía que pensar en eso.',
+    llave: { como: 'capitulo', cual: 1 },
+  },
+  {
+    id: 'cintillo',
+    ranura: 'sombrero',
+    nombre: 'cintillo de antenitas',
+    nota: 'Dos bolitas que se bambolean solas. No sirven para nada.',
+    llave: { como: 'sinCaerse' },
+  },
+  {
+    id: 'corona',
+    ranura: 'sombrero',
+    nombre: 'corona de papel',
+    nota: 'Subiste hasta arriba. Andá con la corona puesta.',
+    llave: { como: 'luna' },
+  },
+
+  /* ── En la cara ───────────────────────────────────────────────── */
+  {
+    id: 'redondos',
+    ranura: 'cara',
+    nombre: 'lentes redondos',
+    nota: 'Para ver bien dónde va a caer.',
+    llave: { como: 'siempre' },
+  },
+  {
+    id: 'oscuros',
+    ranura: 'cara',
+    nombre: 'lentes de sol',
+    nota: 'Nadie sube cajas con esta calma.',
+    llave: { como: 'capitulo', cual: 2 },
+  },
+
+  /* ── En el cuello ─────────────────────────────────────────────── */
+  {
+    id: 'corbatin',
+    ranura: 'cuello',
+    nombre: 'corbatín',
+    nota: 'Una tortuga elegante sigue siendo una tortuga.',
+    llave: { como: 'siempre' },
+  },
+  {
+    id: 'bufanda',
+    ranura: 'cuello',
+    nombre: 'bufanda larga',
+    nota: 'Se le va para atrás en cada salto, aunque no haya viento.',
+    llave: { como: 'capitulo', cual: 3 },
+  },
+
+  /* ── El caparazón ─────────────────────────────────────────────── */
+  /* No son sombreros ni bufandas, son el color del caparazón, y por eso
+     van en su propia ranura. Los nombres salen de las flores, que es de
+     donde salen todos los colores de esta web. */
+  {
+    id: 'girasol',
+    ranura: 'caparazon',
+    nombre: 'caparazón girasol',
+    nota: 'Amarillo de girasol, que es el que más se ve de lejos.',
+    llave: { como: 'records', cuantos: 1 },
+  },
+  {
+    id: 'hibisco',
+    ranura: 'caparazon',
+    nombre: 'caparazón hibisco',
+    nota: 'Rosado fuerte. Si te lo ponés, que se note.',
+    llave: { como: 'records', cuantos: 2 },
+  },
+  {
+    id: 'tulipan',
+    ranura: 'caparazon',
+    nombre: 'caparazón tulipán',
+    nota: 'Violeta. Le ganaste en los tres, podés andar como querás.',
+    llave: { como: 'records', cuantos: 3 },
+  },
+]
+
+/**
+ * Los textos de la pantalla del ropero.
+ *
+ * Sale del cartel de cada capítulo, con un botón, y se puede saltar
+ * entera. Vestir a la tortuga no puede ser un peaje antes de jugar.
+ */
+export const TEXTOS_DEL_ROPERO = {
+  titulo: 'el ropero',
+  /** `{tortuga}` lo rellena `nombrar.ts`, como en todos los textos. */
+  bajada: 'ponele lo que querás a {tortuga}, y se lo quitás cuando te aburra.',
+  /** El botón del cartel del capítulo que abre esto. */
+  abrir: 'vestirla',
+  /** Volver al cartel. */
+  cerrar: 'así está bien',
+  /** El botón de quitarle lo de una ranura. Va junto al título. */
+  quitar: 'quitar',
+  /** Cuántas cosas lleva ganadas, arriba. `{cuantos}` y `{total}`. */
+  cuenta: '{cuantos} de {total}',
+
+  /**
+   * Qué hay que hacer para ganarse lo que todavía está bajo llave.
+   *
+   * Van en imperativo y solas, sin ningún «te falta» delante. Con el
+   * «te falta» puesto salía «te falta ganá el capítulo 1», que no es
+   * español ni de aquí ni de ninguna parte.
+   */
+  llaves: {
+    capitulo: 'ganá el capítulo {cual}',
+    sinCaerse: 'subí un capítulo sin caerte',
+    unRecord: 'igualale un récord a osito',
+    records: 'igualale el récord a osito en {cuantos} capítulos',
+    luna: 'llegá hasta la luna',
+  },
+
+  /** Los nombres de las ranuras, para los grupos de la pantalla. */
+  ranuras: {
+    sombrero: 'la cabeza',
+    cara: 'la cara',
+    cuello: 'el cuello',
+    caparazon: 'el caparazón',
+  },
+} as const
 
 /**
  * La luna de la portada, que es la puerta del juego.

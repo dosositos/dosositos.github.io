@@ -1,4 +1,5 @@
-import type { ProgresoLuna } from '@/types'
+import { ROPERO } from '@/content/luna'
+import type { ProgresoLuna, PuestoEnLaTortuga, RanuraDeLaTortuga } from '@/types'
 
 /**
  * Lo que se acuerda el teléfono entre una vez y otra.
@@ -30,6 +31,7 @@ const VACIO: ProgresoLuna = {
   caidas: 0,
   mejorPorCapitulo: {},
   nombre: '',
+  puesto: {},
 }
 
 export function leerProgreso(): ProgresoLuna {
@@ -43,6 +45,7 @@ export function leerProgreso(): ProgresoLuna {
       caidas: Number(guardado.caidas) || 0,
       mejorPorCapitulo: limpiarMejores(guardado.mejorPorCapitulo),
       nombre: limpiarNombre(guardado.nombre),
+      puesto: limpiarPuesto(guardado.puesto),
     }
   } catch {
     // Navegador con el almacenamiento cerrado, o algo escrito a mano
@@ -109,6 +112,29 @@ function limpiarMejores(crudo: unknown): Record<number, { pasitos: number; caida
 }
 
 /**
+ * Lo que trae puesto, dejado en algo dibujable.
+ *
+ * Se limpia contra el catálogo y no solo contra el tipo. Un `id` que ya
+ * no existe (porque se le cambió el nombre a un accesorio, o porque
+ * alguien escribió en `localStorage` a mano) llegaría hasta el canvas y
+ * ahí no hay dibujo que buscar. Cae acá y la tortuga sale sin nada,
+ * que es lo peor que puede pasar.
+ *
+ * Que esté puesto no quiere decir que esté ganado. Eso lo decide
+ * `ropero.ts` cada vez que se dibuja, y así el día que se toque una
+ * regla no queda nadie con algo puesto que ya no le corresponde.
+ */
+function limpiarPuesto(crudo: unknown): PuestoEnLaTortuga {
+  if (!crudo || typeof crudo !== 'object') return {}
+  const limpio: PuestoEnLaTortuga = {}
+  for (const [ranura, id] of Object.entries(crudo as Record<string, unknown>)) {
+    const existe = ROPERO.find((a) => a.id === id && a.ranura === ranura)
+    if (existe) limpio[ranura as RanuraDeLaTortuga] = existe.id
+  }
+  return limpio
+}
+
+/**
  * Deja el nombre en algo que se pueda enseñar: sin espacios de sobra,
  * sin saltos de línea y sin más largo del que cabe en una línea.
  *
@@ -145,4 +171,22 @@ export function ponerleNombre(nombre: string): ProgresoLuna {
  */
 export function conCualEntra(progreso: ProgresoLuna, ultimoEscrito: number): number {
   return Math.min(Math.max(1, progreso.capitulo + 1), ultimoEscrito)
+}
+
+/**
+ * Ponerle o quitarle algo. `id` vacío es quitarle lo de esa ranura.
+ *
+ * Vive aquí junto al resto del guardado y no en `ropero.ts` porque es
+ * lo mismo que `ponerleNombre`: escribir una cosa en el progreso. Lo de
+ * `ropero.ts` es la otra mitad, la de decidir qué se ganó.
+ */
+export function ponerle(ranura: RanuraDeLaTortuga, id: string): ProgresoLuna {
+  const antes = leerProgreso()
+  const puesto = { ...antes.puesto }
+  if (id) puesto[ranura] = id
+  else delete puesto[ranura]
+
+  const ahora: ProgresoLuna = { ...antes, puesto }
+  guardarProgreso(ahora)
+  return ahora
 }

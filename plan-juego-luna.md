@@ -398,7 +398,7 @@ empieza hasta que lo demás esté cerrado.
 | 7 | El prólogo | El juego con su escuelita delante | Sí |
 | 8 | Teléfono y números | El juego, pero que se sienta bien | Sí |
 | 9 | El colado | Igual, con chiste | Sí |
-| 10 | **La entrada por la luna** (puerta ✓, faltan los accesorios) | El juego, para ella | Fin |
+| 10 | **La entrada por la luna** ✓ | El juego, para ella | Fin |
 
 Al cerrar cada fase: `npm run typecheck`, `npm run revisar`, commit propio, y
 dejar apuntada la siguiente en «La próxima sesión» de `PLAN.md`.
@@ -620,14 +620,39 @@ Tres detalles que costaron más de lo que parecen:
 Y `npm run luna:puerta` fotografía los seis estados y comprueba sola que
 cerrada no deje pasar y que abierta sí.
 
-**Lo que falta de esta fase: los accesorios.**
+**El ropero, también hecho.** Lo otro que pedía la fase:
 
 > Añade un espacio para modificar al personaje, accesorios customizables para el
 > personaje de la tortuga, entre otras cosas que se podrán desbloquear tras
-> ciertos hitos. Puedes entrevistarme más sobre este tema cuando lleguemos a
-> esta fase.
+> ciertos hitos.
 
-Sin decidir. Se habla con Armando antes de escribir una línea.
+Preguntado el 4 de septiembre y contestado: **ropita de juego, no reliquias**.
+Un gorrito de fiesta, unos lentes de sol, una bufanda. No cuentan nada de ellos
+dos y no tienen por qué. Lo que hacen es darle un motivo para volver a subir un
+capítulo que ya ganó, que es lo único que al juego le faltaba.
+
+Once cosas en cuatro ranuras: la cabeza, la cara, el cuello y el caparazón. Una
+por ranura, así que puede andar con gorro, lentes y bufanda a la vez pero no con
+dos gorros. Tres son de salida y las otras ocho se ganan: ganando cada capítulo,
+subiendo uno sin caerse, igualándole los récords a él y llegando arriba.
+
+- El catálogo es de Armando y vive en `ROPERO`, en `luna.ts`: nombre, la línea
+  que dice y qué hay que hacer. Los dibujos son canvas y viven aparte, en
+  `juego-luna/accesorios.ts`. El `id` amarra las dos mitades y
+  `npm run luna:ropero` avisa si una se queda sin la otra.
+- **Lo ganado no se guarda, se calcula.** Guardar la lista sería guardar dos
+  veces la misma verdad, y el día que se toque una regla los teléfonos que ya
+  jugaron se quedarían con la lista vieja para siempre. Se guarda solo lo puesto.
+- Se entra desde el cartel del capítulo, con un botón chiquito y **debajo** del
+  de empezar: vestirla es lo de al lado, no el camino.
+- Se cambia en caliente. El pintor lleva la ropa en una propiedad, igual que
+  `movimientoReducido`, así probarse un gorro no tira el nivel sembrado.
+
+Dos cosas que costaron: **la bufanda** tenía que salir por encima del caparazón
+al volar, porque mandada para atrás sin subirla se veía un aro rosado alrededor
+del cuerpo, como un flotador. Y **lo bloqueado se lee en imperativo y solo**
+(«ganá el capítulo 1»): con un «te falta» delante salía «te falta ganá el
+capítulo 1», que no es español de ninguna parte.
 
 **Y antes de enseñárselo** hay que recordarle que juegue los tres capítulos para
 llenar los récords: sin eso el rival no existe. Esos ya están puestos.

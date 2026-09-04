@@ -2,7 +2,8 @@ import { useReducedMotion } from 'motion/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { CartaDeLaLuna } from '@/componentes/CartaDeLaLuna'
 import { MarcadorDeLaLuna } from '@/componentes/MarcadorDeLaLuna'
-import { AYUDA, BAUTIZO, CAPITULOS, CARTEL, TEXTOS } from '@/content/luna'
+import { RoperoDeLaTortuga } from '@/componentes/RoperoDeLaTortuga'
+import { AYUDA, BAUTIZO, CAPITULOS, CARTEL, TEXTOS, TEXTOS_DEL_ROPERO } from '@/content/luna'
 import { crearPintor } from '@/juego-luna/dibujo'
 import { conectarEntrada } from '@/juego-luna/entrada'
 import { crearMotor, type Motor } from '@/juego-luna/motor'
@@ -13,10 +14,12 @@ import {
   conCualEntra,
   LARGO_DEL_NOMBRE,
   leerProgreso,
+  ponerle,
   ponerleNombre,
 } from '@/juego-luna/progreso'
+import { loPuesto } from '@/juego-luna/ropero'
 import { RETRATOS } from '@/lib/retratos'
-import type { EventoLuna, ProgresoLuna } from '@/types'
+import type { EventoLuna, ProgresoLuna, RanuraDeLaTortuga } from '@/types'
 
 /**
  * A la luna, a pasitos de tortuga.
@@ -47,6 +50,12 @@ export function Luna() {
    * empezar desde fuera del efecto que lo crea.
    */
   const motorRef = useRef<Motor | null>(null)
+  /**
+   * Y el pintor, por lo mismo: la ropa de la tortuga se cambia a mitad
+   * de partida y ponerla por aquí evita tirar el nivel entero, con su
+   * cielo y su decorado sembrados, cada vez que ella se prueba un gorro.
+   */
+  const pintorRef = useRef<ReturnType<typeof crearPintor> | null>(null)
   const menosMovimiento = useReducedMotion()
 
   /** Lo que había guardado al abrir. De aquí sale con cuál se entra. */
@@ -65,6 +74,9 @@ export function Luna() {
 
   /** Lo que va escribiendo en la casilla del nombre. */
   const [escribiendo, setEscribiendo] = useState('')
+
+  /** El ropero abierto encima del cartel. */
+  const [vistiendo, setVistiendo] = useState(false)
 
   /** Se enciende al pisar la última plataforma. */
   const [llegada, setLlegada] = useState<{ pasitos: number; caidas: number } | null>(null)
@@ -98,6 +110,8 @@ export function Luna() {
 
     const pintor = crearPintor(canvas, nivel)
     pintor.movimientoReducido = menosMovimiento ?? false
+    pintor.puesto = loPuesto(leerProgreso())
+    pintorRef.current = pintor
 
     /** Los relojes de los carteles, para apagarlos todos al salir. */
     const relojes: number[] = []
@@ -180,7 +194,13 @@ export function Luna() {
         // Se guarda al pisar la cima y no al final de la cinemática:
         // si cierra la página mientras la luna se va, el capítulo
         // igual quedó ganado.
-        setTotales(anotarCapitulo(capitulo.numero, cuenta.pasitos, cuenta.caidas))
+        const ahora = anotarCapitulo(capitulo.numero, cuenta.pasitos, cuenta.caidas)
+        setTotales(ahora)
+        // Y esto es lo que abre el ropero: ganar el capítulo, o
+        // ganárselo sin caerse, o igualarle el récord, desbloquea cosas.
+        // Sin este aviso ella cerraría el capítulo, entraría al ropero y
+        // vería lo que acaba de ganarse todavía bajo llave.
+        setGuardado(ahora)
       } else if (evento === 'fin') {
         // El cartel espera a que la luna termine de irse. Taparla con
         // un cuadro de texto sería tirar la mejor parte.
@@ -251,6 +271,7 @@ export function Luna() {
     return () => {
       motor.detener()
       motorRef.current = null
+      pintorRef.current = null
       olvidarRelojes()
       window.clearTimeout(relojDeLaAyuda)
       window.visualViewport?.removeEventListener('resize', medir)
@@ -289,6 +310,17 @@ export function Luna() {
   const marcador = llegada ? (
     <MarcadorDeLaLuna record={capitulo.record} pasitos={llegada.pasitos} mejor={suMejor} />
   ) : null
+
+  /**
+   * Ponerse o quitarse algo. Se guarda al instante y se le pasa al
+   * pintor, así lo que se ve en el ropero y lo que se ve jugando son la
+   * misma tortuga sin que haya que cerrar nada.
+   */
+  const ponerse = (ranura: RanuraDeLaTortuga, id: string) => {
+    const ahora = ponerle(ranura, id)
+    setGuardado(ahora)
+    if (pintorRef.current) pintorRef.current.puesto = loPuesto(ahora)
+  }
 
   /** Guardar el nombre y pasar al cartel. Vacío es «mejor después». */
   const bautizar = (puesto: string) => {
@@ -417,11 +449,35 @@ export function Luna() {
               {capitulo.presentacion.boton}
             </button>
 
+            {/* El ropero, debajo y en pequeño. Va después del botón de
+                empezar a propósito: vestirla es lo de al lado, no el
+                camino. La primera vez que abra el juego lo que tiene que
+                hacer es subir, no elegir gorro. */}
+            <button
+              type="button"
+              onClick={() => setVistiendo(true)}
+              className="mt-4 self-center rounded-full border border-margarita/25 px-5 py-2 text-sm text-margarita/60 transition-colors hover:border-tulipan-amarillo/60 hover:text-tulipan-amarillo"
+            >
+              {TEXTOS_DEL_ROPERO.abrir}
+            </button>
+
             <p className="fuente-mano mt-4 text-center text-base text-margarita/45">
               {conElNombre(CARTEL.pie)}
             </p>
           </div>
         </div>
+      ) : null}
+
+      {/* ── El ropero ─────────────────────────────────────────────
+          Encima del cartel y no en vez de él: al cerrarlo vuelve a
+          donde estaba, con el botón de empezar todavía sin tocar. */}
+      {vistiendo ? (
+        <RoperoDeLaTortuga
+          progreso={guardado}
+          nombre={nombre}
+          alPonerse={ponerse}
+          alCerrar={() => setVistiendo(false)}
+        />
       ) : null}
 
       {/* ── El aviso de una línea ─────────────────────────────────── */}

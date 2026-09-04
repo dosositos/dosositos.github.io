@@ -32,7 +32,7 @@ import {
 } from '@/juego-luna/mundo-cajas'
 import { superficieDe as superficieDeVerdad } from '@/juego-luna/mundos'
 import { cabezaDe, dibujarTortuga, poseDe, poseEnLaLuna } from '@/juego-luna/tortuga'
-import type { EscenaLuna, Nivel, Plataforma } from '@/types'
+import type { EscenaLuna, Nivel, Plataforma, PuestoEnLaTortuga } from '@/types'
 
 /**
  * Pintar el mundo de la luna en un canvas 2D.
@@ -115,6 +115,15 @@ export interface Pintor {
   altoDeLaVista: () => number
   /** Sin movimiento de más: se apagan el parallax, el polvo y el golpe. */
   movimientoReducido: boolean
+  /**
+   * La ropita que trae la tortuga, una cosa por ranura.
+   *
+   * Se pone desde fuera igual que `movimientoReducido` y por lo mismo:
+   * cambia mientras la partida corre —ella sale del ropero y sigue
+   * jugando— y volver a montar el pintor entero por un gorro sería
+   * tirar el nivel sembrado y empezar de cero.
+   */
+  puesto: PuestoEnLaTortuga
 }
 
 /**
@@ -381,6 +390,7 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
 
   const pintor: Pintor = {
     movimientoReducido: false,
+    puesto: {},
 
     altoDeLaVista: () => (escala > 0 ? altoCss / escala : MUNDO.alto),
 
@@ -660,6 +670,7 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
           llegando
             ? poseEnLaLuna(poseDe(escena), llegando.quieta, llegando.sentada, escena.reloj)
             : undefined,
+          pintor.puesto,
         )
         // Con el apagón puesto la barra no se dibuja, y eso es todo lo
         // que hace: la carga sigue subiendo igual y el temblor de la

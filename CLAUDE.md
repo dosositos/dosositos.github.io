@@ -157,6 +157,8 @@ npm run luna:asomo       # el banco del adelanto: la tortuga que se asoma al fin
 npm run luna:asomo -- --semana   # ¿en qué página se asoma cada día? (o -- 2026-09-14)
 npm run luna:puerta      # la luna de la portada en sus seis estados
                          # (necesita npm run dev en otra terminal)
+npm run luna:ropero      # la ropita puesta, una por una y todas juntas
+npm run luna:vestir      # la pantalla del ropero en el teléfono
 npm run secretos:cifrar  # private/publicable/ → public/cifrado/ (corre solo por hook)
 npm run revisar          # ¿está todo cifrado y al día? (también antes de build)
 ```

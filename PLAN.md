@@ -441,22 +441,38 @@ y chats, y el sobre de apertura. Eso es el regalo.
 
 ---
 
-## La próxima sesión — los accesorios de la tortuga
+## La próxima sesión — enseñárselo, que ya no es cosa de código
 
 **Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
 arrancamos por donde diga, sin que tengás que acordarte de nada.
 
-**La puerta ya está puesta.** La luna de la portada se toca y lleva al juego,
-pero solo con los tres peluches encontrados. Lo que queda de la fase 9 es lo
-otro que pediste: **poder vestir a la tortuga**, con accesorios que se
-desbloquean al pasar hitos. Eso todavía no está decidido y hay que hablarlo:
-pediste que te entrevistara cuando llegáramos aquí, y aquí estamos.
+**El juego está entero y la puerta está puesta.** Los tres capítulos, la
+llegada, la carta, los récords, la luna de la portada y el ropero. Lo que queda
+no es código.
 
-**Y falta la decisión que no es de código.** El juego ya es visible: en cuanto
-esto se suba, ella lo va a ver en la siguiente visita en cuanto encuentre a los
-tres. Si querés esperar a una fecha, decímelo y no subimos todavía.
+### Lo único que falta: decidir cuándo
 
-### La puerta, hecha el 4 de septiembre
+En cuanto esto se suba, la web ya está en su mano. No lo va a ver el primer día:
+la luna no se abre hasta que encuentre a los tres peluches, y eso le puede
+tomar varios días porque cada uno se esconde en una página distinta y solo sale
+uno por página. Pero va a pasar solo, sin que vos hagas nada.
+
+Si querés que caiga en una fecha, decímelo y esperamos. Si no, se sube y ya.
+
+### Antes de eso, si querés
+
+- **Jugá Ovi y Nico** para ver la llegada y la carta con la clave puesta y
+  después de haber subido, que es como las va a ver ella.
+- **Leé la carta entera en el teléfono**, que son siete párrafos y ella la va a
+  leer bajando con el pulgar.
+- **Mirá el cuarto de Nico jugando**, que las plumas y el temblor de las sábanas
+  no se pueden juzgar en una foto.
+- **Y probate el ropero.** Once cosas, y de salida solo hay tres: el gorrito de
+  fiesta, los lentes redondos y el corbatín. Lo demás se gana subiendo.
+
+### Lo que se hizo el 4 de septiembre, tercera vuelta
+
+#### La puerta
 
 La luna está en el cielo de la portada, arriba a la derecha del título, con un
 brillo que pasa cada dieciocho segundos. Tiene tres caras: apagada mientras le
@@ -479,6 +495,31 @@ la misma noche y tendría que buscarlos de nuevo para releer la carta.
 Para mirarla sin jugar: **`npm run luna:puerta`** (con `npm run dev` en otra
 terminal). Fotografía los seis estados y comprueba sola que cerrada no deje
 pasar y que abierta lleve al juego.
+
+#### El ropero de la tortuga
+
+Ropita de juego, que es lo que elegiste: un gorrito de fiesta, un gorro de lana,
+un cintillo de antenitas, una corona de papel, lentes redondos, lentes de sol,
+un corbatín, una bufanda y tres caparazones de colores. Once cosas en cuatro
+ranuras, una por ranura.
+
+Se entra desde el cartel de cada capítulo, con un botón debajo del de empezar, y
+se puede saltar entera. Arriba está ella misma, dibujada de verdad y andando:
+al tocar algo se lo pone en el momento, que es lo único que hace que valga la
+pena tener ropero.
+
+**Tres son de salida y ocho se ganan.** Ganar cada capítulo, subir uno sin
+caerte, igualarle a osito el récord en uno, en dos y en los tres, y llegar a la
+luna. Lo bloqueado se ve igual, apagado y con lo que hay que hacer escrito
+debajo: escondido, el ropero se vería medio vacío el primer día y sin nada que
+perseguir.
+
+**Lo ganado no se guarda, se calcula del progreso cada vez.** Así el día que
+quieras cambiar una regla, cambia para todos y no solo para quien empiece de
+cero.
+
+Para mirarlo: **`npm run luna:ropero`** (los dibujos, uno por uno y todos
+juntos) y **`npm run luna:vestir`** (la pantalla en el teléfono).
 
 ### Antes de eso, si querés
 

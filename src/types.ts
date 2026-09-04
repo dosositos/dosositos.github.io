@@ -474,6 +474,43 @@ export interface Plataforma {
 }
 
 /** Lo que se guarda en el teléfono entre una vez y otra. */
+/* ── El ropero de la tortuga ─────────────────────────────────────── */
+
+/** Dónde se pone un accesorio. Uno por ranura a la vez. */
+export type RanuraDeLaTortuga = 'sombrero' | 'cara' | 'cuello' | 'caparazon'
+
+/**
+ * Qué hay que hacer para ganarse un accesorio.
+ *
+ * Todo se calcula del progreso guardado y de nada más. Nada de contar
+ * aparte: si hiciera falta llevar la cuenta de algo que el juego no
+ * guarda ya, el ropero se desincronizaría con el marcador el primer día
+ * que alguien borre el teléfono a medias.
+ */
+export type LlaveDeAccesorio =
+  /** De salida, sin hacer nada. */
+  | { como: 'siempre' }
+  /** Haber ganado ese capítulo. */
+  | { como: 'capitulo'; cual: number }
+  /** Haber subido algún capítulo sin caerse ni una vez. */
+  | { como: 'sinCaerse' }
+  /** Haberle ganado o empatado el récord a él en tantos capítulos. */
+  | { como: 'records'; cuantos: number }
+  /** Haber llegado arriba. */
+  | { como: 'luna' }
+
+export interface Accesorio {
+  id: string
+  ranura: RanuraDeLaTortuga
+  nombre: string
+  /** Una línea suya, para cuando se lo gana. */
+  nota: string
+  llave: LlaveDeAccesorio
+}
+
+/** Lo que trae puesto ahora mismo, una cosa por ranura. */
+export type PuestoEnLaTortuga = Partial<Record<RanuraDeLaTortuga, string>>
+
 export interface ProgresoLuna {
   /** El capítulo más alto que ganó. 0 es «todavía ninguno». */
   capitulo: number
@@ -496,6 +533,15 @@ export interface ProgresoLuna {
    * preguntar y en los textos sale «la tortuga».
    */
   nombre: string
+  /**
+   * Lo que trae puesto. Solo lo puesto: lo desbloqueado no se guarda,
+   * se calcula de lo demás cada vez.
+   *
+   * Es a propósito. Guardar la lista de lo ganado es guardar dos veces
+   * la misma verdad, y el día que se toque una regla del ropero los
+   * teléfonos que ya jugaron se quedarían con la lista vieja.
+   */
+  puesto: PuestoEnLaTortuga
 }
 
 /** De qué está hecho el camino de un capítulo. Lo usa el pintor. */

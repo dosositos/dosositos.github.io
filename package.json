@@ -29,6 +29,8 @@
     "luna:ver": "node scripts/juego-luna/ver-luna.mjs",
     "luna:puerta": "node scripts/juego-luna/ver-puerta.mjs",
     "luna:tortuga": "node scripts/juego-luna/ver-tortuga.mjs",
+    "luna:ropero": "node scripts/juego-luna/ver-ropero.mjs",
+    "luna:vestir": "node scripts/juego-luna/ver-vestir.mjs",
     "luna:pista": "node scripts/juego-luna/ver-pista.mjs",
     "luna:cajas": "node scripts/juego-luna/ver-cajas.mjs",
     "luna:cae": "node scripts/juego-luna/ver-cae.mjs",
