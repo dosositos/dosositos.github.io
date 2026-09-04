@@ -380,6 +380,7 @@ export function dibujarPolvo(
   arriba: number,
   abajo: number,
   reloj: number,
+  alfa = 1,
 ) {
   ctx.save()
 
@@ -401,12 +402,12 @@ export function dibujarPolvo(
       // adentro: cuesta dos trazos y con eso la mota queda difusa, que
       // es lo que la separa de una estrella. Con un solo círculo
       // nítido, el cuarto se llenaba de estrellas de más.
-      ctx.globalAlpha = brillo * 0.35
+      ctx.globalAlpha = brillo * 0.35 * alfa
       ctx.beginPath()
       ctx.arc(x, y, mota.r, 0, Math.PI * 2)
       ctx.fill()
 
-      ctx.globalAlpha = brillo
+      ctx.globalAlpha = brillo * alfa
       ctx.beginPath()
       ctx.arc(x, y, mota.r * 0.42, 0, Math.PI * 2)
       ctx.fill()
@@ -421,11 +422,12 @@ export function dibujarTorre(
   torre: Torre,
   arriba: number,
   abajo: number,
+  alfa = 1,
 ) {
   const cuerpo = torre.profundidad > 0 ? COLOR.torreCerca : COLOR.torreLejos
 
   ctx.save()
-  ctx.globalAlpha = 0.4 + torre.profundidad * 0.2
+  ctx.globalAlpha = (0.4 + torre.profundidad * 0.2) * alfa
 
   for (const caja of torre.cajas) {
     if (caja.y + caja.alto < arriba || caja.y > abajo) continue
@@ -523,11 +525,12 @@ export function dibujarEstante(
   estante: Estante,
   reloj: number,
   quieto: boolean,
+  alfa = 1,
 ) {
   const { y, comba } = estante
 
   ctx.save()
-  ctx.globalAlpha = 0.62
+  ctx.globalAlpha = 0.62 * alfa
 
   // Los bultos van primero: están encima de la tabla, o sea detrás de
   // su canto, y tienen que quedar tapados por él.
@@ -569,18 +572,18 @@ export function dibujarEstante(
   ctx.stroke()
 
   ctx.strokeStyle = COLOR.estanteSombra
-  ctx.globalAlpha = 0.4
+  ctx.globalAlpha = 0.4 * alfa
   ctx.lineWidth = 4
   ctx.beginPath()
   tabla(11)
   ctx.stroke()
-  ctx.globalAlpha = 0.62
+  ctx.globalAlpha = 0.62 * alfa
 
   // Y las tiras de cinta colgando, que es lo único que se mueve del
   // fondo de este capítulo. Cuelgan del canto y se mecen apenas: son
   // de cinta de embalar, que es el material del cuarto.
   ctx.strokeStyle = COLOR.cinta
-  ctx.globalAlpha = 0.28
+  ctx.globalAlpha = 0.28 * alfa
   ctx.lineWidth = 2.4
   for (const tira of estante.tiras) {
     const desde = y + 7 - comba * Math.sin((tira.x / MUNDO.ancho) * Math.PI) + comba

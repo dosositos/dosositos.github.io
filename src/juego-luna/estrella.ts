@@ -26,13 +26,31 @@ export function dibujarEstrellaDePapel(
   ganada: boolean,
   reloj: number,
 ) {
-  const x = p.x + p.ancho / 2
-  const y = p.y - 14
-  const r = 10
+  dibujarEstrellita(ctx, p.x + p.ancho / 2, p.y - 14, 10, ganada, reloj)
+}
+
+/**
+ * La misma estrellita, suelta y de cualquier tamaño.
+ *
+ * Aparte de encima de las plataformas, hace falta en la llegada: allá
+ * no hay dónde pisar y las estrellitas se quedan colgadas en el aire,
+ * marcando por dónde subió. Es el mismo papel doblado, y por eso se
+ * dibuja acá y no otra vez allá.
+ */
+export function dibujarEstrellita(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  r: number,
+  ganada: boolean,
+  reloj: number,
+  giro = 0,
+) {
   const latido = ganada ? 1 + Math.sin(reloj * 2.2) * 0.07 : 1
 
   ctx.save()
   ctx.translate(x, y)
+  ctx.rotate(giro)
   ctx.scale(latido, latido)
 
   if (ganada) {

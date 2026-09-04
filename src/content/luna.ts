@@ -577,6 +577,78 @@ export const LUNA = {
 }
 
 /**
+ * La llegada, que pasa una sola vez: al ganar el último capítulo.
+ *
+ * En los tres capítulos la luna se escapa cuando ella alcanza la cima
+ * — sube y se va, y eso es lo que hace que haya un capítulo siguiente.
+ * Esta vez no se escapa. El último salto no cae: sale de la cima y
+ * sigue subiendo, y la cámara la sigue mientras el mundo se queda
+ * abajo.
+ *
+ * Los tiempos van en fracciones de la cinemática entera y no en
+ * milisegundos sueltos, porque lo que importa es el orden: primero
+ * sube, después se posa, después se sienta, y al final se abre la
+ * cámara. Cambiando `ms` se estira o se acorta todo junto sin que se
+ * descuadre ninguna de las cuatro.
+ */
+export const LLEGADA = {
+  /** Lo que dura entera. No se puede saltar: es lo que vino a ver. */
+  ms: 9000,
+
+  /** Hasta acá va subiendo. Es más de la mitad porque es el viaje. */
+  sube: 0.52,
+  /** Se queda un momento parada encima, y acá empieza a sentarse. */
+  sentandose: 0.7,
+  /** Ya está sentada, y ahí es donde la cámara empieza a abrirse. */
+  sentada: 0.8,
+
+  /**
+   * Cuánto se aleja la luna mientras ella sube, en píxeles del mundo.
+   *
+   * La luna espera a 165 de la cima, que caminando es nada: sin esto,
+   * el viaje se acabaría en medio segundo. Se va yendo hacia arriba
+   * mientras ella sube, cada vez más despacio, y ella la alcanza. Es
+   * lo mismo que hace en los tres capítulos, solo que esta vez se
+   * cansa antes que la tortuga.
+   */
+  seAleja: 1500,
+
+  /**
+   * De qué tamaño se ve al llegar. En el capítulo de Nico se ve a 62
+   * de radio; acá termina más del triple, que es lo que hace que la
+   * última parte sea un suelo y no un punto de luz.
+   *
+   * Estuvo en 240 y era demasiado: al llegar, la luna era más ancha
+   * que la pantalla y se leía como una pared blanca con la punta
+   * redondeada. Tiene que seguir cabiendo entera mientras ella se
+   * para encima, porque si no, lo que se entiende recién al abrirse
+   * la cámara es adónde llegó — y eso hay que saberlo al llegar.
+   */
+  radioAlLlegar: 198,
+
+  /** Cuánto se hunde en la luna al pararse encima. */
+  seHunde: 3,
+
+  /**
+   * Cuánto se aleja la cámara al final, de 1 (pegada) a esto. La luna
+   * entera, chiquita ella encima, y todo lo demás cielo.
+   */
+  seAbre: 0.33,
+
+  /**
+   * Las estrellitas de papel que se van quedando atrás mientras sube.
+   *
+   * Son las del frasco y las de los puntos de guardado: lo único que
+   * se repite en los tres mundos. Acá no se pisan ni guardan nada —
+   * ya no hay dónde caerse— y son las que miden el camino recorrido,
+   * que es para lo que sirvieron todo el juego. Se quedan colgadas
+   * donde están y ella las va pasando: eso es lo que las hace medir
+   * algo. Corriéndolas a otra velocidad se volvían decoración.
+   */
+  estrellitas: 18,
+}
+
+/**
  * ══════════════════════════════════════════════════════════════
  *  LOS CAPÍTULOS
  * ══════════════════════════════════════════════════════════════
@@ -1021,6 +1093,41 @@ export const TEXTOS = {
   enTotal: 'en total',
   /** El botón para seguir con el capítulo siguiente, recién ganado el de ahora. */
   seguir: 'seguir con',
-  /** Y al cerrar el último que está escrito, mientras falte alguno. */
-  enObra: 'el capítulo que falta todavía lo estoy haciendo',
+  /* Acá vivía «el capítulo que falta todavía lo estoy haciendo».
+     Era verdad con dos capítulos escritos y dejó de serlo con tres:
+     ahora, al ganar el último, no falta ninguno — se llega a la luna
+     y sale la carta. */
+
+  /* ── Arriba, cuando ya no queda capítulo ────────────────────
+     Acá no sale el cierre de siempre con los pasitos y las caídas:
+     esos números están adentro de la carta, que es donde significan
+     algo. Lo único que hace esta pantalla es dejar leer. */
+
+  /** Si por lo que sea la carta no se pudo abrir. */
+  cartaNoAbre: 'la carta no quiso abrirse, probá recargando',
+  /** Para salir del juego cuando ya la leyó. */
+  volver: 'volver a la madriguera',
+}
+
+/**
+ * La carta que espera arriba, y que es lo que el juego promete desde
+ * su primera línea.
+ *
+ * No está acá: llega descifrada de `public/cifrado/carta-luna.enc`,
+ * como los chats y por la misma razón. Se escribe en
+ * `private/publicable/carta-luna.json` y el hook la cifra sola.
+ *
+ * `{pasitos}` y `{caidas}` se rellenan con lo acumulado de todas las
+ * veces, que es lo que mide subir tres capítulos. Y hay dos aperturas
+ * porque una que hable de caídas a quien no se cayó ni una vez le
+ * está contando la subida de otra.
+ */
+export interface SobreCartaDeLaLuna {
+  titulo: string
+  apertura: string
+  aperturaSinCaidas: string
+  parrafos: string[]
+  cierre: string
+  posdata: string
+  firma: string
 }

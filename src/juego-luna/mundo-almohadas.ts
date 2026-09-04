@@ -333,6 +333,7 @@ export function dibujarLuzDeMadrugada(
   abajo: number,
   cima: number,
   suelo: number,
+  alfa = 1,
 ) {
   // Lo alto que se va: 0 abajo del todo, 1 en la cima. Se toma del
   // borde de arriba de la vista y no de la tortuga — la luz es del
@@ -340,15 +341,15 @@ export function dibujarLuzDeMadrugada(
   const alto = Math.max(0, Math.min(1, (suelo - arriba) / Math.max(1, suelo - cima)))
 
   const luz = ctx.createLinearGradient(0, arriba, 0, abajo)
-  luz.addColorStop(0, `rgba(251, 225, 230, ${(0.05 + alto * 0.09).toFixed(3)})`)
+  luz.addColorStop(0, `rgba(251, 225, 230, ${((0.05 + alto * 0.09) * alfa).toFixed(3)})`)
   luz.addColorStop(1, 'rgba(251, 225, 230, 0)')
   ctx.fillStyle = luz
   ctx.fillRect(0, arriba, MUNDO.ancho, abajo - arriba)
 }
 
-export function dibujarPliegue(ctx: CanvasRenderingContext2D, pliegue: Pliegue) {
+export function dibujarPliegue(ctx: CanvasRenderingContext2D, pliegue: Pliegue, alfa = 1) {
   ctx.save()
-  ctx.globalAlpha = pliegue.brillo
+  ctx.globalAlpha = pliegue.brillo * alfa
   ctx.strokeStyle = COLOR.sabanaLuz
   ctx.lineWidth = pliegue.grosor
   ctx.lineCap = 'round'
@@ -365,7 +366,7 @@ export function dibujarPliegue(ctx: CanvasRenderingContext2D, pliegue: Pliegue) 
 
   // Y su sombra justo debajo, que es lo que le da el bulto. Sin ella
   // el pliegue se lee como un cable cruzando el cuarto.
-  ctx.globalAlpha = pliegue.brillo * 0.9
+  ctx.globalAlpha = pliegue.brillo * 0.9 * alfa
   ctx.strokeStyle = COLOR.sabanaSombra
   ctx.lineWidth = pliegue.grosor * 0.7
   ctx.beginPath()
@@ -389,11 +390,12 @@ export function dibujarCortina(
   abajo: number,
   reloj: number,
   quieta: boolean,
+  alfa = 1,
 ) {
   const cuerpo = cortina.profundidad > 0 ? COLOR.cortinaCerca : COLOR.cortinaLejos
 
   ctx.save()
-  ctx.globalAlpha = 0.55 + cortina.profundidad * 0.2
+  ctx.globalAlpha = (0.55 + cortina.profundidad * 0.2) * alfa
 
   for (const pliegue of cortina.pliegues) {
     const x = cortina.x + pliegue.dx

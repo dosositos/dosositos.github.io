@@ -35,6 +35,7 @@ globalThis.cancelAnimationFrame = () => {
 const { crearMotor } = await import('@/juego-luna/motor.ts')
 const { construirNivel, msDeCargaEn } = await import('@/juego-luna/mundos.ts')
 const { opacidadDeLaPista } = await import('@/juego-luna/dibujo.ts')
+const { laLlegada } = await import('@/juego-luna/llegada.ts')
 const { superficieDe } = await import('@/juego-luna/mundos.ts')
 const { conCualEntra } = await import('@/juego-luna/progreso.ts')
 const {
@@ -43,6 +44,7 @@ const {
   MUNDO,
   PISTA,
   LUNA,
+  LLEGADA,
   CAJAS,
   CINTA,
   PELUCHES,
@@ -1058,12 +1060,13 @@ console.log('')
 console.log('  La luna, antes y durante')
 
 /** Un motor de verdad, con su reloj, sobre el nivel que se le dé. */
-function bancoConCine(nivelDelBanco) {
+function bancoConCine(nivelDelBanco, esElFinal = false) {
   const eventos = []
   let ultima = null
   const motor = crearMotor({
     nivel: nivelDelBanco,
     conCinematica: true,
+    esElFinal,
     pintar: (e) => {
       ultima = e
     },
@@ -1206,6 +1209,78 @@ function mundoConCima() {
     eventos.includes('fin')
       ? '   ✓ la despedida termina y avisa, que es cuando sale el cartel'
       : '   ⚠ la despedida no termina nunca',
+  )
+}
+
+{
+  // (c) La llegada, que es la otra manera de cerrar y pasa una sola
+  // vez: al ganar el último capítulo escrito. Aquí la luna no se
+  // escapa — ella sube y se para encima.
+  //
+  // Esto no se puede mirar jugando sin ganar los tres capítulos, y
+  // dura nueve segundos que no se pueden parar. Lo que se mide acá es
+  // lo que el banco de dibujo no puede ver: que el motor la dispare
+  // en vez de la despedida, que suba de verdad, que termine posada
+  // encima de la luna y no en el aire, y que avise una sola vez.
+  const nivelFinal = mundoConCima()
+  const { motor, frame, eventos } = bancoConCine(nivelFinal, true)
+  motor.empezar()
+
+  let e = frame()
+  for (let i = 0; i < 600 && !eventos.includes('cima'); i += 1) e = frame()
+  const llegoALaCima = eventos.includes('cima')
+  const empezoLaLlegada = e.cine === 'llegada'
+  const alturaDeLaCima = e.y
+
+  // Tiene que subir, y bastante: si se queda donde estaba, la luna se
+  // le escapó igual que en los otros capítulos.
+  const faltan = Math.ceil(LLEGADA.ms / FRAME) + 60
+  let masAlta = e.y
+  for (let i = 0; i < faltan && !eventos.includes('fin'); i += 1) {
+    e = frame()
+    masAlta = Math.min(masAlta, e.y)
+  }
+  const subio = alturaDeLaCima - masAlta
+
+  const avisoUnaVez = eventos.filter((v) => v === 'fin').length === 1
+
+  // Y se queda ahí: cien frames después sigue sentada en el mismo
+  // sitio, porque la carta se abre encima de este cuadro.
+  const alAvisar = { x: e.x, y: e.y, cine: e.cine }
+  for (let i = 0; i < 100; i += 1) e = frame()
+  const seQuedo =
+    Math.abs(e.y - alAvisar.y) < 0.5 && Math.abs(e.x - alAvisar.x) < 0.5 && e.cine === 'llegada'
+
+  // Posada encima de la luna, no flotando al lado ni metida adentro.
+  const l = laLlegada(1, nivelFinal)
+  const enElBorde = Math.abs(e.y - (l.luna.y - l.luna.r + LLEGADA.seHunde)) < 0.5
+  const enElMedio = Math.abs(e.x - l.luna.x) < 0.5
+
+  motor.detener()
+
+  console.log(
+    llegoALaCima && empezoLaLlegada
+      ? '   ✓ en el último capítulo la luna no se escapa: arranca la llegada'
+      : llegoALaCima
+        ? `   ⚠ al pisar la cima arrancó "${alAvisar.cine}" en vez de la llegada`
+        : '   ⚠ no llegó a la cima, la prueba no dice nada',
+  )
+  console.log(
+    subio > 1200
+      ? `   ✓ sube de verdad: ${Math.round(subio)} px por encima de la cima`
+      : `   ⚠ solo subió ${Math.round(subio)} px, que no es un viaje`,
+  )
+  console.log(
+    enElBorde && enElMedio
+      ? '   ✓ termina posada encima de la luna y en el medio, no flotando al lado'
+      : `   ⚠ termina en (${e.x.toFixed(1)}, ${e.y.toFixed(1)}) y la luna está en (${l.luna.x.toFixed(1)}, ${(l.luna.y - l.luna.r).toFixed(1)})`,
+  )
+  console.log(
+    avisoUnaVez && seQuedo
+      ? '   ✓ avisa una sola vez y se queda quieta: la carta se abre encima'
+      : avisoUnaVez
+        ? '   ⚠ después de avisar se mueve, y la carta se abre encima de eso'
+        : `   ⚠ avisó ${eventos.filter((v) => v === 'fin').length} veces`,
   )
 }
 console.log('')

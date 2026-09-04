@@ -1,5 +1,6 @@
 import { useReducedMotion } from 'motion/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { CartaDeLaLuna } from '@/componentes/CartaDeLaLuna'
 import { AYUDA, BAUTIZO, CAPITULOS, CARTEL, TEXTOS } from '@/content/luna'
 import { crearPintor } from '@/juego-luna/dibujo'
 import { conectarEntrada } from '@/juego-luna/entrada'
@@ -195,6 +196,9 @@ export function Luna() {
     const motor = crearMotor({
       nivel,
       conCinematica: true,
+      // Detrás de este ya no hay otro: la luna no se escapa y ella
+      // sube hasta pararse encima. Es lo único que cambia el final.
+      esElFinal: numero === ULTIMO,
       pintar: (escena) => {
         pintor.pintar(escena)
 
@@ -274,10 +278,13 @@ export function Luna() {
 
     motor.empezar()
     return conectarEntrada(canvas, { presionar: motor.presionar, soltar: motor.soltar })
-  }, [empezado, nivel])
+  }, [empezado, nivel, numero])
 
   const retrato = RETRATOS[capitulo.id]
   const siguiente = CAPITULOS.find((c) => c.numero === capitulo.numero + 1)
+
+  /** Detrás de este ya no hay otro: acá se llega a la luna y sale la carta. */
+  const esElFinal = numero === ULTIMO
 
   /** Guardar el nombre y pasar al cartel. Vacío es «mejor después». */
   const bautizar = (puesto: string) => {
@@ -425,7 +432,19 @@ export function Luna() {
       ) : null}
 
       {/* ── El cierre del capítulo ────────────────────────────────── */}
-      {llegada ? (
+      {llegada && esElFinal ? (
+        /* Arriba no hay cartel de cierre y no hay fondo que tape: el
+           canvas se quedó congelado con la luna quieta y ella sentada
+           encima, y la carta se abre sobre eso. Los pasitos y las
+           caídas van adentro de la carta, que es donde significan
+           algo, y son los de todas las veces: lo que mide subir tres
+           capítulos no es la última subida. */
+        <CartaDeLaLuna
+          pasitos={totales?.pasitos ?? llegada.pasitos}
+          caidas={totales?.caidas ?? llegada.caidas}
+          antesala={conElNombre(capitulo.cierre.texto)}
+        />
+      ) : llegada ? (
         <div className="absolute inset-0 overflow-y-auto bg-[#0b1026]/88 px-6 py-10 backdrop-blur-[2px]">
           <div className="anima-aparecer mx-auto flex min-h-full max-w-md flex-col justify-center text-center">
             {retrato ? (
@@ -458,9 +477,7 @@ export function Luna() {
               >
                 {TEXTOS.seguir} {siguiente.nombre}
               </button>
-            ) : (
-              <p className="mt-6 text-xs text-margarita/45">{TEXTOS.enObra}</p>
-            )}
+            ) : null}
           </div>
         </div>
       ) : (

@@ -674,8 +674,13 @@ export interface EscenaLuna {
    * detrás del cartel, pero la luna todavía no se ha presentado. Su
    * cinemática arranca cuando ella le da al botón, que es cuando
    * puede verla; corriendo antes se gastaba detrás del texto.
+   *
+   * `salida` es la luna yéndose, que es como cierran los capítulos
+   * mientras quede alguno. `llegada` es la otra manera de cerrar y
+   * pasa una sola vez: al ganar el último, la luna no se escapa y
+   * ella sube hasta pararse encima.
    */
-  cine: 'espera' | 'entrada' | 'jugando' | 'salida' | 'fin'
+  cine: 'espera' | 'entrada' | 'jugando' | 'salida' | 'llegada' | 'fin'
 
   /** Por dónde va la cinemática, de 0 a 1. */
   cineAvance: number

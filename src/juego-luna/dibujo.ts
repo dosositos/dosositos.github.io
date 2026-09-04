@@ -1,4 +1,4 @@
-import { LUNA, MUNDO, TORTUGA } from '@/content/luna'
+import { LLEGADA, LUNA, MUNDO, TORTUGA } from '@/content/luna'
 import {
   dibujarAlmohada,
   dibujarCortina,
@@ -8,7 +8,8 @@ import {
   sembrarCortinas,
   sembrarPliegues,
 } from '@/juego-luna/mundo-almohadas'
-import { dibujarEstrellaDePapel } from '@/juego-luna/estrella'
+import { dibujarEstrellaDePapel, dibujarEstrellita } from '@/juego-luna/estrella'
+import { laLlegada } from '@/juego-luna/llegada'
 import {
   dibujarLoQueCae,
   dibujarLoQuePusieron,
@@ -26,7 +27,7 @@ import {
   sembrarTorres,
 } from '@/juego-luna/mundo-cajas'
 import { superficieDe as superficieDeVerdad } from '@/juego-luna/mundos'
-import { cabezaDe, dibujarTortuga } from '@/juego-luna/tortuga'
+import { cabezaDe, dibujarTortuga, poseDe, poseEnLaLuna } from '@/juego-luna/tortuga'
 import type { EscenaLuna, Nivel, Plataforma } from '@/types'
 
 /**
@@ -134,6 +135,45 @@ function sembrarEstrellas(cantidad: number, desde: number, hasta: number) {
     })
   }
   return estrellas
+}
+
+/**
+ * Las estrellitas de papel que se quedan colgadas en el viaje a la
+ * luna, sembradas de una vez como todo lo demás.
+ *
+ * Van repartidas a lo largo de lo que sube, y no pegadas a nada: allá
+ * arriba ya no hay plataformas ni hay dónde caerse, así que no marcan
+ * un punto de guardado. Marcan el camino recorrido, que es lo que
+ * estuvieron haciendo los tres capítulos enteros.
+ *
+ * Se separan del centro a propósito: la tortuga sube por el medio y
+ * una estrellita justo en su línea le queda detrás y no se ve pasar.
+ */
+function sembrarEstrellitasDelViaje(nivel: Nivel) {
+  const estrellitas: { x: number; y: number; r: number; giro: number; vuelta: number }[] = []
+  let semilla = 24082026
+  const siguiente = () => {
+    semilla = (semilla * 1664525 + 1013904223) % 4294967296
+    return semilla / 4294967296
+  }
+
+  const arriba = nivel.cima.y - LUNA.sobreLaCima - LLEGADA.seAleja
+  const abajo = nivel.cima.y - 60
+
+  for (let i = 0; i < LLEGADA.estrellitas; i += 1) {
+    const lado = i % 2 === 0 ? -1 : 1
+    estrellitas.push({
+      x: MUNDO.ancho / 2 + lado * (60 + siguiente() * (MUNDO.ancho / 2 - 80)),
+      // Repartidas parejo y corridas un poco al azar, para que no se
+      // lean como una escalera.
+      y: abajo + ((arriba - abajo) * (i + 0.15 + siguiente() * 0.7)) / LLEGADA.estrellitas,
+      r: 9 + siguiente() * 9,
+      giro: siguiente() * Math.PI * 2,
+      // Giran despacito, cada una a su ritmo y para su lado.
+      vuelta: (0.12 + siguiente() * 0.22) * (siguiente() < 0.5 ? -1 : 1),
+    })
+  }
+  return estrellitas
 }
 
 /**
@@ -308,6 +348,11 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
   const pliegues = esDeAlmohadas ? sembrarPliegues(nivel.cima.y - 200, nivel.suelo + 200) : []
   const almohadas = esDeAlmohadas ? sembrarAlmohadas(nivel) : new Map()
 
+  // Las estrellitas que se quedan colgadas en el viaje a la luna. Se
+  // siembran aunque el capítulo no sea el último: son dieciocho y no
+  // se dibujan hasta que la cinemática empieza.
+  const estrellitasDelViaje = sembrarEstrellitasDelViaje(nivel)
+
   let anchoCss = 0
   let altoCss = 0
   let escala = 1
@@ -367,6 +412,11 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
 
       const altoVista = pintor.altoDeLaVista()
 
+      // La llegada: la cinemática del final, la única que pasa una
+      // sola vez. La cuenta sale de `laLlegada`, la misma que usa el
+      // motor para subir a la tortuga; acá solo se dibuja.
+      const llegando = escena.cine === 'llegada' ? laLlegada(escena.cineAvance, nivel) : null
+
       // Las estrellas van en su propia capa, corridas más despacio que
       // el mundo: eso hace sentir que se sube de verdad, en vez de que
       // las plataformas bajen. Con «menos movimiento» viajan pegadas
@@ -377,6 +427,21 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
       ctx.scale(escala, escala)
       dibujarEstrellas(ctx, estrellas, escena.camara * arrastre, altoVista)
       ctx.restore()
+
+      // Al final, la cámara se abre: el mundo se achica alrededor de
+      // ella y queda la luna entera, chiquita ella encima, y todo lo
+      // demás cielo. El cielo estrellado se queda como está —es el
+      // fondo, no una cosa de la que uno se aleje— y por eso esto va
+      // después de dibujarlo.
+      const abriendose = llegando !== null && llegando.zoom < 1
+      if (abriendose && llegando) {
+        const px = margen + escena.x * escala
+        const py = (escena.y - escena.camara) * escala + golpe
+        ctx.save()
+        ctx.translate(px, py)
+        ctx.scale(llegando.zoom, llegando.zoom)
+        ctx.translate(-px, -py)
+      }
 
       // La luna en la cinemática de entrada va pegada a la pantalla,
       // porque el capítulo todavía no empezó y lo único que hay que
@@ -403,10 +468,16 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
       const arriba = escena.camara - 40
       const abajo = escena.camara + altoVista + 40
 
+      // Subiendo a la luna, el cuarto se queda abajo y hay que
+      // apagarlo: es más alto que la pantalla y, si no, las cortinas
+      // de Nico suben pegadas a ella y se ven de fondo en el último
+      // cuadro, que es cielo y nada más.
+      const alfaDelCuarto = llegando ? 1 - llegando.elCuartoSeVa : 1
+
       // La luz de la madrugada del cuarto de Nico va debajo de todo,
       // la luna incluida: es la luz que ella tira, no puede taparla.
       if (esDeAlmohadas) {
-        dibujarLuzDeMadrugada(ctx, arriba, abajo, nivel.cima.y, nivel.suelo)
+        dibujarLuzDeMadrugada(ctx, arriba, abajo, nivel.cima.y, nivel.suelo, alfaDelCuarto)
       }
 
       // La luna esperando arriba del último tramo. Solo aparece
@@ -415,20 +486,40 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
       // alcanza.
       // En `espera` tampoco: antes de darle al botón la luna no ha
       // salido todavía y no puede estar ya arriba aguardando.
-      if (escena.cine !== 'entrada' && escena.cine !== 'espera') {
+      if (llegando) {
+        // Acá no se va: se queda quieta creciendo mientras ella sube,
+        // que es lo contrario de lo que hizo los tres capítulos.
+        dibujarLuna(ctx, llegando.luna)
+      } else if (escena.cine !== 'entrada' && escena.cine !== 'espera') {
         dibujarLunaEsperando(ctx, dondeEspera, escena, nivel.radioDeLaLuna)
+      }
+
+      // Y las estrellitas de papel que se van quedando atrás. Van por
+      // delante de la luna: son lo que se cruza, no lo que se mira.
+      if (llegando) {
+        for (const e of estrellitasDelViaje) {
+          if (e.y < arriba - 80 || e.y > abajo + 80) continue
+          dibujarEstrellita(ctx, e.x, e.y, e.r, true, escena.reloj, e.giro + escena.reloj * e.vuelta)
+        }
       }
 
       // El decorado va detrás de la pista y no se toca: es lo que
       // dice de qué mundo estamos hablando cuando la pista ya se
       // borró y no queda nada.
+      //
+      // Todo esto y las plataformas llevan el mismo `alfaDelCuarto`,
+      // que solo baja en la llegada: el cuarto se va entero o no se
+      // va, que media pared apagada con las cajas encendidas no es
+      // ninguna cosa. Y viaja como parámetro y no como `globalAlpha`,
+      // que es la lección de siempre: adentro de estas funciones hay
+      // alfas propios que se lo llevarían puesto.
       for (const v of vias) {
         if (v.y + v.amplitud < arriba || v.y - v.amplitud > abajo) continue
-        dibujarVia(ctx, v, escena.reloj)
+        dibujarVia(ctx, v, escena.reloj, alfaDelCuarto)
       }
       for (const m of matas) {
         if (m.desde > abajo || m.hasta < arriba) continue
-        dibujarMata(ctx, m, arriba, abajo)
+        dibujarMata(ctx, m, arriba, abajo, alfaDelCuarto)
       }
 
       // Y el del capítulo de Ovi: las torres apiladas contra las dos
@@ -437,11 +528,11 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
       // y van detrás de ellas: es lo que le da hondo al cuarto.
       for (const e of estantes) {
         if (e.y + 40 < arriba || e.y - 60 > abajo) continue
-        dibujarEstante(ctx, e, escena.reloj, pintor.movimientoReducido)
+        dibujarEstante(ctx, e, escena.reloj, pintor.movimientoReducido, alfaDelCuarto)
       }
-      for (const t of torres) dibujarTorre(ctx, t, arriba, abajo)
+      for (const t of torres) dibujarTorre(ctx, t, arriba, abajo, alfaDelCuarto)
       if (esDeCajas && !pintor.movimientoReducido) {
-        dibujarPolvoDelCuarto(ctx, polvo, arriba, abajo, escena.reloj)
+        dibujarPolvoDelCuarto(ctx, polvo, arriba, abajo, escena.reloj, alfaDelCuarto)
       }
 
       // Y el del capítulo de Nico: los pliegues de la sábana cruzando
@@ -449,10 +540,10 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
       // único que se mueve solo en este cuarto.
       for (const pliegue of pliegues) {
         if (pliegue.y + pliegue.amplitud < arriba || pliegue.y - pliegue.amplitud > abajo) continue
-        dibujarPliegue(ctx, pliegue)
+        dibujarPliegue(ctx, pliegue, alfaDelCuarto)
       }
       for (const c of cortinas) {
-        dibujarCortina(ctx, c, arriba, abajo, escena.reloj, pintor.movimientoReducido)
+        dibujarCortina(ctx, c, arriba, abajo, escena.reloj, pintor.movimientoReducido, alfaDelCuarto)
       }
 
       for (const p of escena.plataformas) {
@@ -468,7 +559,8 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
         // adentro que lo tocara se lo llevaba puesto, y pasó: de un
         // tramo que se estaba yendo solo parpadeaba la primera caña
         // del soporte, que era lo único dibujado antes del pisotón.
-        const alfa = opacidadDeLaPista(vida, escena.avisoDeLaPista, pintor.movimientoReducido)
+        const alfa =
+          opacidadDeLaPista(vida, escena.avisoDeLaPista, pintor.movimientoReducido) * alfaDelCuarto
 
         ctx.save()
         ctx.globalAlpha = alfa
@@ -526,8 +618,15 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
       // la caída se ve entera hasta que sale por abajo. Desaparecer en
       // pleno aire parecería un error del juego.
       if (escena.y < escena.camara + altoVista + 60) {
-        dibujarSombra(ctx, escena)
-        dibujarTortuga(ctx, escena)
+        // Subiendo a la luna no hay debajo de qué hacer sombra.
+        if (!llegando) dibujarSombra(ctx, escena)
+        dibujarTortuga(
+          ctx,
+          escena,
+          llegando
+            ? poseEnLaLuna(poseDe(escena), llegando.quieta, llegando.sentada, escena.reloj)
+            : undefined,
+        )
         // Con el apagón puesto la barra no se dibuja, y eso es todo lo
         // que hace: la carga sigue subiendo igual y el temblor de la
         // tortuga sigue contándola. Es información lo que quita, no
@@ -554,6 +653,7 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
       }
 
       ctx.restore()
+      if (abriendose) ctx.restore()
     },
   }
 
@@ -952,6 +1052,7 @@ function dibujarMata(
   },
   arriba: number,
   abajo: number,
+  alfa = 1,
 ) {
   ctx.save()
 
@@ -961,7 +1062,7 @@ function dibujarMata(
 
     // Lo lejos que está decide el color, el grosor y lo que se ve.
     // Sin eso, tres cañas encimadas son una sola mancha.
-    ctx.globalAlpha = 0.26 + cana.profundidad * 0.24
+    ctx.globalAlpha = (0.26 + cana.profundidad * 0.24) * alfa
     const claro = cana.profundidad > 0.5 ? COLOR.bambuCerca : COLOR.bambuLejos
 
     // Un degradado de lado a lado convierte el palo plano en un
@@ -993,9 +1094,9 @@ function dibujarMata(
       const grosor = cana.grosor * (0.34 + 0.66 * t)
 
       ctx.fillStyle = COLOR.bambuNudo
-      ctx.globalAlpha = (0.26 + cana.profundidad * 0.24) * 0.8
+      ctx.globalAlpha = (0.26 + cana.profundidad * 0.24) * 0.8 * alfa
       ctx.fillRect(x - grosor / 2, y, grosor, 1.8)
-      ctx.globalAlpha = 0.26 + cana.profundidad * 0.24
+      ctx.globalAlpha = (0.26 + cana.profundidad * 0.24) * alfa
 
       // Una hoja cada tres nudos y solo en la caña de adelante. El
       // bambú de verdad tiene las hojas arriba, no por todo el tallo.
@@ -1040,6 +1141,7 @@ function dibujarVia(
     carros: { salida: number; color: string }[]
   },
   reloj: number,
+  alfa = 1,
 ) {
   /** El recorrido va de -0,1 a 1,1 para que entre y salga de cuadro. */
   const enLaVia = (u: number) => ({
@@ -1052,7 +1154,7 @@ function dibujarVia(
   ctx.strokeStyle = COLOR.pistaLuz
 
   // Los travesaños, primero, que van por debajo de los rieles.
-  ctx.globalAlpha = 0.06
+  ctx.globalAlpha = 0.06 * alfa
   ctx.lineWidth = 1.4
   for (let i = 0; i <= 40; i += 1) {
     const p = enLaVia(-0.1 + (i / 40) * 1.2)
@@ -1063,7 +1165,7 @@ function dibujarVia(
   }
 
   // Los dos rieles.
-  ctx.globalAlpha = 0.14
+  ctx.globalAlpha = 0.14 * alfa
   ctx.lineWidth = 2.6
   for (const lado of [-5, 5]) {
     ctx.beginPath()
@@ -1083,7 +1185,7 @@ function dibujarVia(
     const ahi = enLaVia(u + 0.01 * via.hacia)
 
     ctx.save()
-    ctx.globalAlpha = 0.3
+    ctx.globalAlpha = 0.3 * alfa
     ctx.translate(aqui.x, aqui.y - 1)
     ctx.rotate(Math.atan2(ahi.y - aqui.y, (ahi.x - aqui.x) * via.hacia))
     if (via.hacia < 0) ctx.scale(-1, 1)

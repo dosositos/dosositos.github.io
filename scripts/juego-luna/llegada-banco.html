@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>La llegada a la luna, cuadro por cuadro</title>
+    <style>
+      body { margin: 0; background: #05070f; font-family: system-ui; color: #f8f4e8; }
+      #tira { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; max-width: 2440px; }
+      figure { margin: 0; }
+      figcaption { font-size: 12px; opacity: 0.6; padding: 6px 2px; }
+      canvas { display: block; border-radius: 6px; }
+    </style>
+  </head>
+  <body>
+    <!--
+      El banco de la llegada, que es el final del juego. No es parte de
+      la web.
+
+      Hace falta por lo mismo que el de lo que cae, pero peor: esto
+      pasa **una sola vez en todo el juego**, después de ganar los tres
+      capítulos, y dura nueve segundos que no se pueden parar ni
+      rebobinar. Mirarlo jugando es mirarlo una vez cada media hora.
+
+      Lo que hay que juzgar acá son cuatro cosas seguidas: que se lea
+      que sube y no que la luna baja, que la alcance en vez de chocar
+      con ella, que se pare encima y no flotando al lado, y que al
+      abrirse la cámara quede la luna entera con ella chiquita encima.
+
+      Se mira con el servidor de siempre andando:
+        npm run dev
+        http://localhost:5173/scripts/juego-luna/llegada-banco.html
+    -->
+    <div id="tira"></div>
+
+    <script type="module">
+      import { crearPintor } from '/src/juego-luna/dibujo.ts'
+      import { laLlegada } from '/src/juego-luna/llegada.ts'
+      import { construirNivel } from '/src/juego-luna/mundos.ts'
+      import { CAPITULOS, LLEGADA, MUNDO } from '/src/content/luna.ts'
+
+      // El último capítulo escrito, que es donde pasa esto.
+      const capitulo = CAPITULOS[CAPITULOS.length - 1]
+      const nivel = construirNivel(capitulo)
+
+      // De dónde sale: pisó la cima un poco corrida del centro, que es
+      // lo normal. Sirve para ver si se endereza sola hacia la luna.
+      const xDeSalida = nivel.cima.x + nivel.cima.ancho * 0.78
+
+      /** La escena que le hace falta al pintor, para un avance dado. */
+      function cuadro(a) {
+        const l = laLlegada(a, nivel)
+        return {
+          x: xDeSalida + (l.luna.x - xDeSalida) * l.avanceDelViaje,
+          y: l.tortugaY,
+          mirando: 1,
+          carga: 0,
+          cargando: false,
+          enSuelo: false,
+          caminado: 0.3,
+          vy: -260,
+          reloj: a * (LLEGADA.ms / 1000),
+          desdeSalto: 9999,
+          desdeAterrizaje: 9999,
+          cayendo: false,
+          agobio: 0,
+          cansancio: 0,
+          camara: l.tortugaY - MUNDO.alto * l.altoDeCamara,
+          hitoAlcanzado: nivel.cima.indice,
+          vidaDeLaPista: nivel.plataformas.map(() => 1),
+          avisoDeLaPista: 0.4,
+          inclinacion: nivel.plataformas.map(() => 0),
+          hundido: nivel.plataformas.map(() => 0),
+          rebote: null,
+          loQueCae: [],
+          efecto: null,
+          cine: 'llegada',
+          cineAvance: a,
+          pasitos: 214,
+          caidas: 9,
+          plataformas: nivel.plataformas,
+        }
+      }
+
+      const momentos = [
+        [0, 'sale de la cima'],
+        [0.06, 'todavía se ve el cuarto'],
+        [0.14, 'el mundo se queda abajo'],
+        [0.24, 'las estrellitas que va pasando'],
+        [0.34, 'la luna ya se ve grande'],
+        [0.44, 'frenando encima de ella'],
+        [LLEGADA.sube, 'llegó'],
+        [0.58, 'parada, mirando'],
+        [LLEGADA.sentandose, 'empieza a sentarse'],
+        [0.75, 'sentándose'],
+        [LLEGADA.sentada, 'sentada, y la cámara empieza a abrirse'],
+        [0.87, 'abriéndose'],
+        [0.94, 'casi'],
+        [1, 'la luna entera, y todo lo demás cielo'],
+      ]
+
+      const tira = document.getElementById('tira')
+      for (const [a, nombre] of momentos) {
+        const figura = document.createElement('figure')
+        const lienzo = document.createElement('canvas')
+        const pie = document.createElement('figcaption')
+        pie.textContent = `${a.toFixed(2)} · ${nombre}`
+        figura.append(lienzo, pie)
+        tira.append(figura)
+
+        const pintor = crearPintor(lienzo, nivel)
+        pintor.medir(288, 624)
+        pintor.pintar(cuadro(a))
+      }
+    </script>
+  </body>
+</html>

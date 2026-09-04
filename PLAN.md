@@ -441,66 +441,101 @@ y chats, y el sobre de apertura. Eso es el regalo.
 
 ---
 
-## La próxima sesión — la llegada a la luna, y la carta
+## La próxima sesión — la fase 9, que es lo único que falta
 
 **Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
 arrancamos por donde diga, sin que tengás que acordarte de nada.
 
-Es **la fase 6, y es el final del juego**: lo que pasa cuando ella gana los tres
-capítulos. Hoy ahí sale «el capítulo que falta todavía lo estoy haciendo», que
-era verdad con dos capítulos escritos y ahora es mentira.
+**El juego está terminado.** Los tres capítulos, la llegada a la luna y la
+carta. Lo que falta no es código: son dos cosas tuyas, y en este orden.
 
-### 1. La llegada
+### 1. Jugá los tres capítulos de punta a punta
 
-Después de ganar el tercero, la tortuga **llega a la luna de una vez**. En los
-tres capítulos la luna se va cuando ella alcanza la cima: sube y se escapa. Esta
-vez no se escapa.
+Los récords están vacíos, y sin eso el rival de ella no existe. Hay que subir
+los tres de verdad, no medirlos con el robot: el robot juega perfecto y no se
+demora nunca, así que sus números no son un rival, son una burla.
 
-Lo que hay pensado, para tener de dónde empezar:
+De paso es la única forma de ver la llegada y la carta como las va a ver ella,
+que es con la clave puesta y después de haber subido. Yo puedo mirar el dibujo
+cuadro por cuadro y el maquetado de la hoja, pero eso no es verlo.
 
-- El último salto **no cae**. Sale de la cima y sigue subiendo, y la cámara la
-  sigue mientras el mundo se queda abajo. Los tres peluches van en su caparazón
-  —el cierre de Nico ya lo dice: «se acomoda entre Boo y Ovi, que ya venían
-  ahí»— así que suben los cuatro.
-- Mientras sube, se van quedando atrás **las estrellitas de papel** de los tres
-  capítulos, que son las del frasco. Es lo único que se repite en los tres
-  mundos y aquí es lo que mide el camino recorrido.
-- Llega, se para en la luna y **se sienta**. La cámara se abre y se ve la luna
-  entera, chiquita ella encima, y todo lo demás cielo.
-- Y ahí sale la carta.
+### 2. Y después, decidir cuándo la luna de la portada se vuelve tocable
 
-**Va con su nombre.** Si ella la bautizó, los textos de la llegada tienen que
-decirlo. Se escriben con `{tortuga}` y `{Tortuga}` en `luna.ts` y los rellena
-`conNombre()` en `src/juego-luna/nombrar.ts`, que ya existe y ya lo hace en los
-tres capítulos. Sin nombre puesto, los huecos dan «la tortuga» y «La tortuga»,
-así que el texto tiene que sonar bien de las dos maneras — eso hay que
-comprobarlo escribiéndolo, no después.
+Esta es la fase 9 y **es la que hace visible el juego**. Hoy vive en `#/luna` y
+no lo apunta nada, así que se puede tocar sin que ella note nada raro. En
+cuanto la luna de la portada se enlace, se acabó: la web ya está en su mano y
+lo va a ver en la siguiente visita.
 
-**Que sea poético sin ser una tarjeta.** Vale la regla de siempre: concreto
-antes que tierno, y nada de moraleja al final. Lo que hace bonito este momento
-ya está puesto desde la primera fase y no hay que explicarlo — ella subió a
-pasitos de tortuga, que es de donde salió la frase.
+Por eso no la enlacé yo. No es una decisión de código, es decidir qué día se lo
+enseñás, y eso se hace después de los récords.
 
-### 2. La carta
+### Lo que se cerró el 4 de septiembre: la llegada, y la carta
 
-Es lo que el juego promete desde su primera línea: «arriba hay una carta que no
-está en ninguna otra parte de la web». Está sin escribir.
+**La llegada.** Al pisar la cima del último capítulo escrito, la luna ya no se
+escapa. Sale de la cima y sigue subiendo mil ochocientos sesenta píxeles, con
+el cuarto apagándose abajo y las estrellitas de papel quedándose atrás. Se para
+encima, se sienta, y la cámara se abre hasta que queda la luna entera, ella
+chiquita arriba, y todo lo demás cielo. Dura nueve segundos y no se puede
+saltar: es lo que vino a ver.
 
-- Va **cifrada**, como todo lo que es voz de verdad, y por la misma razón que
-  los chats.
-- Sale **después** de la llegada, no encima: la animación termina, la luna se
-  queda quieta, y la carta se abre sobre eso.
-- Mirar cómo lo hace `src/componentes/Regalo.tsx`, que ya tiene una carta que se
-  abre con sus fases (`cerrada`, `temblando`, `estallando`, `carta`). No hace
-  falta inventar la mecánica dos veces.
+Tres cosas que solo se vieron midiendo, y ninguna se veía a ojo:
 
-### 3. Y lo que va con eso
+- **La luna hay que traerla al centro del mundo mientras sube.** La cámara de
+  este juego solo persigue de arriba abajo. A lo ancho el mundo está quieto y la
+  cima cae donde le tocó, casi nunca en el medio, así que dejando la luna encima
+  de la cima la tortuga terminaba encaramada en el borde del disco y con media
+  luna fuera de la pantalla.
+- **El cuarto no se acaba porque se salga de la pantalla.** Es más alto que
+  ella, y las cortinas de Nico subían pegadas a la tortuga hasta la luna y se
+  veían de fondo en el último cuadro, que es cielo y nada más. Hay que apagarlo
+  a mano.
+- **Y ese apagado tiene que viajar como parámetro, nunca como `globalAlpha`.**
+  Envolver el bloque en `ctx.globalAlpha` no hizo absolutamente nada:
+  `dibujarCortina` y sus seis hermanas fijan el suyo adentro y se lo llevan
+  puesto. Es la misma lección que dejó el desvanecimiento de la pista, escrita
+  en la cabecera de `mundo-almohadas.ts` desde hace semanas, y volvió a morder.
 
-- **Enlazar el juego desde algún lado.** Vive en `#/luna` y no lo apunta nada.
-  La idea de siempre: la luna de la portada se vuelve tocable.
-- **Llenar los récords**, que necesita que juegues los tres capítulos de punta a
-  punta: sin eso el rival de ella no existe.
+La cuenta vive en `src/juego-luna/llegada.ts` y no en el motor ni en el pintor,
+porque la necesitan los dos y tienen que estar de acuerdo: el motor sube a la
+tortuga y el pintor pone la luna donde ella la va a pisar. Con la cuenta
+copiada en los dos, cualquier retoque en una la dejaba posándose en el aire.
 
+**La carta ya estaba escrita** desde el 27 de agosto, cifrada en
+`carta-luna.enc`, y lo que faltaba era abrirla: no había una sola línea en
+`src/` que la leyera. Ahora sale encima de la llegada y no en vez de ella. El
+canvas se queda congelado en su último cuadro, arriba se ve la luna entera con
+la tortuga sentada, y el papel sube desde abajo. Los `{pasitos}` y `{caidas}`
+se rellenan con lo acumulado de todas las veces, que es lo que mide subir tres
+capítulos, y hay dos aperturas porque una que hable de caídas a quien no se
+cayó ni una vez le está contando la subida de otra.
+
+Dos cosas que decidí y podés cambiar:
+
+- **El cierre de Nico no sale como cartel**, que taparía la llegada. Se quedó
+  arriba, sobre la luna quieta, encima de la hoja: es lo que cuenta que los tres
+  peluches iban en el caparazón, o sea que subieron los cuatro. Si preferís que
+  no salga, es una línea.
+- **Se acabó «el capítulo que falta todavía lo estoy haciendo».** Era verdad
+  con dos capítulos y dejó de serlo con tres.
+
+Y una que es tuya: la apertura dice «te caíste {caidas} veces». Con una sola
+caída va a leerse «te caíste 1 veces». Es tu texto y no lo toqué. Subiendo tres
+capítulos es casi imposible que pase, pero ahí está.
+
+**Los dos bancos nuevos**, que hacen falta porque esto pasa una sola vez en
+todo el juego y dura nueve segundos que no se pueden parar:
+
+- `npm run luna:llegada` — los catorce cuadros de la cinemática.
+- `npm run luna:carta` — la hoja en tres teléfonos, con el final scrolleado.
+  Va con relleno de los mismos largos que la carta de verdad y no con la carta
+  de verdad, por dos motivos: hacen falta la clave y tres capítulos ganados para
+  verla, y son palabras de él para ella, que no tienen por qué andar sueltas por
+  un banco.
+
+Y cuatro comprobaciones más en `npm run luna:probar`: que en el último capítulo
+arranque la llegada y no la despedida, que suba de verdad, que termine posada
+encima de la luna y no flotando al lado, y que avise una sola vez y se quede
+quieta, porque la carta se abre encima de ese cuadro.
 
 ### Lo que cae, la traba que es de los tres capítulos
 
@@ -934,9 +969,6 @@ escribió antes que el capítulo y por eso el capítulo salió en una tarde.
    `src/content/diccionario.ts`, que son de mi redacción y no citas.
 7. Antes de la última fase, **recordarte que juegues los tres capítulos** para
    llenar los récords: sin eso el rival de ella no existe.
-8. Al ganar el capítulo de Nico sale «el capítulo que falta todavía lo estoy
-   haciendo», que era verdad con dos capítulos escritos y ahora es mentira. Es
-   lo primero de la fase 6 — ver «La próxima sesión», arriba.
 
 El plan completo del juego, con la mecánica, los tres mundos, los valores de la
 física y las diez fases, vive en **`plan-juego-luna.md`**, en la raíz. Se lee

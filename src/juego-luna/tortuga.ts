@@ -245,6 +245,63 @@ export function poseDe(e: EscenaLuna): Pose {
 }
 
 /**
+ * Cómo se para y cómo se sienta en la luna, que pasa una sola vez.
+ *
+ * No va dentro de `poseDe` porque no sale de nada que el juego mida:
+ * no depende de la velocidad, ni del suelo, ni de la barra. Es una
+ * cinemática, y el pintor la pide a mano encima de la pose que
+ * traía puesta del último salto.
+ *
+ * `quieta` va de 0 (todavía volando) a 1 (parada encima), y `sentada`
+ * de 0 (de pie) a 1 (sentada). Las dos se mezclan en ese orden, que
+ * es como pasa: primero se posa, se queda un momento mirando, y
+ * después se sienta.
+ */
+export function poseEnLaLuna(base: Pose, quieta: number, sentada: number, reloj: number): Pose {
+  const pose: Pose = { ...base, muslo: [...base.muslo], rodilla: [...base.rodilla], brazo: [...base.brazo], codo: [...base.codo] }
+
+  /* ── Parada encima ──────────────────────────────────────────
+     Derecha, los brazos caídos y la cabeza un poquito para arriba:
+     acaba de llegar y lo primero que hace es mirar dónde está. La
+     respiración es lo único que se mueve. */
+  const respira = Math.sin(reloj * 2.4) * 0.3
+  pose.muslo = [mezclar(base.muslo[0], 0, quieta), mezclar(base.muslo[1], 0, quieta)]
+  pose.rodilla = [mezclar(base.rodilla[0], 0.05, quieta), mezclar(base.rodilla[1], 0.05, quieta)]
+  pose.brazo = [mezclar(base.brazo[0], 0.1, quieta), mezclar(base.brazo[1], -0.1, quieta)]
+  pose.codo = [mezclar(base.codo[0], 0.15, quieta), mezclar(base.codo[1], 0.15, quieta)]
+  pose.cadera = mezclar(base.cadera, CUERPO.cadera, quieta)
+  pose.inclinacion = mezclar(base.inclinacion, 0.04, quieta)
+  pose.cabeza = mezclar(base.cabeza, -0.09, quieta)
+  pose.bob = mezclar(base.bob, respira, quieta)
+  pose.squashX = mezclar(base.squashX, 1, quieta)
+  pose.squashY = mezclar(base.squashY, 1, quieta)
+  pose.ceja = mezclar(base.ceja, 0, quieta)
+  pose.ojos = 1
+  pose.temblor = 0
+  if (quieta > 0.5) pose.boca = 'sonrisa'
+
+  /* ── Sentada ────────────────────────────────────────────────
+     Las piernas estiradas hacia adelante y las manos apoyadas atrás,
+     echada para atrás mirando el cielo. Es la misma silueta de
+     cuando se desmaya —piernas al frente, cadera en el suelo— pero
+     sin remolinos y sin boca de susto: aquella es de porrazo y esta
+     es de haber llegado. */
+  if (sentada > 0) {
+    pose.cadera = mezclar(pose.cadera, -7, sentada)
+    pose.inclinacion = mezclar(pose.inclinacion, -0.3, sentada)
+    pose.muslo = [mezclar(pose.muslo[0], 1.5, sentada), mezclar(pose.muslo[1], 1.68, sentada)]
+    pose.rodilla = [mezclar(pose.rodilla[0], -0.3, sentada), mezclar(pose.rodilla[1], -0.42, sentada)]
+    pose.brazo = [mezclar(pose.brazo[0], -0.95, sentada), mezclar(pose.brazo[1], -0.8, sentada)]
+    pose.codo = [mezclar(pose.codo[0], 0.1, sentada), mezclar(pose.codo[1], 0.12, sentada)]
+    pose.cabeza = mezclar(pose.cabeza, -0.2, sentada)
+    pose.bob = respira * 0.6
+    pose.boca = 'sonrisa'
+  }
+
+  return pose
+}
+
+/**
  * Dónde le queda la cabeza, en coordenadas del mundo.
  *
  * Hay que rehacer la misma cuenta que hace el canvas al encadenar los

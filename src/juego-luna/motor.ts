@@ -5,6 +5,7 @@ import {
   CANSANCIO,
   CINTA,
   IMPULSO,
+  LLEGADA,
   LO_QUE_CAE,
   LUNA,
   MUNDO,
@@ -13,6 +14,7 @@ import {
   SALTO,
   TORTUGA,
 } from '@/content/luna'
+import { laLlegada } from '@/juego-luna/llegada'
 import { msDeCargaEn, superficieDe } from '@/juego-luna/mundos'
 import type { AlgoCayendo, EscenaLuna, EventoLuna, Nivel, Plataforma, QueCae } from '@/types'
 
@@ -113,6 +115,13 @@ export interface OpcionesMotor {
    * despida una luna que nadie está mirando.
    */
   conCinematica?: boolean
+  /**
+   * Si este es el último capítulo escrito. Cambia una sola cosa, y es
+   * el final: al pisar la cima, en vez de irse la luna sube ella. El
+   * motor no sabe de capítulos ni le hace falta — lo único que
+   * necesita saber es si detrás de este hay otro.
+   */
+  esElFinal?: boolean
   /** Se llama una vez por frame con la escena ya interpolada. */
   pintar: (escena: EscenaLuna) => void
   /** Vibración, sonido y demás cosas de afuera. */
@@ -148,7 +157,13 @@ export interface Motor {
 
 const gradosARadianes = (grados: number) => (grados * Math.PI) / 180
 
-export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesMotor): Motor {
+export function crearMotor({
+  nivel,
+  conCinematica,
+  esElFinal,
+  pintar,
+  alEvento,
+}: OpcionesMotor): Motor {
   const { plataformas } = nivel
 
   /**
@@ -189,14 +204,28 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
   let ultimoPiso = 0
 
   /**
-   * En qué momento del capítulo va. Durante las dos cinemáticas el
-   * dedo no hace nada: la luna se está presentando o despidiendo, y
-   * saltar por encima de eso rompe el cuento.
+   * En qué momento del capítulo va. Durante las cinemáticas el dedo
+   * no hace nada: la luna se está presentando, despidiendo o dejando
+   * alcanzar, y saltar por encima de eso rompe el cuento.
    */
-  let cine: 'espera' | 'entrada' | 'jugando' | 'salida' | 'fin' = conCinematica
+  let cine: 'espera' | 'entrada' | 'jugando' | 'salida' | 'llegada' | 'fin' = conCinematica
     ? 'espera'
     : 'jugando'
   let cineMs = 0
+
+  /**
+   * Desde qué `x` salió el último salto, el que ya no cae. Se guarda
+   * al empezar la llegada porque la cima es ancha y ella pudo pisarla
+   * en cualquier punto: sin esto, la tortuga se teletransportaba al
+   * centro en el primer frame de la cinemática.
+   */
+  let xDeSalida = 0
+
+  /** Ya avisó de que llegó, para no avisar una vez por cuadro. */
+  let yaLlego = false
+
+  /** Por dónde va la llegada, de 0 a 1. */
+  const avanceDeLaLlegada = () => Math.min(1, cineMs / LLEGADA.ms)
 
   /** Un tramo se puede pisar mientras no se haya borrado del todo. */
   const sigueAhi = (p: Plataforma) => vida[p.indice] > 0
@@ -401,7 +430,8 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
    * que no aparezca un vacío debajo del primer escalón.
    */
   function camaraObjetivo() {
-    const deseada = t.y - altoVista * 0.62
+    const alto = cine === 'llegada' ? laLlegada(avanceDeLaLlegada(), nivel).altoDeCamara : 0.62
+    const deseada = t.y - altoVista * alto
     const masAbajo = nivel.suelo + 90 - altoVista
     return Math.min(deseada, masAbajo)
   }
@@ -608,18 +638,55 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
   function paso() {
     reloj += PASO
 
-    if (cine === 'entrada' || cine === 'salida') {
+    if (cine === 'entrada' || cine === 'salida' || cine === 'llegada') {
       cineMs += PASO * 1000
-      const dura = cine === 'entrada' ? LUNA.msDeEntrada : LUNA.msDeSalida
+      const dura =
+        cine === 'entrada' ? LUNA.msDeEntrada : cine === 'salida' ? LUNA.msDeSalida : LLEGADA.ms
       if (cineMs >= dura) {
-        if (cine === 'salida') {
+        if (cine === 'entrada') {
+          cine = 'jugando'
+          cineMs = 0
+        } else if (cine === 'salida') {
           cine = 'fin'
+          cineMs = 0
           avisar('fin')
         } else {
-          cine = 'jugando'
+          // La llegada no pasa a `fin` y el contador no se pone a
+          // cero: se queda congelada en su último cuadro, con la
+          // tortuga sentada en la luna, y la carta se abre encima de
+          // eso. Yendo a `fin` como los otros capítulos, la tortuga
+          // volvía de un tirón a la cima detrás del texto.
+          cineMs = dura
+          if (!yaLlego) {
+            yaLlego = true
+            avisar('fin')
+          }
         }
-        cineMs = 0
       }
+    }
+
+    // ── La llegada ────────────────────────────────────────────
+    // Acá no hay física: es lo único del juego que está guionado. La
+    // tortuga sube por la curva de `laLlegada`, que es la misma que
+    // usa el pintor para poner la luna, y la cámara la sigue como la
+    // ha seguido los tres capítulos enteros. Nada de lo de abajo
+    // corre: ni las cajas, ni las almohadas, ni lo que cae. Se acabó.
+    if (cine === 'llegada') {
+      const l = laLlegada(Math.min(1, cineMs / LLEGADA.ms), nivel)
+      t.x = xDeSalida + (l.luna.x - xDeSalida) * l.avanceDelViaje
+      t.y = l.tortugaY
+      t.vx = 0
+      // Sube siempre, aunque al final ya esté quieta: la pose de
+      // volar es la que el pintor mezcla hacia la de pararse encima.
+      t.vy = -260
+      t.enSuelo = false
+      t.cargando = false
+      t.carga = 0
+      t.sinSuelo = 0
+      t.desdeSalto += PASO * 1000
+      t.desdeAterrizaje += PASO * 1000
+      camara += (camaraObjetivo() - camara) * 0.12
+      return
     }
 
     // Durante las cinemáticas la tortuga sigue viva y caminando. Lo
@@ -895,11 +962,21 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
               if (p.indice === nivel.cima.indice && !terminado) {
                 terminado = true
                 avisar('cima')
-                if (conCinematica) {
+                if (!conCinematica) {
+                  avisar('fin')
+                } else if (esElFinal) {
+                  // El último salto no cae. En los tres capítulos la
+                  // luna se escapa al llegar a la cima; en este no.
+                  cine = 'llegada'
+                  cineMs = 0
+                  xDeSalida = t.x
+                  // El fogonazo del despegue, que es el mismo de
+                  // cualquier salto: este también sale de un tramo,
+                  // solo que no vuelve.
+                  t.desdeSalto = 0
+                } else {
                   cine = 'salida'
                   cineMs = 0
-                } else {
-                  avisar('fin')
                 }
               }
             }
@@ -1046,9 +1123,11 @@ export function crearMotor({ nivel, conCinematica, pintar, alEvento }: OpcionesM
           ? Math.min(1, cineMs / LUNA.msDeEntrada)
           : cine === 'salida'
             ? Math.min(1, cineMs / LUNA.msDeSalida)
-            : cine === 'fin'
-              ? 1
-              : 0,
+            : cine === 'llegada'
+              ? avanceDeLaLlegada()
+              : cine === 'fin'
+                ? 1
+                : 0,
       pasitos,
       caidas,
       plataformas,
