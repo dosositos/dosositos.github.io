@@ -476,6 +476,16 @@ Y hay un orden que conviene respetar: la luna se enciende sola cuando ella
 acaba de encontrar al tercero. Ese es el momento, y es gratis — no hay que
 inventarle ninguna ceremonia.
 
+### Antes de eso, si querés
+
+- **Jugá Ovi y Nico** para ver la llegada y la carta con la clave puesta y
+  después de haber subido, que es como las va a ver ella. Los récords ya no
+  hacen falta para eso: están puestos.
+- **Leé la carta entera en el teléfono**, que ahora son siete párrafos y ella la
+  va a leer bajando con el pulgar.
+- **Y mirá el cuarto de Nico jugando**, que las plumas y el temblor de las
+  sábanas no se pueden juzgar en una foto: en un cuadro fijo un vaivén no se ve.
+
 ### Lo que se hizo el 4 de septiembre, segunda vuelta: el cuarto de Nico
 
 El capítulo se leía quieto: estaba bien dibujado y no pasaba nada. Se le
@@ -497,14 +507,6 @@ condición.
 escena de `almohadas-banco.html` no traía `loQueCae` ni `efecto`, el pintor se
 caía en el segundo panel y el banco llevaba semanas enseñando uno solo. Se
 notaba y no se miró.
-
-### Antes de eso, si querés
-
-- **Jugá Ovi y Nico** para ver la llegada y la carta con la clave puesta y
-  después de haber subido, que es como las va a ver ella. Los récords ya no
-  hacen falta para eso: están puestos.
-- **Leé la carta entera en el teléfono**, que ahora son siete párrafos y ella la
-  va a leer bajando con el pulgar.
 
 ### Lo que se cerró el 4 de septiembre: la llegada, la carta y los récords
 
