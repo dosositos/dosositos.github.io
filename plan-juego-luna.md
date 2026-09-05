@@ -76,8 +76,8 @@ tiembla más fuerte. Un castigo que no se ve venir no se aprende, solo enoja. Y
 lo que se pierde es el salto, nunca el progreso: no baja al hito ni se le quita
 nada, solo hay que esperarla.
 
-Los tres números viven en `CANSANCIO`, en `luna.ts`. **Falta contarlo en el
-cartel de la primera pantalla**, junto con lo del mantener y soltar.
+Los tres números viven en `CANSANCIO`, en `luna.ts`, y está contado en el
+cartel de la primera pantalla, en el segundo párrafo de `CARTEL`.
 
 En computadora, la barra espaciadora hace lo mismo. No es el escenario
 principal, pero que no quede tullido.
@@ -393,11 +393,11 @@ empieza hasta que lo demás esté cerrado.
 | 2 | Mundo, cámara, hitos y probador | Un nivel de prueba, de punta a punta | Sí |
 | 3 | Boo entero | Un capítulo de verdad | Sí, y es buen sitio |
 | 4 | Ovi ✓ | Dos capítulos | Sí |
-| 5 | Nico (prototipo ✓, falta el mundo) | Los tres capítulos | Sí |
-| 6 | El último trecho y la carta | El juego completo | Sí |
-| 7 | El prólogo | El juego con su escuelita delante | Sí |
-| 8 | Teléfono y números | El juego, pero que se sienta bien | Sí |
-| 9 | El colado | Igual, con chiste | Sí |
+| 5 | Nico ✓ | Los tres capítulos | Sí |
+| 6 | El último trecho y la carta ✓ | El juego completo | Sí |
+| 7 | El prólogo — **sin hacer** | El juego con su escuelita delante | Sí |
+| 8 | Teléfono y números — **a medias**: falta el sonido y probarlo en su teléfono | El juego, pero que se sienta bien | Sí |
+| 9 | El colado — **sin hacer** | Igual, con chiste | Sí |
 | 10 | **La entrada por la luna** ✓ | El juego, para ella | Fin |
 
 Al cerrar cada fase: `npm run typecheck`, `npm run revisar`, commit propio, y

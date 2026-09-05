@@ -441,23 +441,45 @@ y chats, y el sobre de apertura. Eso es el regalo.
 
 ---
 
-## La próxima sesión — enseñárselo, que ya no es cosa de código
+## La próxima sesión — el prólogo, que es lo que falta de verdad
 
 **Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
 arrancamos por donde diga, sin que tengás que acordarte de nada.
 
-**El juego está entero y la puerta está puesta.** Los tres capítulos, la
-llegada, la carta, los récords, la luna de la portada y el ropero. Lo que queda
-no es código.
+**El juego se puede jugar de punta a punta**: los tres capítulos, la llegada, la
+carta, los récords, la luna de la portada y el ropero. Pero **quedan dos fases
+del plan sin hacer**, y una de las dos importa.
 
-### Lo único que falta: decidir cuándo
+### 1 · El prólogo (fase 7). Es lo que falta
 
-En cuanto esto se suba, la web ya está en su mano. No lo va a ver el primer día:
-la luna no se abre hasta que encuentre a los tres peluches, y eso le puede
-tomar varios días porque cada uno se esconde en una página distinta y solo sale
-uno por página. Pero va a pasar solo, sin que vos hagas nada.
+La escuelita antes del capítulo uno, donde se aprende a jugar y nada cuesta
+nada. Hoy no existe: lo único que le explica el juego es el cartel de texto de
+Boo, y aprender a calcular una barra de fuerza leyendo un párrafo no es lo
+mismo que probándola en una plataforma donde no se puede fallar.
 
-Si querés que caiga en una fecha, decímelo y esperamos. Si no, se sube y ya.
+Va después de los tres mundos a propósito, y ya estamos ahí. Qué enseña y en
+qué orden está escrito en la fase 7 de `plan-juego-luna.md`. Y hace una cosa
+más: **le saca el bulto al cartel de Boo**, que hoy carga la historia de Boo y
+el cómo se juega apiladas una sobre la otra.
+
+### 2 · El colado (fase 9). Es adorno y se puede saltar
+
+El pato con peluca que se cuela en el juego y estorba. Va acá aposta: si el
+tiempo o los créditos aprietan, se salta entero sin tocar nada más.
+
+### 3 · Lo de la fase 8 que necesita su teléfono
+
+`prefers-reduced-motion` ya está y la vibración también. **Faltan los sonidos
+cortos con su interruptor, apagados de fábrica**, y ajustar los números de
+`luna.ts` jugándolo en el Android de ella, que es el aparato que manda.
+
+### Y después, la decisión que no es de código
+
+Cuándo se sube. En cuanto suba, la web ya está en su mano; no lo va a ver el
+primer día porque la luna no se abre hasta que encuentre a los tres peluches, y
+cada uno se esconde en una página distinta. Pero va a pasar solo.
+
+Si querés que caiga en una fecha, decímelo y esperamos.
 
 ### Antes de eso, si querés
 
