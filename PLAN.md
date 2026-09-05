@@ -441,28 +441,30 @@ y chats, y el sobre de apertura. Eso es el regalo.
 
 ---
 
-## La próxima sesión — la fase 8, que es lo último de verdad
+## La próxima sesión — su teléfono, y el colado
 
 **Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
 arrancamos por donde diga, sin que tengás que acordarte de nada.
 
 **El juego está entero**: la escuelita, el cuento de antes, los tres capítulos,
-la llegada, la carta, los récords, el volver a subir, la luna de la portada y el
-ropero. **Del plan queda una fase y media**, y ninguna de las dos es grande.
+la llegada, la carta, los récords, el volver a subir, la luna de la portada, el
+ropero y los sonidos. **Lo que queda del plan no se puede hacer sin ella
+delante**, salvo el colado, que es adorno.
 
-**Nada de esto está subido.** El 5 de septiembre quedó todo commiteado en
-`nico-cobijas` y sin empujar, a propósito. Lo primero de mañana es decidir si se
-sube.
+**Nada de esto está subido, y es a propósito.** Lo decidiste el 5 de
+septiembre: en cuanto suba, ella puede llegar al juego, y querés que suba
+entero. Está todo commiteado en `nico-cobijas` y ahí se queda.
 
-### 1 · La fase 8: los sonidos, y su teléfono
+### 1 · Lo que falta de la fase 8: su Android
 
-`prefers-reduced-motion` ya está y la vibración también. **Faltan los sonidos
-cortos con su interruptor, apagados de fábrica.** Eso se puede hacer sin ella
-delante y es lo primero que toca.
+Los sonidos quedaron el 5 de septiembre y `npm run luna:sonidos` los mide y los
+prueba jugando. **Lo que falta de esta fase no se puede hacer acá**, y se junta
+todo para una sola pasada en el teléfono de ella, que es el aparato que manda:
 
-Lo que sí necesita su Android, que es el aparato que manda, y que se junta todo
-para una sola pasada:
-
+- **Si los sonidos se oyen y no molestan**, que es lo único que un banco no
+  puede contestar. Están bajos aposta: el más fuerte pica en 0.23 de lo que
+  aguanta el altavoz. Si en su teléfono no se oyen, se sube `VOLUMEN_MAESTRO`
+  en `src/juego-luna/sonidos.ts` y nada más.
 - Ajustar los números de `luna.ts` jugándolo de verdad.
 - **Si la luna apagada de la portada, al 55 %, todavía se ve de día.** Es el
   número más delicado de esa esquina: más apagada deja de dar ganas de tocarla,
@@ -476,13 +478,12 @@ para una sola pasada:
 El pato con peluca que se cuela en el juego y estorba. Va al final aposta: si el
 tiempo o los créditos aprietan, se salta entero sin tocar nada más.
 
-### Y después, la decisión que no es de código
+### Cuándo se sube: cuando esté al 100 %
 
-Cuándo se sube. En cuanto suba, la web ya está en su mano; no lo va a ver el
-primer día porque la luna no se abre hasta que encuentre a los tres peluches, y
-cada uno se esconde en una página distinta. Pero va a pasar solo.
-
-Si querés que caiga en una fecha, decímelo y esperamos.
+Ya está decidido y no hay que volver sobre eso. En cuanto suba, la web está en
+su mano, y no lo va a ver el primer día porque la luna no se abre hasta que
+encuentre a los tres peluches, y cada uno se esconde en una página distinta.
+Pero va a pasar solo, y por eso no sube nada hasta que no falte nada.
 
 ### Antes de eso, si querés
 
@@ -495,6 +496,40 @@ Si querés que caiga en una fecha, decímelo y esperamos.
   no se pueden juzgar en una foto.
 - **Y probate el ropero.** Once cosas, y de salida solo hay tres: el gorrito de
   fiesta, los lentes redondos y el corbatín. Lo demás se gana subiendo.
+- **Encendé el sonido** en el cartel del capítulo y jugá un rato con el teléfono
+  destapado. Al encenderlo suena el pop del salto, para que se sepa qué se
+  acaba de encender.
+
+### Los sonidos — 5 de septiembre, tercera vuelta
+
+Nueve sonidos, armados con la Web Audio API. No se baja ningún archivo: cada
+uno son dos o tres osciladores con su sobre, escritos como datos en `RECETAS`,
+dentro de `src/juego-luna/sonidos.ts`.
+
+El pop de soltar y el toc de aterrizar son los cortos, por debajo de 50 ms
+medidos. Son los que se van a oír miles de veces en una subida, y ahí medio
+segundo cansa a los tres minutos. Los otros siete son la estrella, la caída, el
+mareo, el impulso, la caja que la devuelve, el golpe y la llegada a la cima. El
+apurón y el apagón suenan igual aposta: por el oído lo que pasó es lo mismo, y
+darles dos sonidos sería un idioma más que aprender.
+
+**Arrancan apagados, y apagado quiere decir apagado.** Con el interruptor en no,
+la Web Audio API no se toca ni una vez: no se crea el contexto siquiera. El
+interruptor sale en la portada de la escuelita y en el cartel de cada capítulo,
+dice cómo está y no qué hace, y al encenderlo suena el pop del salto una vez,
+que es la única manera de enterarse de qué se acaba de encender.
+
+Se llama desde `alEvento`, una sola línea en `Luna.tsx` y otra en
+`EscuelitaDeLaLuna.tsx`, al lado de la vibración. Quién suena y quién no vive en
+`sonidos.ts`, junto a la receta.
+
+**`npm run luna:sonidos`** hace las dos mitades. Dibuja los nueve a la misma
+escala con una marca cada 100 ms, y mide sobre lo grabado —no sobre lo que dice
+la receta— cuánto duran, cuánto pican y si terminan en silencio de verdad o van
+a chasquear. Después se mete a `/#/luna`, da ocho saltos y cuenta osciladores:
+encendido creó diez, apagado creó cero y ni siquiera el contexto. Esa segunda
+mitad es la que hacía falta: un banco que solo se mira a sí mismo habría dado
+los nueve por perfectos aunque nadie los llamara nunca desde el juego.
 
 ### Y lo que se arregló el 5 de septiembre, segunda vuelta
 

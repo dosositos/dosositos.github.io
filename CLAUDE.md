@@ -153,6 +153,8 @@ npm run luna:llegada     # el banco de la llegada a la luna, cuadro por cuadro
 npm run luna:carta       # la carta en tres teléfonos (con relleno, no con el texto)
 npm run luna:minimos     # ¿en cuántos pasitos se puede subir cada capítulo?
                          # (de ahí salen los récords de él; -- 2 enseña la ruta)
+npm run luna:sonidos     # el banco de los nueve sonidos: los dibuja, los mide, y
+                         # comprueba jugando que suenen (y que apagados no suene nada)
 npm run luna:asomo       # el banco del adelanto: la tortuga que se asoma al final de una página
 npm run luna:asomo -- --semana   # ¿en qué página se asoma cada día? (o -- 2026-09-14)
 npm run luna:puerta      # la luna de la portada en sus seis estados

@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Los sonidos del juego</title>
+    <style>
+      body {
+        margin: 0;
+        background: #0b1026;
+        color: #f4efe6;
+        font-family: system-ui, sans-serif;
+      }
+      #lienzo {
+        padding: 26px 26px 34px;
+      }
+      h1 {
+        margin: 0 0 4px;
+        font-size: 19px;
+        font-weight: 600;
+        color: #f0c86a;
+      }
+      p.bajada {
+        margin: 0 0 22px;
+        font-size: 13px;
+        color: #f4efe699;
+      }
+      .rejilla {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+      .celda {
+        border: 1px solid #f4efe61f;
+        border-radius: 12px;
+        padding: 12px 14px 10px;
+        cursor: pointer;
+      }
+      .celda:hover {
+        border-color: #f0c86a66;
+      }
+      .celda .nombre {
+        font-size: 14px;
+        color: #f0c86a;
+      }
+      .celda .datos {
+        margin-top: 6px;
+        font-size: 11.5px;
+        color: #f4efe680;
+        font-variant-numeric: tabular-nums;
+      }
+      .celda .queja {
+        margin-top: 4px;
+        font-size: 11.5px;
+        color: #ff8f8f;
+      }
+      canvas.onda {
+        display: block;
+        margin-top: 8px;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      Banco de los sonidos del juego de la luna. No es parte de la web.
+
+      Un sonido no se puede mirar en el código: «0.06 segundos» no dice
+      si el pop se oye o si el toc chasquea al final. Acá cada receta se
+      graba de verdad —con la misma función que corre en el teléfono— y
+      se dibuja su onda, con la duración y el pico medidos sobre lo
+      grabado. Y se puede tocar: clic en cualquiera y suena.
+
+      Se mira con el servidor de siempre andando:
+        npm run dev
+        http://localhost:5173/scripts/juego-luna/sonidos-banco.html
+
+      O de una:  npm run luna:sonidos
+
+      Nota: los dos que llevan ruido —el aterrizaje y el golpe— salen un
+      pelo distintos en cada pasada, porque el ruido es al azar. La
+      forma es la misma; los números bailan en el último decimal.
+    -->
+    <div id="lienzo">
+      <h1>Los sonidos del juego</h1>
+      <p class="bajada">
+        Clic en cualquiera para oírlo. Los nueve van a la misma escala, con una marca cada 100 ms.
+        Lo rojo es lo que se pasó de la raya.
+      </p>
+      <div class="rejilla" id="rejilla"></div>
+    </div>
+
+    <script type="module">
+      import { largoDe, recetaDe, RECETAS, tocar, VOLUMEN_MAESTRO } from '/src/juego-luna/sonidos.ts'
+
+      /** Lo que se dibuja, en orden de cuánto se oye durante una subida. */
+      const CUALES = [
+        ['salto', 'el pop de soltar'],
+        ['aterrizaje', 'el toc de caer parada'],
+        ['hito', 'la estrellita'],
+        ['caida', 'la caída'],
+        ['agotada', 'el mareo'],
+        ['impulso', 'el tramo de impulso'],
+        ['rebote', 'la caja que la devuelve'],
+        ['apuron', 'el golpe (apurón y apagón)'],
+        ['cima', 'llegar arriba'],
+      ]
+
+      /**
+       * Lo que no se le perdona a un sonido.
+       *
+       * El techo de duración es distinto para los dos que se repiten
+       * todo el tiempo: medio segundo en la cima está bien, medio
+       * segundo en cada salto es una tortura a los tres minutos.
+       */
+      const TECHO_MS = { salto: 100, aterrizaje: 100 }
+      const TECHO_MS_RESTO = 320
+      /** Más arriba de esto el altavoz del teléfono empieza a raspar. */
+      const PICO_MAXIMO = 0.9
+      /** Si no termina en silencio de verdad, chasquea. */
+      const COLA_MAXIMA = 0.002
+
+      const FRECUENCIA = 48000
+
+      /** Graba una receta con el volumen con que va a sonar de verdad. */
+      async function grabar(receta) {
+        const largo = largoDe(receta) + 0.06
+        const ctx = new OfflineAudioContext(1, Math.ceil(largo * FRECUENCIA), FRECUENCIA)
+        const maestro = ctx.createGain()
+        maestro.gain.value = VOLUMEN_MAESTRO
+        maestro.connect(ctx.destination)
+        tocar(ctx, maestro, receta, 0)
+        const grabado = await ctx.startRendering()
+        return grabado.getChannelData(0)
+      }
+
+      /** Dónde se calla del todo, medido y no declarado. */
+      function medir(muestras) {
+        let pico = 0
+        let ultimaConSonido = 0
+        for (let i = 0; i < muestras.length; i += 1) {
+          const alto = Math.abs(muestras[i])
+          if (alto > pico) pico = alto
+          if (alto > 0.0008) ultimaConSonido = i
+        }
+        let cola = 0
+        for (let i = ultimaConSonido; i < muestras.length; i += 1) {
+          cola = Math.max(cola, Math.abs(muestras[i]))
+        }
+        return {
+          pico,
+          ms: (ultimaConSonido / FRECUENCIA) * 1000,
+          /** Lo que queda sonando después del último sonido de verdad. */
+          cola,
+          /** Qué tan brusco es el último tramo: de ahí sale el chasquido. */
+          corte: Math.abs(muestras[ultimaConSonido] ?? 0),
+        }
+      }
+
+      /**
+       * La ventana de todos los dibujos, en segundos.
+       *
+       * La misma para los nueve a propósito. Con cada onda estirada a
+       * lo ancho de su celda, todas se ven igual de largas y el dibujo
+       * deja de decir lo único que se le pide: que el pop dura un
+       * suspiro y que la llegada a la cima dura de verdad.
+       */
+      const VENTANA = 0.4
+
+      /**
+       * Dibuja una onda.
+       *
+       * `techo` es el pico del más fuerte de los nueve, y va igual para
+       * todos: así se ve alto el que suena fuerte y bajito el que suena
+       * bajito. Normalizando cada uno por su cuenta, los nueve saldrían
+       * del mismo tamaño y el dibujo mentiría.
+       */
+      function dibujarOnda(canvas, muestras, techo) {
+        const densidad = 2
+        const ancho = canvas.clientWidth
+        const alto = 62
+        canvas.width = ancho * densidad
+        canvas.height = alto * densidad
+        canvas.style.height = alto + 'px'
+
+        const ctx = canvas.getContext('2d')
+        ctx.scale(densidad, densidad)
+        ctx.fillStyle = '#00000033'
+        ctx.fillRect(0, 0, ancho, alto)
+
+        // la línea del cero
+        ctx.strokeStyle = '#f4efe61a'
+        ctx.beginPath()
+        ctx.moveTo(0, alto / 2)
+        ctx.lineTo(ancho, alto / 2)
+        ctx.stroke()
+
+        // y una marca cada 100 ms, para poder leer el largo de un vistazo
+        ctx.fillStyle = '#f4efe614'
+        for (let s = 0.1; s < VENTANA; s += 0.1) {
+          ctx.fillRect(Math.round((s / VENTANA) * ancho), 0, 1, alto)
+        }
+
+        // la onda, columna por columna: de cada trocito se pinta lo más
+        // alto y lo más bajo, que es como se ve la forma de verdad
+        ctx.fillStyle = '#f0c86a'
+        const escala = (alto / 2 - 2) / techo
+        const porColumna = (VENTANA * FRECUENCIA) / ancho
+        for (let x = 0; x < ancho; x += 1) {
+          const desde = Math.floor(x * porColumna)
+          if (desde >= muestras.length) break
+
+          let arriba = 0
+          let abajo = 0
+          const hasta = Math.min(muestras.length, Math.floor((x + 1) * porColumna))
+          for (let i = desde; i < hasta; i += 1) {
+            if (muestras[i] > arriba) arriba = muestras[i]
+            if (muestras[i] < abajo) abajo = muestras[i]
+          }
+          const y1 = alto / 2 - arriba * escala
+          const y2 = alto / 2 - abajo * escala
+          ctx.fillRect(x, y1, 1, Math.max(1, y2 - y1))
+        }
+      }
+
+      const rejilla = document.getElementById('rejilla')
+      const resumen = []
+
+      // Primero se graban los nueve, y después se dibujan. Hace falta
+      // en ese orden porque el alto de todos los dibujos sale del pico
+      // del más fuerte, y eso no se sabe hasta tenerlos todos.
+      const grabados = []
+      for (const [evento, comoSellama] of CUALES) {
+        const receta = recetaDe(evento)
+        const muestras = await grabar(receta)
+        grabados.push({ evento, comoSellama, receta, muestras, ...medir(muestras) })
+      }
+
+      const masFuerte = Math.max(...grabados.map((g) => g.pico))
+
+      for (const { evento, comoSellama, receta, muestras, pico, ms, cola, corte } of grabados) {
+        const techo = TECHO_MS[evento] ?? TECHO_MS_RESTO
+        const quejas = []
+        if (ms > techo) quejas.push(`dura ${ms.toFixed(0)} ms y el techo son ${techo}`)
+        if (pico > PICO_MAXIMO) quejas.push(`el pico llega a ${pico.toFixed(2)}, raspa`)
+        if (cola > COLA_MAXIMA) quejas.push('no termina en silencio: va a chasquear')
+        if (corte > 0.05) quejas.push(`se corta en ${corte.toFixed(3)}, no en cero`)
+
+        const celda = document.createElement('div')
+        celda.className = 'celda'
+        celda.innerHTML =
+          `<div class="nombre">${comoSellama}</div>` +
+          `<canvas class="onda"></canvas>` +
+          `<div class="datos">${evento} · ${ms.toFixed(0)} ms · pico ${pico.toFixed(2)}</div>` +
+          (quejas.length ? `<div class="queja">⚠ ${quejas.join(' · ')}</div>` : '')
+        rejilla.append(celda)
+        dibujarOnda(celda.querySelector('canvas'), muestras, masFuerte)
+
+        // y que se pueda oír, que para eso es un banco de sonidos
+        celda.addEventListener('click', () => {
+          const ctx = new AudioContext()
+          const maestro = ctx.createGain()
+          maestro.gain.value = VOLUMEN_MAESTRO
+          maestro.connect(ctx.destination)
+          tocar(ctx, maestro, receta, ctx.currentTime + 0.02)
+        })
+
+        resumen.push({ evento, comoSellama, ms: +ms.toFixed(1), pico: +pico.toFixed(3), quejas })
+      }
+
+      // Sin receta no hay sonido, y eso también hay que poder verlo:
+      // si alguna vez se agrega un evento al motor y se olvida acá, la
+      // lista de arriba se queda corta y este número lo dice.
+      const conReceta = Object.keys(RECETAS).length + 1
+      if (conReceta !== CUALES.length) {
+        resumen.push({
+          evento: '(la lista del banco)',
+          comoSellama: 'faltan sonidos por dibujar',
+          quejas: [`hay ${conReceta} recetas y el banco dibuja ${CUALES.length}`],
+        })
+      }
+
+      // De acá lo lee ver-sonidos.mjs para escribir la tabla en la
+      // terminal. Se pone al final aposta: hasta que esto exista, el
+      // banco todavía está grabando.
+      const bolsa = document.createElement('script')
+      bolsa.type = 'application/json'
+      bolsa.id = 'resumen'
+      bolsa.textContent = JSON.stringify(resumen)
+      document.body.append(bolsa)
+    </script>
+  </body>
+</html>

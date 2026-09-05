@@ -40,6 +40,7 @@
     "luna:carta": "node scripts/juego-luna/ver-carta.mjs",
     "luna:almohadas": "node scripts/juego-luna/ver-almohadas.mjs",
     "luna:asomo": "node scripts/juego-luna/ver-asomo.mjs",
+    "luna:sonidos": "node scripts/juego-luna/ver-sonidos.mjs",
     "diccionario:preparar": "node scripts/preparar-diccionario.mjs && node scripts/cifrar-contenido.mjs"
   },
   "dependencies": {

@@ -396,7 +396,7 @@ empieza hasta que lo demás esté cerrado.
 | 5 | Nico ✓ | Los tres capítulos | Sí |
 | 6 | El último trecho y la carta ✓ | El juego completo | Sí |
 | 7 | El prólogo ✓ | El juego con su escuelita delante | Sí |
-| 8 | Teléfono y números — **a medias**: falta el sonido y probarlo en su teléfono | El juego, pero que se sienta bien | Sí |
+| 8 | Teléfono y números — el sonido ✓; falta probarlo en su teléfono | El juego, pero que se sienta bien | Sí |
 | 9 | El colado — **sin hacer** | Igual, con chiste | Sí |
 | 10 | **La entrada por la luna** ✓ | El juego, para ella | Fin |
 
@@ -604,8 +604,20 @@ salir la segunda vez.
 ### 8 · Teléfono y números
 
 Se prueba en el Android de ella, entrando a `/luna` escribiendo la ruta a mano,
-y se ajustan los números en `luna.ts`. También `prefers-reduced-motion` y los
-sonidos con su interruptor, apagados de fábrica.
+y se ajustan los números en `luna.ts`.
+
+`prefers-reduced-motion` y la vibración estaban desde antes. **Los sonidos
+quedaron el 5 de septiembre**: nueve, armados con la Web Audio API sin bajar
+ningún archivo, en `src/juego-luna/sonidos.ts`. El interruptor sale en la
+portada de la escuelita y en el cartel de cada capítulo, y arranca apagado.
+
+Lo comprueba `npm run luna:sonidos`, que hace dos cosas distintas. Dibuja los
+nueve a la misma escala y mide sobre lo grabado —no sobre la receta— cuánto
+duran, cuánto pican y si terminan en silencio de verdad. Y después se mete al
+juego, da saltos y cuenta osciladores: encendido tiene que crear alguno, y
+apagado no puede crear ni el contexto. Eso último es la promesa entera de
+«apagado de fábrica», y sin la segunda mitad el banco daría los nueve por
+buenos aunque nadie los llamara nunca.
 
 ### 9 · El colado
 

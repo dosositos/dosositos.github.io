@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { CartaDeLaLuna } from '@/componentes/CartaDeLaLuna'
 import { EscuelitaDeLaLuna } from '@/componentes/EscuelitaDeLaLuna'
 import { HistoriaDeLaTortuga } from '@/componentes/HistoriaDeLaTortuga'
+import { InterruptorDeSonido } from '@/componentes/InterruptorDeSonido'
 import { MarcadorDeLaLuna } from '@/componentes/MarcadorDeLaLuna'
 import { RoperoDeLaTortuga } from '@/componentes/RoperoDeLaTortuga'
 import {
@@ -30,6 +31,7 @@ import {
   ponerleNombre,
 } from '@/juego-luna/progreso'
 import { loPuesto } from '@/juego-luna/ropero'
+import { sonar } from '@/juego-luna/sonidos'
 import { RETRATOS } from '@/lib/retratos'
 import type { EventoLuna, ProgresoLuna, RanuraDeLaTortuga } from '@/types'
 
@@ -213,6 +215,13 @@ export function Luna() {
     const yaLoSabe = new Set<EventoLuna>()
 
     const alEvento = (evento: EventoLuna) => {
+      // El sonido, antes que nada y para todos los eventos de una vez:
+      // si está apagado —que es como viene— no hace nada, y si está
+      // encendido cada cosa sabe sola cómo suena. Quién suena y quién
+      // no vive en `sonidos.ts`, junto a la receta; repartir eso por
+      // este if de acá abajo sería tener el catálogo en dos sitios.
+      sonar(evento)
+
       if (evento === 'salto') {
         vibrar(12)
 
@@ -598,6 +607,12 @@ export function Luna() {
             >
               {TEXTOS_DEL_ROPERO.abrir}
             </button>
+
+            {/* Y el sonido, todavía más chiquito y todavía más abajo.
+                Está en el cartel de los tres capítulos y no una sola
+                vez al principio, porque la decisión cambia según dónde
+                esté: lo que en la casa se enciende, en el bus se apaga. */}
+            <InterruptorDeSonido className="mt-3" />
 
             <p className="fuente-mano mt-4 text-center text-base text-margarita/45">
               {conElNombre(CARTEL.pie)}

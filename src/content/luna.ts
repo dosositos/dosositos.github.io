@@ -1103,6 +1103,20 @@ export const CARTEL = {
   pie: 'Se sube a pasitos. No hay apuro.',
 }
 
+/**
+ * El interruptor de los sonidos.
+ *
+ * Dice cómo está y no qué hace: «sonido: apagado» y no «encender el
+ * sonido». Un botón que dice qué hace obliga a adivinar cómo está, y
+ * eso a mitad de partida no se puede.
+ */
+export const SONIDO = {
+  apagado: 'sonido: apagado',
+  encendido: 'sonido: encendido',
+  /** Para el lector de pantalla, que no ve la pastillita. */
+  etiqueta: 'sonidos del juego',
+}
+
 /** Los textos de pantalla del juego. */
 export const TEXTOS = {
   ayudaTocar: 'mantené apretado y soltá',

@@ -1,5 +1,6 @@
 import { useReducedMotion } from 'motion/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { InterruptorDeSonido } from '@/componentes/InterruptorDeSonido'
 import { CLASES, ESCUELITA } from '@/content/luna'
 import { crearPintor } from '@/juego-luna/dibujo'
 import { conectarEntrada } from '@/juego-luna/entrada'
@@ -8,6 +9,7 @@ import { construirNivel } from '@/juego-luna/mundos'
 import { conNombre } from '@/juego-luna/nombrar'
 import { leerProgreso } from '@/juego-luna/progreso'
 import { loPuesto } from '@/juego-luna/ropero'
+import { sonar } from '@/juego-luna/sonidos'
 import type { EventoLuna } from '@/types'
 
 /**
@@ -119,6 +121,13 @@ export function EscuelitaDeLaLuna({
     }
 
     const alEvento = (evento: EventoLuna) => {
+      // Igual que en el juego: para todos los eventos de una vez, y
+      // callado mientras el interruptor esté apagado. Acá importa más
+      // que en ningún lado, porque las clases son el primer sitio donde
+      // va a oír el pop y el toc, y así llega a los capítulos sabiendo
+      // qué significa cada uno.
+      sonar(evento)
+
       if (evento === 'salto') vibrar(12)
       else if (evento === 'caida') vibrar([0, 30])
       else if (evento === 'agotada') vibrar([0, 14, 60, 14, 60, 26])
@@ -223,6 +232,12 @@ export function EscuelitaDeLaLuna({
             >
               {ESCUELITA.saltar}
             </button>
+
+            {/* El sonido se ofrece acá, en la primera pantalla del
+                juego, y vuelve a ofrecerse en el cartel de cada
+                capítulo. Es el único sitio donde encenderlo no
+                interrumpe nada: todavía no empezó. */}
+            <InterruptorDeSonido className="mt-4" />
           </div>
         </div>
       )}
