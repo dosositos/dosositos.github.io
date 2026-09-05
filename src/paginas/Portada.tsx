@@ -57,8 +57,16 @@ export function Portada() {
           cielo. Con la separación entera de la portada quedaba un hueco
           vacío arriba y otro abajo, y eso no se lee como una luna que
           está ahí desde siempre, se lee como que le estamos señalando
-          que apareció algo. */}
-      <div className="-my-9 -mr-5 flex justify-end self-stretch">
+          que apareció algo.
+
+          **`overflow-x-clip` y no `overflow-hidden`.** Esta franja es
+          la que corta la luna, que se sale por la derecha, y tiene que
+          cortarla **solo a lo ancho**: `clip` deja que a lo alto siga
+          saliéndose, que es lo que necesitan el resplandor de la luna
+          y el papelito que le cuelga debajo. Con `hidden` los dos
+          quedaban cortados a filo y aparecía una raya recta en el
+          cielo. */}
+      <div className="-my-9 -mr-5 flex justify-end self-stretch overflow-x-clip">
         <LunaDePortada />
       </div>
 

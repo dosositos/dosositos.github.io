@@ -63,26 +63,6 @@ const MS_DEL_AVISO = 3600
  */
 const ASOMO = 0.3
 
-/**
- * El aire que se le deja arriba y abajo al recortarla.
- *
- * Tiene que caber el resplandor entero: el halo se sale un 30 % del
- * disco por cada lado y la sombra de la luna llena difumina 46 px. Sin
- * este aire, el recorte del costado le corta también el brillo de
- * arriba y de abajo y la luna sale dentro de un rectángulo.
- */
-const AIRE = 60
-
-/**
- * Cómo se apaga la luna hacia el borde: entera hasta la mitad de lo
- * que se ve, y de ahí se va disolviendo en la noche.
- *
- * Es lo que hace que se lea asomada en vez de recortada. Un corte a
- * filo deja una raya recta, y una raya recta en el cielo se ve desde
- * lejos.
- */
-const DESVANECIDO = 'linear-gradient(to right, #000 52%, rgba(0,0,0,0.55) 82%, transparent 100%)'
-
 export function LunaDePortada() {
   const navigate = useNavigate()
   const sinMovimiento = useReducedMotion()
@@ -156,109 +136,88 @@ export function LunaDePortada() {
        ve es una luna asomada por el borde de la pantalla. Eso es lo
        que la vuelve un hallazgo en vez de un botón.
 
-       El recorte se hace con una caja más angosta que el disco y no
-       sacándola de la página con un margen negativo. Sacándola,
-       cualquier teléfono terminaba con barra de desplazamiento de
-       lado, y una web que se mueve de costado al tocarla se siente
-       rota. Así el hueco no existe: la caja mide lo que se ve.
+       **Acá no se recorta nada.** El disco se sale por la derecha con
+       un margen negativo, y quien lo corta es la franja de la portada,
+       que lleva `overflow-x-clip` y termina justo en el filo de la
+       pantalla. Ese `clip` muerde solo a lo ancho: el resplandor sigue
+       saliéndose por arriba y por abajo, que es lo que tiene que hacer.
 
-       Y la caja es **más alta que el disco**, con el disco centrado
-       dentro. El recorte tiene que morder por el costado y por ningún
-       lado más: a la medida justa le cortaba también el resplandor de
-       arriba y de abajo, y en vez de una luna asomada se veía una luna
-       metida en un rectángulo, con las esquinas y todo. El aire de
-       sobra no ocupa nada, es transparente.
+       Antes se recortaba aquí, con una caja más angosta que el disco, y
+       eso dejaba **una raya vertical en el cielo**: el halo de la luna
+       es un cuadrado con un degradado redondo dentro, más ancho que el
+       disco, y la caja se lo cortaba a filo por la izquierda. Se veía
+       una línea recta de arriba abajo, a un dedo de la luna, y una
+       línea recta en el cielo no la puso nadie.
 
-       Y el costado no se corta, **se desvanece**. Cortado a filo se
-       veía la raya: el borde de la página no cae exactamente donde
-       termina esta caja —depende del respiro lateral de la portada y
-       del ancho del teléfono— así que el tajo quedaba a diez píxeles
-       del filo, a la vista, y lo que se leía era un rectángulo y no una
-       luna asomada. Desvaneciéndola no hay raya que cuadrar en ningún
-       teléfono: la luna se mete en lo oscuro y ya. */
-    <div className="relative z-20 flex flex-col items-end">
-      <div
-        className="grid place-items-center overflow-hidden"
-        style={{
-          width: lado * (1 - ASOMO),
-          height: lado + AIRE * 2,
-          // El aire de arriba y de abajo no ocupa sitio en la página.
-          // Es transparente y está solo para que el recorte no le corte
-          // el resplandor, así que dejándolo contar sumaba ciento veinte
-          // píxeles de nada alrededor de la luna: se veía un hueco en la
-          // portada con una luna en el medio, como si le estuviéramos
-          // señalando que ahí apareció algo.
-          marginTop: -AIRE,
-          marginBottom: -AIRE,
-          maskImage: DESVANECIDO,
-          WebkitMaskImage: DESVANECIDO,
-        }}
+       Esta caja mide lo que se ve —el disco menos lo que se asoma— y no
+       corta: está para que el papelito de abajo cuelgue del borde
+       derecho de la pantalla y no del borde del disco, que se fue
+       afuera. */
+    <div className="relative z-20" style={{ width: lado * (1 - ASOMO), height: lado }}>
+      <button
+        ref={botonRef}
+        type="button"
+        onClick={tocar}
+        aria-label={abierta ? ENTRADA_POR_LA_LUNA.etiquetaAbierta : ENTRADA_POR_LA_LUNA.etiqueta}
+        className="absolute top-0 left-0 grid cursor-pointer place-items-center"
+        style={{ width: lado, height: lado }}
       >
-        <button
-          ref={botonRef}
-          type="button"
-          onClick={tocar}
-          aria-label={abierta ? ENTRADA_POR_LA_LUNA.etiquetaAbierta : ENTRADA_POR_LA_LUNA.etiqueta}
-          className="relative grid cursor-pointer place-items-center"
-          style={{ width: lado, height: lado }}
-        >
-          {/* El halo, que es lo único que se enciende cada tanto. */}
-          <span
-            aria-hidden
-            className="anima-brillo-luna absolute inset-[-30%] rounded-full"
-            style={{
-              background: abierta
-                ? 'radial-gradient(circle, rgb(245 244 232 / 0.42), rgb(245 244 232 / 0) 66%)'
-                : // Cerrada, el halo va a la mitad. Es lo que más la
-                  // delataba: un resplandor pasando cada dieciocho
-                  // segundos en una esquina se ve desde el otro lado de
-                  // la pantalla, y lo que se busca ahora es que se la
-                  // encuentre, no que se la anuncie.
-                  'radial-gradient(circle, rgb(245 244 232 / 0.2), rgb(245 244 232 / 0) 66%)',
-            }}
-          />
+        {/* El halo, que es lo único que se enciende cada tanto. */}
+        <span
+          aria-hidden
+          className="anima-brillo-luna absolute inset-[-30%] rounded-full"
+          style={{
+            background: abierta
+              ? 'radial-gradient(circle, rgb(245 244 232 / 0.42), rgb(245 244 232 / 0) 66%)'
+              : // Cerrada, el halo va a la mitad. Es lo que más la
+                // delataba: un resplandor pasando cada dieciocho
+                // segundos en una esquina se ve desde el otro lado de
+                // la pantalla, y lo que se busca ahora es que se la
+                // encuentre, no que se la anuncie.
+                'radial-gradient(circle, rgb(245 244 232 / 0.2), rgb(245 244 232 / 0) 66%)',
+          }}
+        />
 
-          {/* El disco. Cerrada está más apagada, pero se ve: si no se
+        {/* El disco. Cerrada está más apagada, pero se ve: si no se
             viera no habría nada que tocar y el aviso no llegaría nunca. */}
-          <motion.span
-            aria-hidden
-            className="anima-flotar relative block overflow-hidden rounded-full"
-            style={{
-              width: lado,
-              height: lado,
-              background: 'radial-gradient(circle at 34% 30%, #fdfbf0, #f0ead2 52%, #cfc6a8 100%)',
-              boxShadow: llena
-                ? '0 0 46px rgb(245 196 81 / 0.4), inset -8px -8px 20px rgb(120 108 78 / 0.28)'
-                : '0 0 26px rgb(248 244 232 / 0.22), inset -8px -8px 20px rgb(120 108 78 / 0.3)',
-            }}
-            // Cerrada baja hasta donde sigue leyéndose como luna y no
-            // como piedra. Más apagada de esto se vuelve una mancha gris
-            // en el cielo y deja de dar ganas de tocarla, que es de lo
-            // único que depende que el aviso le llegue alguna vez. Bajó
-            // de 0,72 a 0,55 al meterla en la esquina: ahí el cielo es
-            // más oscuro y el disco resalta más que en medio de su
-            // franja. Es de lo primero que hay que volver a mirar en el
-            // Android de ella, que es la pantalla que manda.
-            animate={{ opacity: abierta ? 1 : 0.55 }}
-            transition={{ duration: 1.6, ease: 'easeOut' }}
-            whileTap={{ scale: 0.93 }}
-          >
-            {CRATERES.map((c, i) => (
-              <span
-                key={i}
-                className="absolute rounded-full bg-[#8a7f5e]"
-                style={{
-                  left: `${c.x}%`,
-                  top: `${c.y}%`,
-                  width: `${c.lado}%`,
-                  height: `${c.lado}%`,
-                  opacity: c.opacidad,
-                }}
-              />
-            ))}
-          </motion.span>
-        </button>
-      </div>
+        <motion.span
+          aria-hidden
+          className="anima-flotar relative block overflow-hidden rounded-full"
+          style={{
+            width: lado,
+            height: lado,
+            background: 'radial-gradient(circle at 34% 30%, #fdfbf0, #f0ead2 52%, #cfc6a8 100%)',
+            boxShadow: llena
+              ? '0 0 46px rgb(245 196 81 / 0.4), inset -8px -8px 20px rgb(120 108 78 / 0.28)'
+              : '0 0 26px rgb(248 244 232 / 0.22), inset -8px -8px 20px rgb(120 108 78 / 0.3)',
+          }}
+          // Cerrada baja hasta donde sigue leyéndose como luna y no
+          // como piedra. Más apagada de esto se vuelve una mancha gris
+          // en el cielo y deja de dar ganas de tocarla, que es de lo
+          // único que depende que el aviso le llegue alguna vez. Bajó
+          // de 0,72 a 0,55 al meterla en la esquina: ahí el cielo es
+          // más oscuro y el disco resalta más que en medio de su
+          // franja. Es de lo primero que hay que volver a mirar en el
+          // Android de ella, que es la pantalla que manda.
+          animate={{ opacity: abierta ? 1 : 0.55 }}
+          transition={{ duration: 1.6, ease: 'easeOut' }}
+          whileTap={{ scale: 0.93 }}
+        >
+          {CRATERES.map((c, i) => (
+            <span
+              key={i}
+              className="absolute rounded-full bg-[#8a7f5e]"
+              style={{
+                left: `${c.x}%`,
+                top: `${c.y}%`,
+                width: `${c.lado}%`,
+                height: `${c.lado}%`,
+                opacity: c.opacidad,
+              }}
+            />
+          ))}
+        </motion.span>
+      </button>
 
       {/* Aquí vivía «la carta sigue allá arriba», debajo de la luna
           llena. Se fue: si ya subió, ya sabe qué hay arriba, y un
@@ -281,7 +240,12 @@ export function LunaDePortada() {
             transition={{ duration: 0.45, ease: [0.34, 1.56, 0.64, 1] }}
             role="status"
             onClick={() => setAvisando(false)}
-            className="papel absolute top-full right-0 mt-3 cursor-pointer rounded-xl px-4 py-2 text-center whitespace-nowrap"
+            className="papel absolute top-full mt-2 cursor-pointer rounded-xl px-4 py-2 text-center whitespace-nowrap"
+            // Un dedo de aire contra el filo. Pegado al borde con
+            // `right-0` quedaba tocando el canto de la pantalla, y la
+            // franja de la portada corta ahí: un papelito que llega
+            // justo al corte parece que se sigue por fuera.
+            style={{ right: 14 }}
           >
             <p className="fuente-mano text-base leading-snug text-texto-suave">
               {ENTRADA_POR_LA_LUNA.cerrada}

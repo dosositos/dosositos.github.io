@@ -1134,9 +1134,18 @@ export const TEXTOS = {
   /** Y el remate, según cómo le fue. Solo uno de los tres. */
   leGanaste: 'le ganaste',
   loEmpataste: 'lo empataste',
-  /** `{cuantos}` viene con su palabra: «un pasito» o «4 pasitos». */
-  teFalta: 'te faltaron {cuantos}',
-  teFaltaUno: 'te faltó un pasito',
+  /**
+   * Y cuando le costó más que a él.
+   *
+   * **Sobraron y no faltaron.** El récord es el mínimo, así que subir
+   * en más pasitos que él no es quedarse corta: es haber dado unos de
+   * más. «Te faltaron 4 pasitos» decía justo lo contrario de lo que
+   * pasó, y encima sonaba a que no llegó, cuando llegó igual.
+   *
+   * `{cuantos}` viene con su palabra: «4 pasitos».
+   */
+  teSobraron: 'te sobraron {cuantos}',
+  teSobroUno: 'te sobró un pasito',
   /** Su mejor de antes, cuando esta subida no fue la mejor. */
   tuMejor: 'tu mejor acá: {pasitos} pasitos',
   /* Acá vivía «el capítulo que falta todavía lo estoy haciendo».

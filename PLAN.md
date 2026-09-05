@@ -485,6 +485,31 @@ Si querés que caiga en una fecha, decímelo y esperamos.
 - **Y probate el ropero.** Once cosas, y de salida solo hay tres: el gorrito de
   fiesta, los lentes redondos y el corbatín. Lo demás se gana subiendo.
 
+### Y lo que se arregló el 5 de septiembre, segunda vuelta
+
+**La raya en el cielo.** Al lado de la luna de la portada se veía una línea
+recta vertical, de arriba abajo. Era real y era del código: el halo de la luna
+es un cuadrado con un degradado redondo dentro, más ancho que el disco, y la
+caja que recortaba la luna se lo cortaba a filo por la izquierda. Ahora acá no
+se recorta nada — la luna se sale por la derecha y quien la corta es la franja
+de la portada, con `overflow-x-clip`, que muerde solo a lo ancho y deja que el
+resplandor siga saliéndose por arriba y por abajo.
+
+**«Te faltaron 4 pasitos» decía lo contrario de lo que pasó.** El récord es el
+mínimo, así que subir en más pasitos que él es haber dado unos **de más**, no
+haberse quedado corta. Y encima sonaba a que no llegó, cuando llegó igual. Ahora
+dice «te sobraron».
+
+**La tortuga del cuento iba muy rápido.** El ciclo de la caminata va por
+distancia y no por tiempo —así los pies no patinan—, o sea que el número que
+dice cuánto avanza dice también qué tan rápido pedalea. Bajó de 26 a 15.
+
+**Y los tres se veían pegoteados a su espalda.** Estaban dibujados después que
+ella, así que salían enteros y por delante de todo, como tres calcomanías. Ahora
+se pintan **antes**: el caparazón les tapa las patitas y lo que se ve es a tres
+asomándose por encima de él, que es como se viaja en una tortuga. Van más atrás,
+además, porque el tercero le quedaba detrás de la cabeza.
+
 ### Lo que se arregló el 5 de septiembre, probándolo en el teléfono
 
 Cinco cosas que solo salieron jugándolo en un iPhone 14 Pro Max, y una de

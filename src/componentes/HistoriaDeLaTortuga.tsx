@@ -50,11 +50,17 @@ const SUELO = ALTO - 16
 /**
  * Lo que camina por segundo, en unidades.
  *
- * Menos que en el juego, donde va a 55. Allá la pantalla la sigue y el
- * mundo mide 360 de ancho; acá cruza un cuadro quieto, y a la
- * velocidad del juego parecía que iba corriendo. Es una tortuga.
+ * Bastante menos que en el juego, donde va a 55. Allá la pantalla la
+ * sigue y el mundo mide 360 de ancho; acá cruza un cuadro quieto y se
+ * la ve entera todo el rato.
+ *
+ * Y es el mismo número el que mueve las paticas, porque el ciclo de la
+ * caminata va por distancia y no por tiempo: así los pies no patinan.
+ * O sea que esto no es solo cuánto avanza, es también qué tan rápido
+ * pedalea. A 26 se veía como si fuera corriendo, que en una tortuga es
+ * justo lo que no puede pasar.
  */
-const VELOCIDAD = 26
+const VELOCIDAD = 15
 
 /** Cuánto dura el pasito suelto, el del cuadro en que dice que sí. */
 const MS_DEL_PASITO = 1100
@@ -368,40 +374,47 @@ function ElCamino({
       ctx.ellipse(escena.x, escena.y + 1.5, 16, 4, 0, 0, Math.PI * 2)
       ctx.fill()
 
-      dibujarTortuga(ctx, escena, undefined, puesto)
-
-      // Y los que van montados, apoyados en el caparazón.
+      // Los que van montados, **antes que ella**.
+      //
+      // Ese orden es lo único que los hace parecer montados. Pintados
+      // después salían enteros y por delante de todo, flotando pegados
+      // a su espalda como tres calcomanías; pintados antes, el
+      // caparazón les tapa las patitas y lo que se ve es a tres
+      // asomándose por encima de él, que es como se viaja en una
+      // tortuga.
       //
       // Los números salen de dónde le queda el caparazón, que no es
       // donde uno diría: ella va parada en dos patas y mirando a la
-      // derecha, así que el caparazón le queda **a la espalda y en
-      // alto**, unas 47 unidades por encima de las paticas y una
-      // docena hacia atrás. Puestos en el medio de ella se le sentaban
-      // en la barriga y le tapaban la cara.
-      //
-      // Se dibujan después que ella para que se les vea encima y no
-      // metidos debajo del caparazón.
+      // derecha, así que el caparazón le queda a la espalda y en alto,
+      // unas 47 unidades por encima de las paticas y una docena hacia
+      // atrás.
       for (let i = 0; i < c.encima; i += 1) {
         const img = retratos.get(LOS_TRES[i])
         if (!img?.complete || img.naturalWidth === 0) continue
 
-        // Chiquitos y amontonados: en el caparazón de una tortuga no
-        // caben tres peluches en fila, y verlos apretujados es
-        // justamente el chiste.
+        // Chiquitos y encaramados uno junto al otro: en el caparazón de
+        // una tortuga no caben tres peluches en fila, y verlos
+        // apretujados es justamente el chiste. El del medio va un
+        // pelín más alto, que es como se amontona cualquier cosa.
+        //
+        // Bien atrás, además: puestos más adelante, el tercero le
+        // quedaba detrás de la cabeza y no se le veía más que una oreja.
         const lado = 15
-        const suX = escena.x - 26 + i * 9
-        const suY = escena.y - 60
+        const suX = escena.x - 26 + i * 8
+        const suY = escena.y - 55 - (i === 1 ? 3 : 0)
 
-        // El último puede venir subiendo todavía: sale del suelo y se
+        // El último puede venir subiendo todavía: sale de abajo y se
         // acomoda arriba. Los que ya estaban ni se enteran.
         const suyo = i === c.encima - 1 ? trepando : 1
         const suave = 1 - (1 - suyo) * (1 - suyo)
-        const y = suY + (1 - suave) * 58
+        const y = suY + (1 - suave) * 52
 
         ctx.globalAlpha = suave
         ctx.drawImage(img, suX - lado / 2, y, lado, lado)
         ctx.globalAlpha = 1
       }
+
+      dibujarTortuga(ctx, escena, undefined, puesto)
 
       cuadroPedido = requestAnimationFrame(pintar)
     }

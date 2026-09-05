@@ -34,8 +34,8 @@ export function MarcadorDeLaLuna({
       : diferencia === 0
         ? TEXTOS.loEmpataste
         : diferencia === 1
-          ? TEXTOS.teFaltaUno
-          : TEXTOS.teFalta.replace('{cuantos}', `${diferencia} pasitos`)
+          ? TEXTOS.teSobroUno
+          : TEXTOS.teSobraron.replace('{cuantos}', `${diferencia} pasitos`)
 
   // Solo cuando viene de otra vez. Repetir el número que ya está
   // arriba no le dice nada a nadie.
