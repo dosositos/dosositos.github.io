@@ -441,30 +441,40 @@ y chats, y el sobre de apertura. Eso es el regalo.
 
 ---
 
-## La próxima sesión — el prólogo, que es lo que falta de verdad
+## La próxima sesión — la fase 8, que es lo último de verdad
 
 **Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
 arrancamos por donde diga, sin que tengás que acordarte de nada.
 
-**El juego se puede jugar de punta a punta**, y ahora también aprender a
-jugarlo: los tres capítulos, la escuelita, el cuento de antes, la llegada, la
-carta, los récords, la luna de la portada y el ropero. **De las dos fases que
-faltaban, la que importaba está hecha.**
+**El juego está entero**: la escuelita, el cuento de antes, los tres capítulos,
+la llegada, la carta, los récords, el volver a subir, la luna de la portada y el
+ropero. **Del plan queda una fase y media**, y ninguna de las dos es grande.
 
-### 1 · El colado (fase 9). Es adorno y se puede saltar
+**Nada de esto está subido.** El 5 de septiembre quedó todo commiteado en
+`nico-cobijas` y sin empujar, a propósito. Lo primero de mañana es decidir si se
+sube.
 
-El pato con peluca que se cuela en el juego y estorba. Va acá aposta: si el
-tiempo o los créditos aprietan, se salta entero sin tocar nada más.
-
-### 2 · Lo de la fase 8 que necesita su teléfono
+### 1 · La fase 8: los sonidos, y su teléfono
 
 `prefers-reduced-motion` ya está y la vibración también. **Faltan los sonidos
-cortos con su interruptor, apagados de fábrica**, y ajustar los números de
-`luna.ts` jugándolo en el Android de ella, que es el aparato que manda.
+cortos con su interruptor, apagados de fábrica.** Eso se puede hacer sin ella
+delante y es lo primero que toca.
 
-Y de paso, dos cosas de esta vuelta que solo se pueden juzgar en su pantalla: si
-la luna apagada de la portada al 55 % todavía se ve de día, y si las siete
-clases de la escuelita se le hacen largas.
+Lo que sí necesita su Android, que es el aparato que manda, y que se junta todo
+para una sola pasada:
+
+- Ajustar los números de `luna.ts` jugándolo de verdad.
+- **Si la luna apagada de la portada, al 55 %, todavía se ve de día.** Es el
+  número más delicado de esa esquina: más apagada deja de dar ganas de tocarla,
+  y sin tocarla no se entera nunca de que hay una puerta.
+- **Si las siete clases de la escuelita se le hacen largas.** Se pueden juntar
+  las tres de los tramos raros en una sola si aburren.
+- Si la tortuga del cuento, ya a 15, camina como tortuga o sigue apurada.
+
+### 2 · El colado (fase 9). Es adorno y se puede saltar
+
+El pato con peluca que se cuela en el juego y estorba. Va al final aposta: si el
+tiempo o los créditos aprietan, se salta entero sin tocar nada más.
 
 ### Y después, la decisión que no es de código
 
@@ -476,8 +486,9 @@ Si querés que caiga en una fecha, decímelo y esperamos.
 
 ### Antes de eso, si querés
 
-- **Jugá Ovi y Nico** para ver la llegada y la carta con la clave puesta y
-  después de haber subido, que es como las va a ver ella.
+- **Jugá los tres de punta a punta** para ver la llegada y la carta con la clave
+  puesta, que es como las va a ver ella. Y al llegar arriba fijate en el botón
+  nuevo de la carta: «subir otra vez».
 - **Leé la carta entera en el teléfono**, que son siete párrafos y ella la va a
   leer bajando con el pulgar.
 - **Mirá el cuarto de Nico jugando**, que las plumas y el temblor de las sábanas
