@@ -140,6 +140,27 @@ export function Luna() {
 
   const empezado = fase === 'jugando'
 
+  /**
+   * Si el canvas del capítulo está puesto en la pantalla.
+   *
+   * La historia y la escuelita se van por su propio `return` más abajo,
+   * con su canvas y su bucle, y mientras están puestas el canvas de acá
+   * no existe. Al volver hay que montar el motor otra vez, y sin este
+   * aviso el efecto no se enteraba: sus dependencias eran el capítulo y
+   * el nivel, y ninguno de los dos cambia por salir de la escuelita.
+   *
+   * Eso dejaba la pantalla en negro desde el cartel de Boo en adelante:
+   * el canvas estaba ahí y no lo pintaba nadie. Se vio vistiendo a la
+   * tortuga antes de empezar, que es el camino más largo hasta el
+   * cartel y por eso el más fácil de notar.
+   *
+   * Va como un sí o un no y no como la fase entera a propósito: la fase
+   * también cambia de `cartel` a `jugando`, y metiéndola en las
+   * dependencias, darle a «empezar» tiraría el motor y montaría uno
+   * nuevo. Esto se enciende una vez y se queda encendido.
+   */
+  const conCanvas = fase !== 'historia' && fase !== 'escuelita'
+
   useEffect(() => {
     const canvas = canvasRef.current
     const caja = cajaRef.current
@@ -331,7 +352,7 @@ export function Luna() {
       window.visualViewport?.removeEventListener('scroll', medir)
       window.removeEventListener('orientationchange', medir)
     }
-  }, [capitulo, menosMovimiento, nivel])
+  }, [capitulo, conCanvas, menosMovimiento, nivel])
 
   /**
    * Empezar de verdad: la luna se presenta y el dedo pasa a mandar.

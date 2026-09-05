@@ -659,6 +659,15 @@ export interface ClaseDelPrologo extends MundoEscrito {
   pista: string
 }
 
+/** Qué hace la tortuga mientras se lee un cuadro de la historia. */
+export type QueHaceLaTortuga =
+  /** Parada, mirando para arriba. */
+  | 'mirando'
+  /** Da un pasito y se para. Es el cuadro en que dice que sí. */
+  | 'pasito'
+  /** Andando de verdad, cruzando el cuadro y volviendo a entrar. */
+  | 'caminando'
+
 /**
  * Un cuadro de la historia que se cuenta antes de jugar: qué se lee y
  * qué se ve mientras se lee.
@@ -672,10 +681,21 @@ export interface CuadroDeLaHistoria {
    * porque de eso se trata.
    */
   luna: number
-  /** Si la tortuga está caminando o parada mirando para arriba. */
-  camina: boolean
-  /** Cuántos peluches lleva ya trepados al caparazón, de 0 a 3. */
-  peluches: number
+  tortuga: QueHaceLaTortuga
+  /**
+   * Cuántos de los tres se ven esperando allá arriba, cada uno en su
+   * mundo. De 0 a 3.
+   */
+  esperan: number
+  /**
+   * Y cuántos se le treparon ya al caparazón. De 0 a 3.
+   *
+   * Van aparte de los que esperan porque son dos momentos distintos y
+   * el juego los separa: en el juego cada peluche se gana subiendo su
+   * capítulo, así que empezar la historia con los tres encima estaría
+   * contando un final que ella todavía no jugó.
+   */
+  encima: number
 }
 
 /**

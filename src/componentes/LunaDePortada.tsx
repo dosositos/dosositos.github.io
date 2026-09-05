@@ -182,6 +182,14 @@ export function LunaDePortada() {
         style={{
           width: lado * (1 - ASOMO),
           height: lado + AIRE * 2,
+          // El aire de arriba y de abajo no ocupa sitio en la página.
+          // Es transparente y está solo para que el recorte no le corte
+          // el resplandor, así que dejándolo contar sumaba ciento veinte
+          // píxeles de nada alrededor de la luna: se veía un hueco en la
+          // portada con una luna en el medio, como si le estuviéramos
+          // señalando que ahí apareció algo.
+          marginTop: -AIRE,
+          marginBottom: -AIRE,
           maskImage: DESVANECIDO,
           WebkitMaskImage: DESVANECIDO,
         }}
@@ -273,11 +281,7 @@ export function LunaDePortada() {
             transition={{ duration: 0.45, ease: [0.34, 1.56, 0.64, 1] }}
             role="status"
             onClick={() => setAvisando(false)}
-            className="papel absolute top-full right-0 cursor-pointer rounded-xl px-4 py-2 text-center whitespace-nowrap"
-            // La caja del recorte lleva aire de sobra abajo, así que
-            // el papelito colgaría a un dedo de la luna. Se le sube ese
-            // aire y queda pegado a ella, que es lo que lo hace señalarla.
-            style={{ marginTop: 12 - AIRE }}
+            className="papel absolute top-full right-0 mt-3 cursor-pointer rounded-xl px-4 py-2 text-center whitespace-nowrap"
           >
             <p className="fuente-mano text-base leading-snug text-texto-suave">
               {ENTRADA_POR_LA_LUNA.cerrada}

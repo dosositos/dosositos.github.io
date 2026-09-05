@@ -39,21 +39,26 @@ export function Portada() {
       <Regalo />
 
       {/* ── La luna ──────────────────────────────────────────────
-          Su franja de cielo sobre el título, pegada a la esquina
+          Un pedazo de cielo sobre el título, pegada a la esquina
           derecha y asomada por el borde. Es la única puerta al juego de
           la tortuga, y no se abre hasta que encuentre a los tres
           peluches escondidos.
 
-          El `-mr-5` se come el respiro lateral de la portada, que es lo
-          que la deja de verdad contra el filo de la pantalla; sin él se
-          quedaba a veinte píxeles del borde y eso ya no se lee como
-          asomada, se lee como mal puesta.
+          **`self-stretch` y no `w-full`.** Son dos maneras de ocupar el
+          ancho y solo una sirve acá: la portada centra a sus hijos, y a
+          un hijo con ancho propio lo centra dentro del hueco que deja
+          el margen negativo, así que el `-mr-5` la corría diez píxeles
+          en vez de veinte y la luna se quedaba a un dedo del filo.
+          Estirada no hay nada que centrar y el margen se come entero el
+          respiro lateral de la portada, que es lo que la pone contra el
+          borde de la pantalla en cualquier teléfono.
 
-          El margen de abajo la acerca al encabezado, pero menos que
-          antes: debajo de la luna cuelga el papelito de «aún te falta
-          algo», y acercándola más se le montaba encima a la línea de
-          «osito · osita». */}
-      <div className="-mr-5 -mb-4 flex w-full justify-end sm:-mr-5 sm:-mb-2">
+          Y `-my-9` porque esto no es una sección: es una luna en el
+          cielo. Con la separación entera de la portada quedaba un hueco
+          vacío arriba y otro abajo, y eso no se lee como una luna que
+          está ahí desde siempre, se lee como que le estamos señalando
+          que apareció algo. */}
+      <div className="-my-9 -mr-5 flex justify-end self-stretch">
         <LunaDePortada />
       </div>
 

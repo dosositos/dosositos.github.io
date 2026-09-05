@@ -87,12 +87,15 @@ if (!(await texto(pag)).includes('por qué una tortuga')) {
   mal('la primera pantalla no es la historia')
 }
 
-// Nueve cuadros. Se toca en el medio de la pantalla para pasar de uno
-// al otro, que es lo que va a hacer ella con el pulgar.
-for (let i = 1; i <= 9; i += 1) {
-  await pag.waitForTimeout(2300)
+// Los cuadros del cuento. Se toca en el medio de la pantalla para
+// pasar de uno al otro, que es lo que va a hacer ella con el pulgar.
+// Se esperan tres segundos en cada uno para que a los que se trepan al
+// caparazón les dé tiempo de subirse antes de la foto.
+const CUADROS = 11
+for (let i = 1; i <= CUADROS; i += 1) {
+  await pag.waitForTimeout(3000)
   await pag.screenshot({ path: `private/notas/historia-${String(i).padStart(2, '0')}.png` })
-  if (i < 9) await pag.mouse.click(206, 500)
+  if (i < CUADROS) await pag.mouse.click(206, 500)
 }
 
 // Y el último cuadro tiene que dejarla en el bautizo, que es el remate:
@@ -179,7 +182,7 @@ if (!segunda.includes('por qué una tortuga')) fallos.push('sin historia al volv
 await pag.screenshot({ path: 'private/notas/historia-11-segunda-vez.png' })
 
 // El último cuadro, que con nombre puesto tiene que nombrarla.
-for (let i = 0; i < 8; i += 1) {
+for (let i = 0; i < 10; i += 1) {
   await pag.mouse.click(206, 500)
   await pag.waitForTimeout(700)
 }
@@ -212,6 +215,61 @@ console.log(
 // Y el cartel de Boo, ya sin el manual encima: eso es lo que la
 // escuelita le vino a quitar.
 await pag.screenshot({ path: 'private/notas/escuelita-09-cartel-de-boo.png' })
+
+/* ── 5 · Y que detrás del cartel haya juego ──────────────────────
+   La comprobación que faltaba, y la que se pagó cara. La historia y la
+   escuelita se van con su propio `return`, así que mientras están
+   puestas el canvas del capítulo no existe; al volver hay que montar el
+   motor otra vez. Sin eso la pantalla queda en negro desde el cartel de
+   Boo en adelante, y no se nota mirando el cartel: el cartel se pinta
+   igual, con el negro detrás.
+
+   Se mira el canvas de verdad, contando cuántos píxeles distintos del
+   fondo tiene. Un canvas al que no pinta nadie sale de un solo color. */
+
+async function pintaAlgo() {
+  return pag.evaluate(() => {
+    const canvas = document.querySelector('canvas')
+    if (!canvas) return 'no hay canvas'
+    const ctx = canvas.getContext('2d')
+    const d = ctx.getImageData(0, 0, canvas.width, canvas.height).data
+    const colores = new Set()
+    for (let i = 0; i < d.length; i += 4 * 997) {
+      colores.add(`${d[i]},${d[i + 1]},${d[i + 2]},${d[i + 3]}`)
+    }
+    return colores.size
+  })
+}
+
+const antesDeEmpezar = await pintaAlgo()
+console.log(
+  typeof antesDeEmpezar === 'number' && antesDeEmpezar > 3
+    ? `✓ detrás del cartel de Boo hay cielo pintado (${antesDeEmpezar} colores)`
+    : `⚠ DETRÁS DEL CARTEL NO HAY NADA: ${antesDeEmpezar}`,
+)
+if (!(typeof antesDeEmpezar === 'number' && antesDeEmpezar > 3)) {
+  fallos.push('pantalla en negro detrás del cartel')
+}
+
+// Y lo mismo pasando por el ropero, que es el camino más largo hasta el
+// cartel y por donde se vio la primera vez.
+await pag.getByRole('button', { name: /ropero|vestir|ponerle/i }).first().click()
+await pag.waitForTimeout(1200)
+await pag.screenshot({ path: 'private/notas/escuelita-10-ropero.png' })
+await pag.getByRole('button', { name: /listo|cerrar|volver|así está/i }).first().click()
+await pag.waitForTimeout(900)
+
+await pag.getByRole('button', { name: 'subir con Boo' }).click()
+await pag.waitForTimeout(2600)
+await pag.screenshot({ path: 'private/notas/escuelita-11-jugando.png' })
+
+const jugando = await pintaAlgo()
+console.log(
+  typeof jugando === 'number' && jugando > 3
+    ? `✓ y el capítulo arranca pintando (${jugando} colores)`
+    : `⚠ EL CAPÍTULO ARRANCA EN NEGRO: ${jugando}`,
+)
+if (!(typeof jugando === 'number' && jugando > 3)) fallos.push('capítulo en negro')
 console.log(
   despues.includes('camina sola de un lado al otro')
     ? '⚠ el cartel de Boo sigue cargando el cómo se juega'

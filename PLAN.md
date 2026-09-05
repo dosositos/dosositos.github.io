@@ -485,6 +485,50 @@ Si querés que caiga en una fecha, decímelo y esperamos.
 - **Y probate el ropero.** Once cosas, y de salida solo hay tres: el gorrito de
   fiesta, los lentes redondos y el corbatín. Lo demás se gana subiendo.
 
+### Lo que se arregló el 5 de septiembre, probándolo en el teléfono
+
+Cinco cosas que solo salieron jugándolo en un iPhone 14 Pro Max, y una de
+ellas era grave.
+
+**La pantalla en negro.** Vestir a la tortuga antes de empezar dejaba el juego
+sin pintar y no se podía jugar. La historia y la escuelita se van con su propio
+`return`, así que mientras están puestas el canvas del capítulo no existe; al
+volver hay que montar el motor otra vez, y el efecto que lo monta no se
+enteraba porque sus dependencias eran el capítulo y el nivel, y ninguno de los
+dos cambia por salir de la escuelita. Ahora depende también de si el canvas está
+puesto. **No se notaba mirando el cartel**, que se pinta igual con el negro
+detrás, así que `npm run luna:antes` mira ahora el canvas de verdad: cuenta
+cuántos colores tiene, y uno que no pinta nadie sale de un solo color.
+
+**El cuento estaba congelado.** La tortuga movía las paticas sin avanzar —o sea,
+corría en el sitio— y los peluches flotaban en el cielo sin llegar a subírsele
+nunca. Estaban en dos sitios distintos: ella en un canvas chiquito y ellos en
+imágenes de HTML al lado. Ahora el camino entero es un solo canvas a lo ancho de
+la pantalla: ella **cruza el cuadro** y vuelve a entrar por la izquierda,
+levanta polvito con las paticas, hay una raya de suelo contra la que se mide que
+avanza, y las estrellas del cielo titilan. Y va más despacio que en el juego: a
+la velocidad de allá parecía que corría, y es una tortuga.
+
+**Los tres se le suben al caparazón de verdad**, dibujados en el mismo lienzo,
+apoyados en el caparazón —que le queda a la espalda y en alto, no en la barriga—
+y trepándose de a uno con su animación.
+
+**Y no arrancan montados.** En el juego cada peluche se gana subiendo su
+capítulo, así que empezar el cuento con los tres encima le contaba un final que
+todavía no jugó. Ahora se los ve **esperándola**, cada uno a su altura y
+bamboleándose, y recién después se suben. Ninguno queda encima de la luna:
+sentado ahí lo que se leía es que ese ya llegó.
+
+**Y la luna de la portada.** No llegaba al borde: la portada centra a sus hijos,
+así que a un hijo con ancho propio lo centraba dentro del hueco que dejaba el
+margen negativo y la corría diez píxeles en vez de veinte. Estirada no hay nada
+que centrar. Y el aire de arriba y de abajo —transparente, y puesto solo para
+que el recorte no le corte el resplandor— estaba contando en la página: sumaba
+ciento veinte píxeles de nada alrededor, y con la separación entera de la
+portada encima quedaba un hueco vacío con una luna en el medio. Eso no se lee
+como una luna que está ahí desde siempre, se lee como que le estamos señalando
+que apareció algo.
+
 ### Lo que se hizo el 4 de septiembre, cuarta vuelta: la escuelita y el cuento
 
 #### Por qué una tortuga
