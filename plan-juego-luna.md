@@ -395,7 +395,7 @@ empieza hasta que lo demás esté cerrado.
 | 4 | Ovi ✓ | Dos capítulos | Sí |
 | 5 | Nico ✓ | Los tres capítulos | Sí |
 | 6 | El último trecho y la carta ✓ | El juego completo | Sí |
-| 7 | El prólogo — **sin hacer** | El juego con su escuelita delante | Sí |
+| 7 | El prólogo ✓ | El juego con su escuelita delante | Sí |
 | 8 | Teléfono y números — **a medias**: falta el sonido y probarlo en su teléfono | El juego, pero que se sienta bien | Sí |
 | 9 | El colado — **sin hacer** | Igual, con chiste | Sí |
 | 10 | **La entrada por la luna** ✓ | El juego, para ella | Fin |
@@ -552,30 +552,54 @@ nada). Al llegar arriba, la carta descifrada.
 **Cerrando esta fase el juego está entero y sigue escondido.** Si los créditos
 se acaban justo aquí, se acaban en el mejor lugar posible.
 
-### 7 · El prólogo
+### 7 · El prólogo ✓ (4 de septiembre)
 
-Una escuelita antes del capítulo uno, donde se aprende a jugar y nada cuesta
-nada. Va **después de los tres mundos y del último trecho** a propósito: hasta
-entonces no se sabe del todo qué hay que enseñar, porque las clases de tramo se
-terminan de inventar haciendo los capítulos.
+**Hecho: siete clases y el cuento de antes.** Vive en
+`src/componentes/EscuelitaDeLaLuna.tsx`, con las clases escritas en `CLASES` de
+`content/luna.ts`. Se juegan con el mismo motor y el mismo pintor que los
+capítulos, sin cinemática de la luna y con `nadaCae` puesto: en una clase se
+enseña una cosa, y un rayo desbocándole la barra mientras aprende a soltarla
+enseña dos a la vez y ninguna bien.
 
-Qué enseña, en este orden y una cosa por pantalla:
+Las siete, en este orden:
 
-1. **Mantener y soltar**, en una plataforma ancha y con la de al lado tan cerca
-   que no se puede fallar.
-2. **El cansancio**, dejándola aguantar hasta que se desmaya. Aprenderlo aquí,
-   donde da risa, y no a mitad del capítulo dos.
-3. **La estrellita de papel**, para que el guardado se entienda antes de
-   necesitarlo. Se pisa una y se la deja caer a propósito.
-4. **Los tramos raros**, uno por pantalla: el que se borra, el de impulso, y los
-   que traigan Ovi y Nico.
-5. **Caerse**, para que la primera caída de verdad no sea la primera vez que
-   ve la pantalla volver a una estrella.
+1. **Mantener y soltar.** La de al lado tan cerca y tan baja que no se puede
+   fallar.
+2. **El cansancio.** Una plataforma de pared a pared: no hay a dónde ir, así que
+   lo único que se puede hacer es aguantar hasta marearse. Se aprende aquí, donde
+   da risa, y no a mitad del capítulo dos.
+3. **La estrellita, y caerse.** El plan las tenía separadas y son la misma: la
+   estrella no significa nada hasta que una se cae y la pantalla la devuelve ahí.
+   Se pisa y se tira al vacío a propósito.
+4. **La pista que se borra**, la traba de Boo.
+5. **El tramo de impulso.**
+6. **La caja que cede**, la traba de Ovi.
+7. **La almohada que se hunde**, la traba de Nico, y la última: es la que pide
+   prisa, y pedir prisa antes de que sepa medir la barra sería enseñarle a
+   apurarse en vez de a saltar.
 
-Y hace una cosa más, que es la que la pidió: **le saca el bulto al cartel de
-Boo**. Hoy el capítulo uno abre con la historia de Boo y encima con el cómo se
-juega, y son dos cosas distintas apiladas una sobre otra. Con el prólogo hecho,
-el cartel de Boo se queda solo con Boo.
+**Cómo se pasa una clase depende de la clase.** Cinco se pasan llegando arriba,
+la del cansancio mareándose y la de la estrellita cayéndose. Eso es lo que dice
+`objetivo`, y es lo que deja que la clase de aguantar la barra sea una
+plataforma sin salida en vez de un nivel.
+
+**Se ofrece una sola vez por teléfono**, y se puede saltar entera. Se guarda
+cuál de las dos fue (`escuelita: 'hecha' | 'saltada'`), porque no dejan a la
+misma persona del otro lado: **a quien la hizo se le quita el «cómo se juega»
+del cartel de Boo**, que era lo otro que esta fase venía a arreglar; a quien se
+la saltó se le deja, que es lo único que le queda explicándole el juego.
+
+Y delante de todo, **el cuento** (`HistoriaDeLaTortuga.tsx`): por qué una
+tortuga. Nueve cuadros que se pasan tocando, con la luna subiendo, ella
+caminando dibujada de verdad y los tres trepándosele al caparazón. Sale la
+primera vez y **cada vez que se vuelve a empezar**. El último cuadro es la
+bisagra: la primera vez termina en que todavía no tiene nombre y de ahí se pasa
+al bautizo; cuando ya lo tiene, la nombra y sale a jugar.
+
+Para mirarlo: **`npm run luna:escuelita`** juega las siete clases con un robot y
+avisa si alguna no se puede pasar; **`npm run luna:antes`** saca las fotos del
+cuento y de las clases en el teléfono, y comprueba que la escuelita no vuelva a
+salir la segunda vez.
 
 ### 8 · Teléfono y números
 
@@ -593,10 +617,19 @@ aprietan, se salta entero sin tocar nada más.
 Es la fase que hace visible todo lo anterior, y por eso es la última.
 
 **La puerta está hecha (4 de septiembre).** La luna vive en el cielo de la
-portada, arriba a la derecha del título, en `LunaDePortada.tsx`, y es lo único
-en toda la web que apunta a `/luna`. Brilla cada dieciocho segundos, y al
-tocarla se agranda hasta comerse la pantalla y aterriza en el azul noche del
-canvas, que es el mismo color, así que no hay corte.
+portada, en la esquina derecha y en `LunaDePortada.tsx`, y es lo único en toda
+la web que apunta a `/luna`. Brilla cada dieciocho segundos, y al tocarla se
+agranda hasta comerse la pantalla y aterriza en el azul noche del canvas, que es
+el mismo color, así que no hay corte.
+
+**Y se le bajó el tono (4 de septiembre, tercera vuelta).** Es más grande que
+antes, se mete en la esquina y **se desvanece hacia el borde**, así que lo que
+se ve es una luna asomada y no un botón. Cerrada va al 55 % y con el halo a la
+mitad. Al tocarla sin los tres ya no sale la pista entera: sale «aún te falta
+algo» y nada más, porque decirle dónde buscar le resolvía el acertijo de una y
+lo que le quedaba no era buscar, era ir a recoger. Y debajo de la luna llena ya
+no hay línea: si subió, sabe qué hay arriba, y el cartelito convertía lo único
+secreto de la web en un aviso más.
 
 **La condición, tal como se pidió:** no se abre hasta que encuentre a los tres
 peluches. El colado da lo mismo, ese no es hijo de nadie. Tocarla sin tenerlos

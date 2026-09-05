@@ -1,9 +1,19 @@
 import { useReducedMotion } from 'motion/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { CartaDeLaLuna } from '@/componentes/CartaDeLaLuna'
+import { EscuelitaDeLaLuna } from '@/componentes/EscuelitaDeLaLuna'
+import { HistoriaDeLaTortuga } from '@/componentes/HistoriaDeLaTortuga'
 import { MarcadorDeLaLuna } from '@/componentes/MarcadorDeLaLuna'
 import { RoperoDeLaTortuga } from '@/componentes/RoperoDeLaTortuga'
-import { AYUDA, BAUTIZO, CAPITULOS, CARTEL, TEXTOS, TEXTOS_DEL_ROPERO } from '@/content/luna'
+import {
+  AYUDA,
+  BAUTIZO,
+  CAPITULOS,
+  CARTEL,
+  ESCUELITA,
+  TEXTOS,
+  TEXTOS_DEL_ROPERO,
+} from '@/content/luna'
 import { crearPintor } from '@/juego-luna/dibujo'
 import { conectarEntrada } from '@/juego-luna/entrada'
 import { crearMotor, type Motor } from '@/juego-luna/motor'
@@ -11,6 +21,8 @@ import { capituloNumero, construirNivel, ULTIMO_CAPITULO } from '@/juego-luna/mu
 import { conNombre } from '@/juego-luna/nombrar'
 import {
   anotarCapitulo,
+  anotarEscuelita,
+  anotarLlegada,
   conCualEntra,
   LARGO_DEL_NOMBRE,
   leerProgreso,
@@ -39,8 +51,21 @@ import type { EventoLuna, ProgresoLuna, RanuraDeLaTortuga } from '@/types'
  * del capítulo, la ayuda de abajo, el aviso de la estrella y el cierre.
  */
 
-/** Las tres pantallas de antes de jugar, en orden. */
-type Fase = 'bautizo' | 'cartel' | 'jugando'
+/**
+ * Las pantallas de antes de jugar, en orden.
+ *
+ * `historia` es por qué una tortuga, y sale cada vez que se entra por
+ * el capítulo uno: la primera de todas y cada vez que se vuelve a
+ * empezar. `escuelita` son las siete clases, y esa sí es una sola vez
+ * por teléfono.
+ *
+ * El bautizo va **entre las dos**, y ese es el orden que importa: la
+ * historia termina en que todavía no tiene nombre, y de ahí se pasa a
+ * ponérselo. Preguntándolo antes, ese remate no existe; preguntándolo
+ * después de las siete clases, ella ya jugó media hora con una tortuga
+ * sin nombre y la pregunta llega tarde.
+ */
+type Fase = 'historia' | 'escuelita' | 'bautizo' | 'cartel' | 'jugando'
 
 export function Luna() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -66,11 +91,23 @@ export function Luna() {
   const nivel = useMemo(() => construirNivel(capitulo), [capitulo])
 
   /**
+   * Por dónde se entra.
+   *
+   * Entrando por el capítulo uno se entra por la historia, siempre:
+   * dura menos de un minuto, se salta con un botón y es lo que le da
+   * sentido a que la que sube sea una tortuga. Entrando por el dos o
+   * el tres —o sea, volviendo a media vuelta— no: eso es retomar, y a
+   * quien retoma no se le vuelve a contar el principio.
+   *
    * El nombre se pregunta una sola vez, la primera de todas. Si lo deja
    * para después queda vacío y se le vuelve a preguntar la próxima,
    * que es la única manera de cambiarlo: no hay pantalla de ajustes.
    */
-  const [fase, setFase] = useState<Fase>(() => (leerProgreso().nombre ? 'cartel' : 'bautizo'))
+  const [fase, setFase] = useState<Fase>(() => {
+    const guardado = leerProgreso()
+    if (conCualEntra(guardado, ULTIMO_CAPITULO) === 1) return 'historia'
+    return guardado.nombre ? 'cartel' : 'bautizo'
+  })
 
   /** Lo que va escribiendo en la casilla del nombre. */
   const [escribiendo, setEscribiendo] = useState('')
@@ -195,12 +232,28 @@ export function Luna() {
         // si cierra la página mientras la luna se va, el capítulo
         // igual quedó ganado.
         const ahora = anotarCapitulo(capitulo.numero, cuenta.pasitos, cuenta.caidas)
-        setTotales(ahora)
-        // Y esto es lo que abre el ropero: ganar el capítulo, o
-        // ganárselo sin caerse, o igualarle el récord, desbloquea cosas.
-        // Sin este aviso ella cerraría el capítulo, entraría al ropero y
-        // vería lo que acaba de ganarse todavía bajo llave.
-        setGuardado(ahora)
+
+        if (numero === ULTIMO_CAPITULO) {
+          // Llegó arriba: se anota la llegada y **empieza otra
+          // vuelta**. De aquí para adelante vuelve a entrar por el
+          // capítulo de Boo, porque un juego que se acaba y no se
+          // puede volver a empezar se juega una sola vez en la vida.
+          //
+          // Lo que la carta enseña son los números de **antes** de
+          // borrar: los pasitos de esta subida, que es de lo que
+          // habla. Lo ganado no se borra nunca, eso lo cuida
+          // `anotarLlegada`.
+          const { antes, ahora: deNuevo } = anotarLlegada()
+          setTotales(antes)
+          setGuardado(deNuevo)
+        } else {
+          setTotales(ahora)
+          // Y esto es lo que abre el ropero: ganar el capítulo, o
+          // ganárselo sin caerse, o igualarle el récord, desbloquea
+          // cosas. Sin este aviso ella cerraría el capítulo, entraría
+          // al ropero y vería lo que acaba de ganarse bajo llave.
+          setGuardado(ahora)
+        }
       } else if (evento === 'fin') {
         // El cartel espera a que la luna termine de irse. Taparla con
         // un cuadro de texto sería tirar la mejor parte.
@@ -322,10 +375,58 @@ export function Luna() {
     if (pintorRef.current) pintorRef.current.puesto = loPuesto(ahora)
   }
 
-  /** Guardar el nombre y pasar al cartel. Vacío es «mejor después». */
+  /**
+   * Lo que toca después de la historia y después del bautizo: la
+   * escuelita si nunca la vio, y si ya la vio, el cartel del capítulo.
+   *
+   * Vive en un sitio solo porque lo preguntan los dos. Escrito dos
+   * veces, el día que se cambie una de las dos ella entraría a la
+   * escuelita desde la historia y no desde el bautizo, o al revés.
+   */
+  const trasLaPresentacion = (progreso: ProgresoLuna): Fase =>
+    progreso.escuelita === 'pendiente' ? 'escuelita' : 'cartel'
+
+  /** Guardar el nombre y seguir. Vacío es «mejor después». */
   const bautizar = (puesto: string) => {
-    setGuardado(ponerleNombre(puesto))
+    const ahora = ponerleNombre(puesto)
+    setGuardado(ahora)
+    setFase(trasLaPresentacion(ahora))
+  }
+
+  /**
+   * Se acabó la historia. Si todavía no la bautizó, ahí va la
+   * pregunta, que es justo donde el último cuadro la deja.
+   */
+  const trasLaHistoria = () => {
+    const ahora = leerProgreso()
+    setFase(ahora.nombre ? trasLaPresentacion(ahora) : 'bautizo')
+  }
+
+  /**
+   * Se acabó la escuelita, o se la saltó. Las dos cosas se anotan para
+   * no volver a ofrecérsela, y se anota cuál de las dos fue: al cartel
+   * de Boo se le quita el «cómo se juega» solo a quien la hizo.
+   */
+  const trasLaEscuelita = (como: 'hecha' | 'saltada') => {
+    setGuardado(anotarEscuelita(como))
     setFase('cartel')
+  }
+
+  /**
+   * Volver a subir, desde la carta.
+   *
+   * El progreso ya se reinició al pisar la luna, así que acá no hay
+   * nada que borrar: solo hay que volver a poner la página en el
+   * capítulo uno y devolverla a la historia, que es por donde empieza
+   * una vuelta. La escuelita no vuelve a salir — esa fue una vez.
+   */
+  const volverASubir = () => {
+    setLlegada(null)
+    setTotales(null)
+    setAyudaVisible(true)
+    setJugando(false)
+    setNumero(1)
+    setFase('historia')
   }
 
   /** Del cierre de un capítulo al cartel del siguiente, sin salir. */
@@ -338,6 +439,15 @@ export function Luna() {
     setNumero(siguiente.numero)
     setFase('cartel')
   }
+
+  /* ── La historia y la escuelita, antes que nada ──────────────────
+     Salen con `return` propio y no montadas encima del juego: cada una
+     tiene su canvas y su bucle, y tener los dos corriendo a la vez
+     sería pintar dos juegos en la misma pantalla para que se vea uno.
+     Al terminar, la página vuelve por su camino de siempre y el motor
+     del capítulo nace ahí, limpio. */
+  if (fase === 'historia') return <HistoriaDeLaTortuga alTerminar={trasLaHistoria} />
+  if (fase === 'escuelita') return <EscuelitaDeLaLuna alSalir={trasLaEscuelita} />
 
   return (
     <div
@@ -430,8 +540,15 @@ export function Luna() {
               </p>
             ))}
 
-            {/* Cómo se juega va solo en el primero: después ya lo sabe. */}
-            {capitulo.numero === 1 ? (
+            {/* Cómo se juega, solo en el primero **y solo para quien no
+                pasó por la escuelita**. Con las siete clases hechas
+                esto sobra: ya lo probó con el dedo, que es la única
+                manera de aprender a medir una barra de fuerza. Y a
+                quien se las saltó se le deja, porque es lo único que
+                le queda explicándole el juego. Esto es lo que le
+                saca el bulto al cartel de Boo, que llevaba la historia
+                de Boo y el manual apilados uno sobre el otro. */}
+            {capitulo.numero === 1 && guardado.escuelita !== 'hecha' ? (
               <div className="mt-6 border-t border-margarita/15 pt-5">
                 {CARTEL.parrafos.map((parrafo, i) => (
                   <p key={i} className="mt-3 text-[0.9rem] leading-relaxed text-margarita/60">
@@ -504,6 +621,7 @@ export function Luna() {
           caidas={totales?.caidas ?? llegada.caidas}
           antesala={conElNombre(capitulo.cierre.texto)}
           marcador={marcador}
+          alVolverASubir={volverASubir}
         />
       ) : llegada ? (
         <div className="absolute inset-0 overflow-y-auto bg-[#0b1026]/88 px-6 py-10 backdrop-blur-[2px]">

@@ -122,6 +122,13 @@ export interface OpcionesMotor {
    * necesita saber es si detrás de este hay otro.
    */
   esElFinal?: boolean
+  /**
+   * Que no caiga nada del cielo. Lo piden las clases de la escuelita:
+   * ahí se enseña una cosa por pantalla, y un rayo que le desboca la
+   * barra mientras aprende a soltarla enseña dos a la vez y ninguna
+   * bien. Lo que cae tiene su propia clase el día que se escriba.
+   */
+  nadaCae?: boolean
   /** Se llama una vez por frame con la escena ya interpolada. */
   pintar: (escena: EscenaLuna) => void
   /** Vibración, sonido y demás cosas de afuera. */
@@ -161,6 +168,7 @@ export function crearMotor({
   nivel,
   conCinematica,
   esElFinal,
+  nadaCae,
   pintar,
   alEvento,
 }: OpcionesMotor): Motor {
@@ -483,7 +491,7 @@ export function crearMotor({
     const jugando = cine === 'jugando' && cayendo <= 0 && tirada <= 0
     const yaAprendio = !LO_QUE_CAE.desdeLaPrimeraEstrella || hitoAlcanzado >= primerLazo
 
-    if (jugando && yaAprendio) {
+    if (jugando && yaAprendio && !nadaCae) {
       paraElSiguiente -= PASO
       if (paraElSiguiente <= 0) {
         // Nunca dos a la vez: lo que se pide es verlo venir, y de una

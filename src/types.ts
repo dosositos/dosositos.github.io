@@ -512,11 +512,35 @@ export interface Accesorio {
 export type PuestoEnLaTortuga = Partial<Record<RanuraDeLaTortuga, string>>
 
 export interface ProgresoLuna {
-  /** El capítulo más alto que ganó. 0 es «todavía ninguno». */
+  /**
+   * Por dónde va **esta vuelta**: el capítulo más alto que ganó desde
+   * que empezó a subir. 0 es «todavía ninguno».
+   *
+   * Se borra al llegar a la luna, y por eso está separado de `cumbre`.
+   * Lo que decide con cuál capítulo se entra es esto; lo que decide qué
+   * tiene ganado en el ropero es lo otro. Con un solo número, volver a
+   * empezar le quitaría la corona que ya se había ganado.
+   */
   capitulo: number
-  /** Los pasitos que lleva dados en total. */
+  /**
+   * El capítulo más alto que ganó **alguna vez**. Esto no se borra
+   * nunca: lo ganado, ganado.
+   */
+  cumbre: number
+  /** Cuántas veces llegó hasta arriba. 0 es todavía ninguna. */
+  llegadas: number
+  /**
+   * Cómo le fue con la escuelita. Se ofrece una sola vez por teléfono.
+   *
+   * Son tres y no dos porque saltársela y haberla hecho no dejan a la
+   * misma persona del otro lado: a las dos hay que dejar de
+   * ofrecérsela, pero solo a la que la hizo se le puede quitar el
+   * «cómo se juega» del cartel de Boo.
+   */
+  escuelita: 'pendiente' | 'hecha' | 'saltada'
+  /** Los pasitos que lleva dados **esta vuelta**. */
   pasitos: number
-  /** Las veces que se cayó en total. */
+  /** Las veces que se cayó **esta vuelta**. */
   caidas: number
   /**
    * Lo mejor que ha hecho en cada capítulo, por número de capítulo.
@@ -584,20 +608,85 @@ export interface Nivel {
 }
 
 /**
- * Un capítulo tal como se escribe en `luna.ts`: el peluche, su
- * presentación, su cierre y las plataformas.
+ * Lo mínimo que hace falta para armar un nivel jugable: de qué está
+ * hecho el camino, qué traba tiene y por dónde va.
+ *
+ * Vive aparte de `CapituloEscrito` porque hay dos cosas que se juegan
+ * con el mismo motor y solo una es un capítulo: las clases de la
+ * escuelita no tienen peluche, ni presentación, ni cierre, ni récord.
+ * Pedirles todo eso obligaría a inventarles un retrato y un texto de
+ * despedida para que compilaran.
  */
-export interface CapituloEscrito {
-  /** El id del peluche, que es también el del archivo de su retrato. */
-  id: string
-  /** Su nombre, para los pies de foto y los carteles. */
-  nombre: string
-  /** Su sitio en el orden. 1 es Boo. */
+export interface MundoEscrito {
+  /**
+   * Su sitio en el orden. 1 es Boo, y de aquí sale de qué tamaño se ve
+   * la luna. Las clases de la escuelita ponen 1: allá la luna es
+   * decorado y todavía no significa nada.
+   */
   numero: number
   material: MaterialDelMundo
   seDesvanece: boolean
   cede: boolean
   seHunde: boolean
+  plataformas: PlataformaEscrita[]
+}
+
+/** Qué tiene que pasar para dar por aprendida una clase. */
+export type ObjetivoDeClase =
+  /** Llegar arriba. Es el de casi todas. */
+  | 'cima'
+  /** Que se maree de tanto aguantar. La clase del cansancio. */
+  | 'agotada'
+  /** Caerse y volver a la estrellita. La clase del guardado. */
+  | 'reaparicion'
+
+/**
+ * Una clase de la escuelita: un nivel chiquito con una sola cosa que
+ * aprender y nada que perder.
+ */
+export interface ClaseDelPrologo extends MundoEscrito {
+  id: string
+  /** El título de arriba, de dos o tres palabras. */
+  titulo: string
+  /** La línea que dice qué hacer. Se lee de reojo, sin parar el juego. */
+  texto: string
+  objetivo: ObjetivoDeClase
+  /**
+   * El empujoncito, para si se queda trabada un rato largo. En la
+   * escuelita nada cuesta nada, y una clase que no se puede pasar
+   * sería lo único de todo el juego que sí cuesta.
+   */
+  pista: string
+}
+
+/**
+ * Un cuadro de la historia que se cuenta antes de jugar: qué se lee y
+ * qué se ve mientras se lee.
+ */
+export interface CuadroDeLaHistoria {
+  texto: string
+  /**
+   * Qué tan lejos está la luna en este cuadro, de 0 (un puntito allá
+   * arriba) a 1 (llenando el cielo). No sube parejo: la historia
+   * empieza con la luna imposible y termina con ella igual de lejos,
+   * porque de eso se trata.
+   */
+  luna: number
+  /** Si la tortuga está caminando o parada mirando para arriba. */
+  camina: boolean
+  /** Cuántos peluches lleva ya trepados al caparazón, de 0 a 3. */
+  peluches: number
+}
+
+/**
+ * Un capítulo tal como se escribe en `luna.ts`: el peluche, su
+ * presentación, su cierre y las plataformas.
+ */
+export interface CapituloEscrito extends MundoEscrito {
+  /** El id del peluche, que es también el del archivo de su retrato. */
+  id: string
+  /** Su nombre, para los pies de foto y los carteles. */
+  nombre: string
   presentacion: {
     titulo: string
     texto: string[]

@@ -143,6 +143,11 @@ function Telefono({
             pasitos={214}
             caidas={caidas}
             antesala={ANTESALA}
+            // Sin hacer nada, pero puesto: es lo que hace que salgan
+            // los dos botones del final, y el maquetado de esos dos es
+            // justo lo que este banco viene a juzgar. En el teléfono se
+            // apilan y en la computadora van uno al lado del otro.
+            alVolverASubir={() => {}}
             marcador={
               <MarcadorDeLaLuna
                 record={CAPITULOS[CAPITULOS.length - 1].record}

@@ -446,32 +446,25 @@ y chats, y el sobre de apertura. Eso es el regalo.
 **Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
 arrancamos por donde diga, sin que tengás que acordarte de nada.
 
-**El juego se puede jugar de punta a punta**: los tres capítulos, la llegada, la
-carta, los récords, la luna de la portada y el ropero. Pero **quedan dos fases
-del plan sin hacer**, y una de las dos importa.
+**El juego se puede jugar de punta a punta**, y ahora también aprender a
+jugarlo: los tres capítulos, la escuelita, el cuento de antes, la llegada, la
+carta, los récords, la luna de la portada y el ropero. **De las dos fases que
+faltaban, la que importaba está hecha.**
 
-### 1 · El prólogo (fase 7). Es lo que falta
-
-La escuelita antes del capítulo uno, donde se aprende a jugar y nada cuesta
-nada. Hoy no existe: lo único que le explica el juego es el cartel de texto de
-Boo, y aprender a calcular una barra de fuerza leyendo un párrafo no es lo
-mismo que probándola en una plataforma donde no se puede fallar.
-
-Va después de los tres mundos a propósito, y ya estamos ahí. Qué enseña y en
-qué orden está escrito en la fase 7 de `plan-juego-luna.md`. Y hace una cosa
-más: **le saca el bulto al cartel de Boo**, que hoy carga la historia de Boo y
-el cómo se juega apiladas una sobre la otra.
-
-### 2 · El colado (fase 9). Es adorno y se puede saltar
+### 1 · El colado (fase 9). Es adorno y se puede saltar
 
 El pato con peluca que se cuela en el juego y estorba. Va acá aposta: si el
 tiempo o los créditos aprietan, se salta entero sin tocar nada más.
 
-### 3 · Lo de la fase 8 que necesita su teléfono
+### 2 · Lo de la fase 8 que necesita su teléfono
 
 `prefers-reduced-motion` ya está y la vibración también. **Faltan los sonidos
 cortos con su interruptor, apagados de fábrica**, y ajustar los números de
 `luna.ts` jugándolo en el Android de ella, que es el aparato que manda.
+
+Y de paso, dos cosas de esta vuelta que solo se pueden juzgar en su pantalla: si
+la luna apagada de la portada al 55 % todavía se ve de día, y si las siete
+clases de la escuelita se le hacen largas.
 
 ### Y después, la decisión que no es de código
 
@@ -491,6 +484,91 @@ Si querés que caiga en una fecha, decímelo y esperamos.
   no se pueden juzgar en una foto.
 - **Y probate el ropero.** Once cosas, y de salida solo hay tres: el gorrito de
   fiesta, los lentes redondos y el corbatín. Lo demás se gana subiendo.
+
+### Lo que se hizo el 4 de septiembre, cuarta vuelta: la escuelita y el cuento
+
+#### Por qué una tortuga
+
+Lo que el juego nunca explicó. Se abría con Boo contando de dónde venía, y nadie
+decía nunca por qué la que sube es el animal más lento que hay.
+
+Nueve cuadros, antes de todo lo demás. Alguien dijo «te quiero de aquí a la
+luna», el pájaro dijo que quedaba muy alto y el cohete pidió que le pagaran. La
+tortuga no dijo nada, dio un pasito, y cuando le dijeron que así iba a tardar
+toda la vida dijo que bueno. Después se le treparon los tres al caparazón.
+
+Lleva caminando **el tiempo que llevan ellos dos**, contado de verdad desde
+`content/config.ts`. Es la única cifra del cuento y es la que lo ancla: sin ella
+la tortuga lleva caminando un rato inventado.
+
+Se pasa tocando y no solo, porque cada quien lee a su velocidad. Se puede saltar.
+Y el último cuadro es la bisagra: la primera vez termina en que **todavía no
+tiene nombre** y de ahí se pasa a ponérselo, que es la pantalla que ya existía y
+que hasta ahora salía de la nada. Cuando ya lo tiene, la nombra y sale a jugar.
+
+Sale antes de la escuelita la primera vez y **antes del capítulo uno cada vez
+que se vuelve a empezar**. La tortuga es la de verdad, el mismo dibujo del juego
+y con la ropita que traiga puesta.
+
+#### La escuelita
+
+Siete pantallitas donde nada cuesta nada: no se cuentan pasitos, no se anotan
+caídas y no cae nada del cielo. Mantener y soltar, el cansancio, la estrellita,
+la pista que se borra, el tramo de impulso, la caja que cede y la almohada que
+se hunde.
+
+**La estrellita y caerse iban separadas en el plan y son la misma clase.** Una
+estrella no significa nada hasta que te caés y la pantalla te devuelve ahí. Se
+pisa, se tira al vacío a propósito, y ahí se entiende.
+
+**La del cansancio es una plataforma de pared a pared.** No hay a dónde ir, así
+que lo único que se puede hacer es aguantar hasta marearse. Fue la que obligó a
+que una clase se pase por lo que pasa y no por llegar arriba: cinco se pasan
+llegando, esa mareándose y la de la estrellita cayéndose.
+
+**Se ofrece una sola vez por teléfono**, y se puede saltar entera. Se guarda cuál
+de las dos fue, porque no dejan a la misma persona del otro lado: a quien la hizo
+se le quita el «cómo se juega» del cartel de Boo, que es lo otro que esta fase
+venía a arreglar, y a quien se la saltó se le deja, porque es lo único que le
+queda explicándole el juego.
+
+`npm run luna:escuelita` las juega con un robot y avisa si alguna no se puede
+pasar. `npm run luna:antes` saca las fotos en el teléfono y comprueba que la
+escuelita no vuelva a salir la segunda vez.
+
+#### Que el juego se pueda volver a jugar
+
+Al pisar la luna, el juego **empieza otra vuelta**: se vuelve a entrar por el
+capítulo de Boo. Y en la carta, al lado de «volver a la madriguera», hay ahora
+un «subir otra vez».
+
+Esto obligó a partir el guardado en dos, y era lo delicado de toda la sesión.
+`capitulo` es **por dónde va esta vuelta** y se borra al llegar; `cumbre` es el
+capítulo más alto de siempre y `llegadas` cuántas veces llegó, y esos dos no se
+borran nunca. Con un solo número, llegar a la luna le habría quitado la corona y
+el caparazón dorado en el mismo momento de ganárselos, y le habría cerrado la
+luna de la portada la misma tarde en que subió. El ropero pregunta por la cumbre
+y la portada por las llegadas.
+
+Los pasitos y las caídas sí se ponen a cero, y la carta recibe los de **antes**
+de borrar, que son de los que habla. `npm run luna:probar` comprueba las once
+cosas de esa cuenta, con un `localStorage` de mentira.
+
+#### Y la luna de la portada, más escondida
+
+Es más grande que antes, se metió en la esquina y **se desvanece hacia el
+borde**: lo que se ve es una luna asomada, no un botón. Cerrada va al 55 % y con
+el halo a la mitad.
+
+Se desvanece en vez de cortarse porque el borde de la página no cae exactamente
+donde termina su caja —depende del respiro lateral de la portada y del ancho del
+teléfono—, así que el tajo quedaba a diez píxeles del filo, a la vista, y lo que
+se leía era un rectángulo.
+
+**El aviso de tocarla cerrada son ahora cuatro palabras: «aún te falta algo».**
+Antes decía dónde estaban escondidos los peluches, y con eso le resolvía el
+acertijo de una: lo que le quedaba no era buscar, era ir a recoger. Y debajo de
+la luna llena ya no hay línea. Si subió, sabe qué hay arriba.
 
 ### Lo que se hizo el 4 de septiembre, tercera vuelta
 

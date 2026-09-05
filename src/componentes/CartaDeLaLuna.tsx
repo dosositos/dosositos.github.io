@@ -31,9 +31,18 @@ export function CartaDeLaLuna({
   caidas,
   antesala,
   marcador,
+  alVolverASubir,
 }: {
   pasitos: number
   caidas: number
+  /**
+   * Volver a empezar desde el capítulo uno, sin salir de la página.
+   *
+   * Hace falta porque al pisar la luna el juego se reinicia solo: sin
+   * este botón, la única manera de volver a subir sería salirse a la
+   * madriguera y volver a entrar por la luna de la portada.
+   */
+  alVolverASubir: () => void
   /**
    * El cierre del último capítulo, que en los otros dos sale como
    * cartel y acá no puede: taparía la llegada. Se queda arriba, sobre
@@ -93,6 +102,7 @@ export function CartaDeLaLuna({
       caidas={caidas}
       antesala={antesala}
       marcador={marcador}
+      alVolverASubir={alVolverASubir}
     />
   )
 }
@@ -113,12 +123,18 @@ export function HojaDeLaCarta({
   caidas,
   antesala,
   marcador,
+  alVolverASubir,
 }: {
   carta: SobreCartaDeLaLuna
   pasitos: number
   caidas: number
   antesala: string
   marcador?: ReactNode
+  /**
+   * Opcional porque el banco (`npm run luna:carta`) pinta la hoja sin
+   * juego detrás: allí no hay a dónde volver a subir.
+   */
+  alVolverASubir?: () => void
 }) {
   // `{lasCaidas}` viene con su palabra puesta y `{caidas}` es solo el
   // número. Hacen falta las dos: «te caíste 1 veces» arruina la única
@@ -205,13 +221,28 @@ export function HojaDeLaCarta({
 
         <p className="fuente-mano mt-2 text-center text-lg">{carta.firma}</p>
 
-        <div className="mt-10 text-center">
+        {/* Los dos finales posibles: irse, o volver a subir. Van del
+            mismo tamaño y uno al lado del otro porque son igual de
+            válidos — nada de esto se gana ni se pierde. En el teléfono
+            se apilan, con el de volver a la madriguera primero: es lo
+            que va a hacer casi siempre. */}
+        <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             to="/"
-            className="inline-block rounded-full border border-[#141a33]/20 px-5 py-2 text-sm text-[#141a33]/60 transition-colors hover:border-[#141a33]/50 hover:text-[#141a33]"
+            className="rounded-full border border-[#141a33]/20 px-5 py-2 text-sm text-[#141a33]/60 transition-colors hover:border-[#141a33]/50 hover:text-[#141a33]"
           >
             {TEXTOS.volver}
           </Link>
+
+          {alVolverASubir ? (
+            <button
+              type="button"
+              onClick={alVolverASubir}
+              className="rounded-full border border-[#141a33]/20 px-5 py-2 text-sm text-[#141a33]/60 transition-colors hover:border-[#141a33]/50 hover:text-[#141a33]"
+            >
+              {TEXTOS.volverAJugar}
+            </button>
+          ) : null}
         </div>
       </motion.article>
     </div>

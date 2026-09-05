@@ -39,11 +39,21 @@ export function Portada() {
       <Regalo />
 
       {/* ── La luna ──────────────────────────────────────────────
-          Su franja de cielo sobre el título, a la derecha. Es la única
-          puerta al juego de la tortuga, y no se abre hasta que
-          encuentre a los tres peluches escondidos. El margen negativo
-          la acerca al encabezado sin dejar que se le monte encima. */}
-      <div className="-mb-10 flex w-full justify-end pr-2 sm:-mb-6 sm:pr-6">
+          Su franja de cielo sobre el título, pegada a la esquina
+          derecha y asomada por el borde. Es la única puerta al juego de
+          la tortuga, y no se abre hasta que encuentre a los tres
+          peluches escondidos.
+
+          El `-mr-5` se come el respiro lateral de la portada, que es lo
+          que la deja de verdad contra el filo de la pantalla; sin él se
+          quedaba a veinte píxeles del borde y eso ya no se lee como
+          asomada, se lee como mal puesta.
+
+          El margen de abajo la acerca al encabezado, pero menos que
+          antes: debajo de la luna cuelga el papelito de «aún te falta
+          algo», y acercándola más se le montaba encima a la línea de
+          «osito · osita». */}
+      <div className="-mr-5 -mb-4 flex w-full justify-end sm:-mr-5 sm:-mb-2">
         <LunaDePortada />
       </div>
 

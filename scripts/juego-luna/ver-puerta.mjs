@@ -7,19 +7,24 @@
  *
  * Lo que fotografía, en orden:
  *
- *  1. **Cerrada.** Sin haber encontrado a los peluches. Tiene que verse
- *     lo bastante como para dar ganas de tocarla, porque tocarla es lo
- *     que dispara el aviso.
- *  2. **El aviso**, que sale de tocarla cerrada. Que quepa en la
- *     pantalla y no se salga por el costado.
+ *  1. **Cerrada.** Sin haber encontrado a los peluches. Va metida en la
+ *     esquina y asomada por el borde, y ahí está el equilibrio de toda
+ *     esta parte: tiene que verse lo bastante como para dar ganas de
+ *     tocarla —tocarla es lo que dispara el aviso— y lo bastante poco
+ *     como para que encontrarla sea encontrarla.
+ *  2. **El aviso**, que sale de tocarla cerrada. Son cuatro palabras y
+ *     no dicen qué falta: eso lo descubre ella.
  *  3. **Abierta**, con los tres encontrados.
- *  4. **Llena**, que es como la va a ver después de subir.
+ *  4. **Llena**, que es como la va a ver después de subir. Sin línea
+ *     debajo: si ya subió, ya sabe qué hay arriba.
  *  5. **El viaje**, la luna comiéndose la pantalla al entrar.
  *  6. **Encendiéndose sola**, sin recargar, en el momento de dar con el
  *     tercero. Ese es el que hay que mirar con más cuidado.
  *
- * Lo que hay que juzgar en las fotos es si choca con algo: el botón del
- * tema va fijo arriba a la derecha y la luna anda por esa esquina.
+ * Dos cosas que juzgar en las fotos. Si choca con algo: el botón del
+ * tema va fijo arriba a la derecha y la luna anda por esa esquina. Y si
+ * al recortarse por el borde la página saca barra de desplazamiento de
+ * lado, que eso se comprueba solo aquí abajo.
  */
 import { readFileSync } from 'node:fs'
 import { chromium } from 'playwright-core'
@@ -75,10 +80,21 @@ await pag.getByRole('button', { name: 'la luna' }).click()
 await pag.waitForTimeout(700)
 await pag.screenshot({ path: 'private/notas/puerta-2-aviso.png' })
 
-const dijoQueNo = (await pag.evaluate(() => document.body.innerText)).includes('Todavía no')
+const dijoQueNo = (await pag.evaluate(() => document.body.innerText)).includes(
+  'aún te falta algo',
+)
 const seFue = pag.url().includes('/luna')
 console.log(dijoQueNo ? '✓ cerrada avisa en vez de abrir' : '⚠ cerrada no avisó nada')
 console.log(seFue ? '⚠ SE ABRIÓ SIN LOS PELUCHES' : '✓ cerrada no lleva a ningún lado')
+/* Y que meterla en la esquina no haya sacado barra de lado. Una web
+   que se mueve de costado al tocarla se siente rota, y es justo lo que
+   pasa si el disco se sale de la página en vez de recortarse. */
+const seMueveDeLado = await pag.evaluate(
+  () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+)
+console.log(
+  seMueveDeLado ? '⚠ LA PÁGINA SE MUEVE DE LADO' : '✓ no saca barra de desplazamiento de lado',
+)
 await pag.close()
 
 /* ── 3 · Abierta, con los tres encontrados ───────────────────────── */
@@ -120,9 +136,20 @@ await pag.close()
 
 pag = await abrirPortada(() => {
   localStorage.setItem('dosositos:peluches:los-tres', '250')
+  // Con `llegadas` y no con `capitulo`: al pisar la luna el juego se
+  // reinicia para poder volver a subir, así que lo que deja la luna
+  // llena es haber llegado, no por dónde va ahora.
   localStorage.setItem(
     'dosositos:luna',
-    JSON.stringify({ capitulo: 3, pasitos: 96, caidas: 11, nombre: 'Manchita' }),
+    JSON.stringify({
+      capitulo: 0,
+      cumbre: 3,
+      llegadas: 1,
+      escuelita: 'hecha',
+      pasitos: 0,
+      caidas: 0,
+      nombre: 'Manchita',
+    }),
   )
 })
 await pag.screenshot({ path: 'private/notas/puerta-4-llena.png' })

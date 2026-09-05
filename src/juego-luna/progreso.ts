@@ -27,6 +27,9 @@ export const LARGO_DEL_NOMBRE = 16
 
 const VACIO: ProgresoLuna = {
   capitulo: 0,
+  cumbre: 0,
+  llegadas: 0,
+  escuelita: 'pendiente',
   pasitos: 0,
   caidas: 0,
   mejorPorCapitulo: {},
@@ -39,8 +42,19 @@ export function leerProgreso(): ProgresoLuna {
     const crudo = localStorage.getItem(LLAVE)
     if (!crudo) return { ...VACIO }
     const guardado = JSON.parse(crudo) as Partial<ProgresoLuna>
+    const capitulo = Number(guardado.capitulo) || 0
     return {
-      capitulo: Number(guardado.capitulo) || 0,
+      capitulo,
+      // Los teléfonos que ya jugaron antes de que existiera la vuelta
+      // no traen `cumbre` guardada, y lo que tienen en `capitulo` es
+      // justamente su cumbre de siempre. Sin este piso perderían el
+      // ropero entero al abrir la web actualizada.
+      cumbre: Math.max(capitulo, Number(guardado.cumbre) || 0),
+      llegadas: Math.max(0, Number(guardado.llegadas) || 0),
+      escuelita:
+        guardado.escuelita === 'hecha' || guardado.escuelita === 'saltada'
+          ? guardado.escuelita
+          : 'pendiente',
       pasitos: Number(guardado.pasitos) || 0,
       caidas: Number(guardado.caidas) || 0,
       mejorPorCapitulo: limpiarMejores(guardado.mejorPorCapitulo),
@@ -77,6 +91,7 @@ export function anotarCapitulo(capitulo: number, pasitos: number, caidas: number
   const ahora: ProgresoLuna = {
     ...antes,
     capitulo: Math.max(antes.capitulo, capitulo),
+    cumbre: Math.max(antes.cumbre, capitulo),
     pasitos: antes.pasitos + pasitos,
     caidas: antes.caidas + caidas,
     mejorPorCapitulo: {
@@ -84,6 +99,63 @@ export function anotarCapitulo(capitulo: number, pasitos: number, caidas: number
       [capitulo]: ahoraEsMejor ? { pasitos, caidas } : mejorAntes,
     },
   }
+  guardarProgreso(ahora)
+  return ahora
+}
+
+/**
+ * Llegó a la luna: se anota la llegada y **empieza otra vuelta**.
+ *
+ * De aquí para adelante vuelve a entrar por el capítulo de Boo. No es
+ * un castigo ni un borrón: el juego es corto y se acaba, y sin esto la
+ * única manera de volver a subir sería no volver a subir nunca.
+ *
+ * Lo que se borra es por dónde iba —el capítulo de esta vuelta, los
+ * pasitos y las caídas de esta vuelta—, y solo eso. **Lo ganado no se
+ * toca:** la cumbre, los récords de cada capítulo, el nombre que le
+ * puso y la ropita se quedan donde están. Empezar de nuevo no puede
+ * quitarle la corona que ya se ganó, ni cerrarle la luna de la portada
+ * la misma tarde en que llegó.
+ *
+ * Devuelve **lo de antes de borrar**, que es lo que la carta necesita:
+ * los pasitos de esta subida, que es de lo que habla.
+ */
+export function anotarLlegada(): { antes: ProgresoLuna; ahora: ProgresoLuna } {
+  const antes = leerProgreso()
+  const ahora: ProgresoLuna = {
+    ...antes,
+    capitulo: 0,
+    cumbre: Math.max(antes.cumbre, antes.capitulo),
+    llegadas: antes.llegadas + 1,
+    pasitos: 0,
+    caidas: 0,
+  }
+  guardarProgreso(ahora)
+  return { antes, ahora }
+}
+
+/** ¿Llegó hasta arriba alguna vez? */
+export function yaLlego(progreso: ProgresoLuna): boolean {
+  return progreso.llegadas > 0
+}
+
+/**
+ * La escuelita ya está vista.
+ *
+ * Se anota al terminarla **y también al saltársela**: las dos son
+ * maneras de decir «esto ya no me hace falta». Repetirle la escuelita
+ * a quien ya sabe jugar es la forma más rápida de que deje de abrir el
+ * juego.
+ *
+ * Se guarda cuál de las dos fue porque el cartel de Boo lo pregunta:
+ * a quien la hizo se le quita el «cómo se juega» de encima, y a quien
+ * se la saltó se le deja, que es lo único que le queda explicándole el
+ * juego.
+ */
+export function anotarEscuelita(como: 'hecha' | 'saltada'): ProgresoLuna {
+  const antes = leerProgreso()
+  if (antes.escuelita === como) return antes
+  const ahora: ProgresoLuna = { ...antes, escuelita: como }
   guardarProgreso(ahora)
   return ahora
 }

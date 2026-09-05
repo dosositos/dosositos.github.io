@@ -32,12 +32,35 @@ globalThis.cancelAnimationFrame = () => {
   pendiente = null
 }
 
+/**
+ * Un `localStorage` de mentira, para poder probar el guardado.
+ *
+ * Sin esto, `progreso.ts` se cae en su `try` y devuelve siempre el
+ * progreso vacío, así que lo de la vuelta —que empieza otra al llegar
+ * a la luna sin borrar lo ganado— no se podría comprobar desde aquí y
+ * habría que fiarse de leerlo. Es media docena de líneas y lo que
+ * cuida es lo único del juego que, si sale mal, le borra a ella cosas
+ * que ya se había ganado.
+ */
+{
+  const cajon = new Map()
+  globalThis.localStorage = {
+    getItem: (llave) => (cajon.has(llave) ? cajon.get(llave) : null),
+    setItem: (llave, valor) => cajon.set(llave, String(valor)),
+    removeItem: (llave) => cajon.delete(llave),
+    clear: () => cajon.clear(),
+  }
+}
+
 const { crearMotor } = await import('@/juego-luna/motor.ts')
 const { construirNivel, msDeCargaEn } = await import('@/juego-luna/mundos.ts')
 const { opacidadDeLaPista } = await import('@/juego-luna/dibujo.ts')
 const { laLlegada } = await import('@/juego-luna/llegada.ts')
 const { superficieDe } = await import('@/juego-luna/mundos.ts')
-const { conCualEntra } = await import('@/juego-luna/progreso.ts')
+const { anotarCapitulo, anotarLlegada, conCualEntra, leerProgreso, ponerle } = await import(
+  '@/juego-luna/progreso.ts'
+)
+const { estaGanado, loGanado } = await import('@/juego-luna/ropero.ts')
 const {
   SALTO,
   TORTUGA,
@@ -2189,7 +2212,8 @@ console.log('  Con qué capítulo entra')
 
 {
   const ultimo = CAPITULOS.reduce((mayor, c) => Math.max(mayor, c.numero), 1)
-  const con = (ganados) => conCualEntra({ capitulo: ganados, pasitos: 0, caidas: 0, nombre: '' }, ultimo)
+  const con = (ganados) =>
+    conCualEntra({ capitulo: ganados, pasitos: 0, caidas: 0, nombre: '' }, ultimo)
 
   const primeraVez = con(0) === 1
   const trasGanarUno = con(1) === Math.min(2, ultimo)
@@ -2218,6 +2242,81 @@ console.log('  Con qué capítulo entra')
           .map((c) => `${c.id} (${construirNivel(c).hitos.length} estrellas, tocan ${lasQueTocan(c)})`)
           .join('; ')}`,
   )
+}
+
+console.log('')
+console.log('  La vuelta: llegar a la luna y volver a empezar')
+
+/*
+ * Lo más delicado de todo el guardado, y lo único que si sale mal le
+ * quita a ella cosas que ya se había ganado.
+ *
+ * Al pisar la luna el juego reinicia **por dónde va** —para poder
+ * volver a subir— y no toca **lo ganado**. Son dos números distintos
+ * a propósito: `capitulo` es esta vuelta y `cumbre` es de siempre. Con
+ * uno solo, llegar arriba le cerraría la luna de la portada y le
+ * quitaría la corona en el mismo momento de ganárselas.
+ */
+{
+  localStorage.clear()
+
+  // Sube los tres capítulos, igualándole el récord en el primero y
+  // sin caerse, que es lo que abre casi todo el ropero.
+  for (const c of CAPITULOS) {
+    anotarCapitulo(c.numero, c.record ?? 30, 0)
+  }
+  // Y se pone algo que solo se gana llegando a la luna.
+  const deLaLuna = loGanado(leerProgreso()).find((a) => a.llave.como === 'luna')
+  if (deLaLuna) ponerle(deLaLuna.ranura, deLaLuna.id)
+
+  const antesDeLlegar = leerProgreso()
+  const ganadoAntes = loGanado(antesDeLlegar).length
+
+  const { antes, ahora } = anotarLlegada()
+
+  const bien = []
+  const mal = []
+  const comprobar = (queda, linea) => (queda ? bien : mal).push(linea)
+
+  comprobar(ahora.capitulo === 0, 'la vuelta vuelve a cero')
+  comprobar(
+    conCualEntra(ahora, CAPITULOS.length) === 1,
+    'y con eso se vuelve a entrar por el capítulo uno',
+  )
+  comprobar(ahora.llegadas === 1, 'la llegada queda anotada')
+  comprobar(ahora.cumbre === CAPITULOS.length, 'la cumbre se queda donde estaba')
+  comprobar(ahora.pasitos === 0 && ahora.caidas === 0, 'los pasitos de la vuelta se ponen a cero')
+  comprobar(
+    antes.pasitos === antesDeLlegar.pasitos && antes.caidas === antesDeLlegar.caidas,
+    'y la carta recibe los de antes de borrar, que son de los que habla',
+  )
+  comprobar(
+    Object.keys(ahora.mejorPorCapitulo).length === CAPITULOS.length,
+    'los récords de cada capítulo no se tocan',
+  )
+  comprobar(loGanado(ahora).length === ganadoAntes, 'no se pierde nada del ropero')
+  comprobar(
+    !deLaLuna || estaGanado(deLaLuna, ahora),
+    'y lo que se gana llegando arriba sigue ganado después de llegar',
+  )
+  comprobar(
+    !deLaLuna || ahora.puesto[deLaLuna.ranura] === deLaLuna.id,
+    'y sigue puesto, no se le cae de encima',
+  )
+
+  for (const linea of bien) console.log('   ✓ ' + linea)
+  for (const linea of mal) console.log('   ⚠ ' + linea)
+
+  // Y la segunda vuelta cuenta como segunda, no reescribe la primera.
+  anotarCapitulo(1, 40, 3)
+  const otraVez = anotarLlegada().ahora
+  console.log(
+    otraVez.llegadas === 2 && otraVez.cumbre === CAPITULOS.length
+      ? '   ✓ la segunda vuelta se anota aparte y la cumbre sigue siendo la cumbre'
+      : `   ⚠ la segunda vuelta se contó mal: ${otraVez.llegadas} llegadas, cumbre ${otraVez.cumbre}`,
+  )
+
+  localStorage.clear()
 }
 
 console.log('')

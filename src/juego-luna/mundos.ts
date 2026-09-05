@@ -1,5 +1,5 @@
 import { ALMOHADAS, CAJAS, CAPITULOS, COBIJAS, LUNA, MUNDO, SALTO } from '@/content/luna'
-import type { CapituloEscrito, Nivel, Plataforma } from '@/types'
+import type { CapituloEscrito, MundoEscrito, Nivel, Plataforma } from '@/types'
 
 /**
  * Armar un capítulo a partir de lo que está escrito en `luna.ts`.
@@ -43,7 +43,16 @@ export function capituloNumero(numero: number): CapituloEscrito {
   return CAPITULOS.find((c) => c.numero === numero) ?? CAPITULOS[0]
 }
 
-export function construirNivel(capitulo: CapituloEscrito): Nivel {
+/**
+ * Arma un nivel jugable.
+ *
+ * Toma un `MundoEscrito` y no un capítulo entero porque hay dos cosas
+ * que se juegan con este motor: los tres capítulos y las clases de la
+ * escuelita. Una clase no tiene peluche ni cierre, y pedírselos para
+ * poder armar sus cuatro plataformas sería inventarle un final a una
+ * pantalla que dura veinte segundos.
+ */
+export function construirNivel(capitulo: MundoEscrito): Nivel {
   const escritas = capitulo.plataformas
   if (escritas.length === 0) throw new Error('un capítulo sin plataformas no se puede jugar')
 

@@ -1,4 +1,4 @@
-import type { Accesorio, CapituloEscrito } from '@/types'
+import type { Accesorio, CapituloEscrito, ClaseDelPrologo, CuadroDeLaHistoria } from '@/types'
 
 /**
  * A la luna, a pasitos de tortuga.
@@ -1153,7 +1153,344 @@ export const TEXTOS = {
   cartaNoAbre: 'la carta no quiso abrirse, probá recargando',
   /** Para salir del juego cuando ya la leyó. */
   volver: 'volver a la madriguera',
+  /**
+   * Y para volver a subir, al lado del otro.
+   *
+   * Va acá abajo y no arriba: primero se lee la carta, que es a lo que
+   * vino. Pero tiene que estar, porque al llegar a la luna el juego se
+   * reinicia y sin este botón la única manera de volver a empezar
+   * sería salirse y entrar de nuevo por la portada.
+   */
+  volverAJugar: 'subir otra vez',
 }
+
+
+/**
+ * ══════════════════════════════════════════════════════════════
+ *  LA HISTORIA, ANTES DE JUGAR
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Por qué una tortuga. Es lo único que el juego nunca explicó: se
+ * abría con Boo contando de dónde venía y nadie decía por qué la que
+ * sube es el animal más lento que hay.
+ *
+ * Y la respuesta es toda la web: «de aquí a la luna a pasitos de
+ * tortuga» es una de sus medidas del infinito, y es la única que
+ * tiene camino. Las otras son números. Esta se anda.
+ *
+ * Sale antes de la escuelita la primera vez, y antes del capítulo uno
+ * cada vez que se vuelve a empezar. Se puede saltar, y el último
+ * cuadro es la bisagra: la primera vez termina en que todavía no
+ * tiene nombre y de ahí se pasa a ponérselo. Cuando ya lo tiene, ese
+ * mismo cuadro la nombra y sale a jugar — decirle «todavía no tiene
+ * nombre» a quien ya se lo puso hace tres meses es el juego
+ * olvidándose de ella.
+ *
+ * Los cuadros se pasan tocando, no solos. Cada quien lee a su
+ * velocidad, y un cuento que se adelanta antes de que lo terminen de
+ * leer no es un cuento, es un cartel que se apura.
+ *
+ * `{tiempo}` se llena con lo que llevan de conocerse, contado de
+ * verdad desde `content/config.ts`. Es la única cifra del cuento y es
+ * la que lo ancla: la tortuga no lleva caminando un rato inventado.
+ */
+export const HISTORIA: {
+  titulo: string
+  cuadros: CuadroDeLaHistoria[]
+  ultimoConNombre: string
+  seguir: string
+  saltar: string
+} = {
+  /** Lo que se lee arriba del todo, chiquito, mientras dura. */
+  titulo: 'Por qué una tortuga',
+
+  seguir: 'tocá para seguir',
+  saltar: 'saltar',
+
+  /**
+   * El último cuadro cuando ella ya la bautizó, o sea todas las veces
+   * menos la primera. `{Tortuga}` es el nombre que le puso.
+   */
+  ultimoConNombre: 'Y se llama {Tortuga}. Otra vez, pues.',
+
+  cuadros: [
+    {
+      texto: 'Un día alguien dijo «te quiero de aquí a la luna».',
+      luna: 0.12,
+      camina: false,
+      peluches: 0,
+    },
+    {
+      texto: 'Se dice fácil. Nadie que lo dice está pensando en ir.',
+      luna: 0.12,
+      camina: false,
+      peluches: 0,
+    },
+    {
+      texto:
+        'Le preguntamos a todos. El pájaro dijo que quedaba muy alto. El cohete pidió que le pagaran.',
+      luna: 0.18,
+      camina: false,
+      peluches: 0,
+    },
+    {
+      texto: 'La tortuga no dijo nada. Dio un pasito.',
+      luna: 0.22,
+      camina: true,
+      peluches: 0,
+    },
+    {
+      texto: 'Le dijeron que así iba a tardar toda la vida. Dijo que bueno.',
+      luna: 0.3,
+      camina: true,
+      peluches: 0,
+    },
+    {
+      texto: 'Boo se le trepó al caparazón. Después Ovi. Después Nico. Ninguno la dejó ir sola.',
+      luna: 0.4,
+      camina: true,
+      peluches: 3,
+    },
+    {
+      texto: 'Lleva {tiempo} caminando y todavía no llega. No se ha parado ni un día.',
+      luna: 0.55,
+      camina: true,
+      peluches: 3,
+    },
+    {
+      texto: 'Arriba hay una carta. No hay nada más.',
+      luna: 0.85,
+      camina: false,
+      peluches: 3,
+    },
+    {
+      texto: 'Y todavía no tiene nombre.',
+      luna: 0.5,
+      camina: false,
+      peluches: 3,
+    },
+  ],
+}
+
+
+/**
+ * ══════════════════════════════════════════════════════════════
+ *  LA ESCUELITA
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Siete pantallitas antes del capítulo uno, donde se aprende a jugar
+ * y **nada cuesta nada**: no hay pasitos que se cuenten, no hay
+ * caídas que se anoten y no cae nada del cielo. Se juega una sola vez
+ * por teléfono, y se puede saltar entera.
+ *
+ * Por qué existe: el juego se explicaba con un párrafo encima del
+ * cartel de Boo, y calcular una barra de fuerza leyendo un párrafo no
+ * es lo mismo que probándola donde no se puede fallar. Y de paso le
+ * saca el bulto a ese cartel, que cargaba la historia de Boo y el
+ * cómo se juega apiladas una sobre la otra.
+ *
+ * **Una cosa por pantalla, y en este orden.** El orden no es
+ * decorativo: el cansancio se aprende antes de que importe, la
+ * estrellita se entiende antes de necesitarla, y las tres trabas de
+ * los capítulos se ven sueltas antes de venir mezcladas con la
+ * subida.
+ *
+ * Las plataformas se escriben igual que las de los capítulos: `x` de
+ * 0 a 360, `altura` desde el suelo y creciendo hacia arriba. Lo que
+ * cambia es que aquí van holgadas a propósito. Una clase difícil es
+ * una clase mal escrita.
+ *
+ * Se comprueban con `npm run luna:escuelita`, que las juega con un
+ * robot y avisa si alguna no se puede pasar.
+ */
+
+/** La primera pantalla, antes de la primera clase. */
+export const ESCUELITA = {
+  titulo: 'La escuelita',
+  parrafos: [
+    'Antes de salir, siete pantallitas para agarrarle la mano. Aquí no se cuentan pasitos y no se anotan caídas. Tampoco te va a caer nada encima.',
+    'Se pasa una sola vez. Después de esto, la que sube sos vos.',
+  ],
+  boton: 'empezar la escuelita',
+  saltar: 'ya sé jugar, saltala',
+
+  /** Y al terminar las siete. */
+  final: {
+    titulo: 'Ya sabés',
+    texto:
+      'Eso es todo lo que hay que saber. Lo demás es subir, y para subir no hace falta que te enseñe nada.',
+    boton: 'ahora sí, a la luna',
+  },
+
+  /**
+   * Cuánto se la deja penar antes de asomarle la pista. Es largo a
+   * propósito: entrar a los diez segundos a decirle cómo se hace es
+   * quitarle la clase.
+   */
+  msParaLaPista: 25000,
+}
+
+export const CLASES: ClaseDelPrologo[] = [
+  /* ── 1 · Mantener y soltar ────────────────────────────────────
+     La de al lado está tan cerca y tan baja que no se puede fallar.
+     Es lo único que se busca acá: que descubra que el dedo hace
+     algo. */
+  {
+    id: 'soltar',
+    titulo: 'Mantené y soltá',
+    texto: 'Apretá la pantalla, mirá cómo se llena la barra y soltá. Sale para donde venía mirando.',
+    pista: 'No importa con cuánta fuerza: desde acá se llega con cualquiera.',
+    objetivo: 'cima',
+    numero: 1,
+    material: 'pista',
+    seDesvanece: false,
+    cede: false,
+    seHunde: false,
+    plataformas: [
+      { x: 20, ancho: 200, altura: 0 },
+      { x: 195, ancho: 145, altura: 45, hito: true },
+    ],
+  },
+
+  /* ── 2 · El cansancio ─────────────────────────────────────────
+     Una sola plataforma de pared a pared: no hay a dónde ir, así
+     que lo único que se puede hacer es lo que dice el cartel. Se
+     aprende aquí, donde da risa, y no a mitad del capítulo dos. */
+  {
+    id: 'cansancio',
+    titulo: 'No aguantés de más',
+    texto: 'Apretá y no soltés, a ver qué le pasa. La barra se pone roja antes: eso es el aviso.',
+    pista: 'Apretá y quedate apretando sin soltar. No pasa nada malo, es para que lo veas.',
+    objetivo: 'agotada',
+    numero: 1,
+    material: 'pista',
+    seDesvanece: false,
+    cede: false,
+    seHunde: false,
+    plataformas: [{ x: 0, ancho: 360, altura: 0 }],
+  },
+
+  /* ── 3 · La estrellita, y caerse ──────────────────────────────
+     Van juntas porque son la misma cosa: la estrella no significa
+     nada hasta que una se cae y la pantalla la devuelve ahí. La de
+     arriba está solo para que la estrella no sea la cima y la clase
+     no se termine sola al pisarla. */
+  {
+    id: 'estrella',
+    titulo: 'La estrellita guarda',
+    texto:
+      'Subí a la estrellita y después tirate para abajo a propósito. Fijate a dónde te devuelve.',
+    pista: 'Ya la pisaste: ahora saltá para abajo, a la plataforma del suelo. No perdés nada.',
+    objetivo: 'reaparicion',
+    numero: 1,
+    material: 'pista',
+    seDesvanece: false,
+    cede: false,
+    seHunde: false,
+    plataformas: [
+      // De pared a pared: de este suelo no se puede caer. Así la única
+      // caída posible es la de después de la estrellita, que es la que
+      // la clase quiere enseñar.
+      { x: 0, ancho: 360, altura: 0 },
+      { x: 200, ancho: 140, altura: 70, hito: true },
+      // Esta no enseña nada: está para que la estrellita no sea la
+      // cima. Siendo la cima, pisarla daría la clase por terminada
+      // antes de la caída, que es justo la mitad que importa.
+      { x: 30, ancho: 110, altura: 150 },
+    ],
+  },
+
+  /* ── 4 · La pista que se borra ────────────────────────────────
+     La traba de Boo. El hito va en la 1 porque hasta el primer lazo
+     no se borra nada: así el primer salto se da con el suelo quieto
+     y el aviso llega justo cuando ya sabe saltar. */
+  {
+    id: 'pista',
+    titulo: 'Lo que pisás, se va',
+    texto: 'Pasada la estrellita, la pista se empieza a borrar detrás. Parpadea antes de irse.',
+    pista: 'No te quedés pensando mucho encima de un tramo que ya está parpadeando.',
+    objetivo: 'cima',
+    numero: 1,
+    material: 'pista',
+    seDesvanece: true,
+    cede: false,
+    seHunde: false,
+    plataformas: [
+      { x: 20, ancho: 320, altura: 0 },
+      { x: 200, ancho: 130, altura: 70, hito: true },
+      { x: 40, ancho: 120, altura: 155 },
+      { x: 205, ancho: 120, altura: 240 },
+      { x: 45, ancho: 140, altura: 325, hito: true },
+    ],
+  },
+
+  /* ── 5 · El tramo de impulso ──────────────────────────────────
+     El único regalo del juego. La geometría es la misma que la de
+     los impulsos de Boo: se centra sola y sale siempre igual, así
+     que el destino se puede poner con precisión. */
+  {
+    id: 'impulso',
+    titulo: 'Los que te lanzan',
+    texto: 'Caé en el tramo brillante y no toqués nada. De ahí sale sola, y ese salto no te cuesta.',
+    pista: 'El tramo brillante es el de la izquierda. Saltá encima y soltá el dedo.',
+    objetivo: 'cima',
+    numero: 1,
+    material: 'pista',
+    seDesvanece: false,
+    cede: false,
+    seHunde: false,
+    plataformas: [
+      { x: 20, ancho: 320, altura: 0 },
+      { x: 40, ancho: 110, altura: 75, impulso: 'derecha' },
+      { x: 230, ancho: 115, altura: 215, hito: true },
+    ],
+  },
+
+  /* ── 6 · La caja que cede ─────────────────────────────────────
+     La traba de Ovi. La cima es estrella, y las estrellas van
+     firmes por regla: el sitio donde se respira no se puede mover. */
+  {
+    id: 'cajas',
+    titulo: 'Las cajas ceden',
+    texto:
+      'Se inclinan hacia donde te parés. En el medio no hay cuesta, y desde el medio el salto sale entero.',
+    pista: 'Pará en la mitad de la caja, no en la orilla, y de ahí cargá.',
+    objetivo: 'cima',
+    numero: 1,
+    material: 'cajas',
+    seDesvanece: false,
+    cede: true,
+    seHunde: false,
+    plataformas: [
+      { x: 20, ancho: 320, altura: 0 },
+      { x: 195, ancho: 140, altura: 70 },
+      { x: 40, ancho: 145, altura: 150, hito: true },
+    ],
+  },
+
+  /* ── 7 · La almohada que se hunde ─────────────────────────────
+     La traba de Nico, y la última: es la que pide prisa, y pedir
+     prisa antes de que sepa medir la barra sería enseñarle a
+     apurarse en vez de a saltar. */
+  {
+    id: 'almohadas',
+    titulo: 'Las almohadas se hunden',
+    texto:
+      'Mientras estés encima, va bajando. Cuanto más te demorés, desde más abajo sale el salto.',
+    pista: 'Acá conviene no pensarlo tanto: cargá apenas caés y soltá.',
+    objetivo: 'cima',
+    numero: 1,
+    material: 'almohadas',
+    seDesvanece: false,
+    cede: false,
+    seHunde: true,
+    plataformas: [
+      { x: 20, ancho: 320, altura: 0 },
+      { x: 195, ancho: 140, altura: 70 },
+      { x: 40, ancho: 145, altura: 150, hito: true },
+    ],
+  },
+]
 
 /**
  * El ropero de la tortuga.
@@ -1320,8 +1657,8 @@ export const TEXTOS_DEL_ROPERO = {
  *
  * Que se pueda tocar estando cerrada es a propósito. Lo primero que va
  * a pasar es que la toque y le salga el aviso de abajo, y a partir de
- * ahí buscar a Ovi, a Boo y a Nico deja de ser un juego suelto y pasa a
- * ser el camino a otra cosa.
+ * ahí la luna deja de ser un dibujo del cielo y pasa a ser algo que se
+ * abre.
  */
 export const ENTRADA_POR_LA_LUNA = {
   /** Lo que dice el lector de pantalla mientras está cerrada. */
@@ -1332,18 +1669,16 @@ export const ENTRADA_POR_LA_LUNA = {
   /**
    * El aviso de tocarla sin tenerlos a los tres.
    *
-   * Da la pista entera. Un acertijo que no se puede resolver no es un
-   * secreto, es una puerta trabada: si no le dice dónde buscar, la
-   * toca dos veces y no la vuelve a tocar nunca.
+   * Cuatro palabras y ni una más. Antes decía dónde buscar y con eso
+   * le resolvía el acertijo de una: leído así, lo que le queda no es
+   * buscar, es ir a recoger. El aviso solo tiene que decirle que la
+   * puerta existe y que le falta algo; qué es, lo averigua ella, y
+   * los peluches ya se asoman solos por las esquinas de la web.
+   *
+   * Sin título, además. Un papelito con encabezado es una noticia, y
+   * esto es un «todavía no» dicho de pasada.
    */
-  cerrada: {
-    titulo: 'Todavía no',
-    texto:
-      'Antes de irte tan lejos los quiero a los tres en casa. Andan escondidos por la madriguera, con medio cuerpo afuera en alguna esquina.',
-  },
-
-  /** Y lo que le sale debajo cuando ya subió hasta arriba. */
-  llena: 'la carta sigue allá arriba',
+  cerrada: 'aún te falta algo',
 }
 
 /**

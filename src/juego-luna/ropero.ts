@@ -47,20 +47,27 @@ export function subioSinCaerse(progreso: ProgresoLuna): boolean {
   return Object.values(progreso.mejorPorCapitulo).some((m) => m.caidas === 0)
 }
 
-/** ¿Está ganado este accesorio con el progreso de ahora? */
+/**
+ * ¿Está ganado este accesorio?
+ *
+ * Se pregunta contra **la cumbre y las llegadas**, no contra el
+ * capítulo de esta vuelta. Llegar a la luna reinicia por dónde va, y si
+ * el ropero mirara ese número ella perdería la corona y el caparazón
+ * dorado en el mismo momento de ganárselos. Lo ganado, ganado.
+ */
 export function estaGanado(accesorio: Accesorio, progreso: ProgresoLuna): boolean {
   const llave = accesorio.llave
   switch (llave.como) {
     case 'siempre':
       return true
     case 'capitulo':
-      return progreso.capitulo >= llave.cual
+      return progreso.cumbre >= llave.cual
     case 'sinCaerse':
       return subioSinCaerse(progreso)
     case 'records':
       return recordesIgualados(progreso) >= llave.cuantos
     case 'luna':
-      return progreso.capitulo >= ULTIMO_CAPITULO
+      return progreso.llegadas > 0 || progreso.cumbre >= ULTIMO_CAPITULO
   }
 }
 
