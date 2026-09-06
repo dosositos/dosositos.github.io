@@ -461,10 +461,14 @@ Los sonidos quedaron el 5 de septiembre y `npm run luna:sonidos` los mide y los
 prueba jugando. **Lo que falta de esta fase no se puede hacer acá**, y se junta
 todo para una sola pasada en el teléfono de ella, que es el aparato que manda:
 
-- **Si los sonidos se oyen y no molestan**, que es lo único que un banco no
-  puede contestar. Están bajos aposta: el más fuerte pica en 0.23 de lo que
-  aguanta el altavoz. Si en su teléfono no se oyen, se sube `VOLUMEN_MAESTRO`
-  en `src/juego-luna/sonidos.ts` y nada más.
+- **Si los sonidos y la música se oyen y no molestan**, que es lo único que un
+  banco no puede contestar. Los dos están bajos aposta, y los dos se suben con
+  un número: `VOLUMEN_MAESTRO` en `src/juego-luna/sonidos.ts` para los pops (el
+  más fuerte pica en 0.23 de lo que aguanta el altavoz) y `VOLUMEN` en
+  `src/juego-luna/musica.ts` para las canciones, que van en 0.18.
+- **Si la música tarda mucho en arrancar** en su conexión. Se baja y se descifra
+  la canción entera antes de sonar: acá es un segundo o dos, en datos móviles
+  puede ser más. Si molesta, se bajan a 48 kbps en `preparar-musica.mjs`.
 - Ajustar los números de `luna.ts` jugándolo de verdad.
 - **Si la luna apagada de la portada, al 55 %, todavía se ve de día.** Es el
   número más delicado de esa esquina: más apagada deja de dar ganas de tocarla,
@@ -496,9 +500,42 @@ Pero va a pasar solo, y por eso no sube nada hasta que no falte nada.
   no se pueden juzgar en una foto.
 - **Y probate el ropero.** Once cosas, y de salida solo hay tres: el gorrito de
   fiesta, los lentes redondos y el corbatín. Lo demás se gana subiendo.
-- **Encendé el sonido** en el cartel del capítulo y jugá un rato con el teléfono
-  destapado. Al encenderlo suena el pop del salto, para que se sepa qué se
-  acaba de encender.
+- **Jugá con el teléfono destapado**, que ahora el sonido viene encendido: los
+  pops y las cuatro canciones de fondo. El botón para callarlo está en el cartel
+  del capítulo, debajo de «vestirla».
+
+### La música de fondo, y el sonido encendido de fábrica — 5 de septiembre, cuarta vuelta
+
+**Los sonidos ahora vienen encendidos.** Un interruptor apagado no se toca
+nunca, y el juego se siente distinto con ellos. Solo un «no» escrito por ella lo
+apaga; el que nunca eligió nada cae del lado de encendido.
+
+**Y hay música de fondo**: cuatro canciones en bucle, en orden al azar, a un
+quinto de volumen. El mismo botón manda sobre las dos cosas — cuando alguien
+quiere que se calle, quiere que se calle todo.
+
+Llegaron a 192 kbps en estéreo, 17 MB entre las cuatro. Se convierten a 64 kbps
+en mono, que a ese volumen y por el altavoz de un teléfono —que es mono de
+todas formas— no se distingue, y bajan a 6 MB. Eso lo hace
+`npm run musica:preparar`, que además les borra los metadatos.
+
+**Van cifradas, en el mismo lote que las fotos.** El repositorio es público y
+subir cuatro canciones enteras en claro no es una opción. Comparten la sal, así
+que el teléfono deriva la llave una sola vez para las fotos y para la música;
+con un lote aparte serían otras 250.000 vueltas de PBKDF2 justo al entrar al
+juego. El precio es que una canción se baja y se descifra entera antes de sonar,
+y por eso la siguiente se va bajando mientras suena la de ahora.
+
+Arranca con el primer toque de ella, sea cual sea, porque el navegador no deja
+que una página empiece a sonar sola. Se calla al salir de `/luna` y mientras la
+página no se vea, que es para cuando deje el juego abierto y se vaya a contestar
+un mensaje.
+
+`npm run luna:sonidos` creció con esto: comprueba que de fábrica venga
+encendido, que la música arranque, y que **al acabarse una canción entre otra**
+— le adelanta el reloj hasta el final en vez de esperar tres minutos y medio.
+`npm run revisar` cuenta las canciones: sin ellas el juego se queda mudo y nadie
+se entera hasta que ella entre, que es el fallo silencioso de siempre.
 
 ### Los sonidos — 5 de septiembre, tercera vuelta
 

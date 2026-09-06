@@ -78,14 +78,20 @@ const clave = existsSync('.env')
 
 /**
  * Entra al capítulo dos —el uno arrastra la historia y el bautizo—, da
- * saltos, y cuenta cuántos osciladores creó la página.
+ * saltos, y cuenta lo que sonó de verdad.
  *
- * Se cuentan osciladores y no llamadas a `sonar`, a propósito. La
- * llamada la puedo poner yo y no prueba nada; el oscilador solo existe
- * si el sonido llegó hasta el final del camino: interruptor encendido,
- * contexto despierto y receta armada.
+ * Se cuentan osciladores y canciones que el navegador aceptó tocar, no
+ * llamadas a `sonar` ni a `arrancarMusica`. Las llamadas las puedo
+ * poner yo y no prueban nada; un oscilador solo existe si el sonido
+ * llegó hasta el final del camino, y una canción solo se da por sonando
+ * cuando la promesa de `play()` resolvió — que es donde se cae si el
+ * navegador todavía no daba por bueno el toque, o si el mp3 no se pudo
+ * descifrar.
+ *
+ * `como` es 'defecto' (no se toca el localStorage, que es como lo va a
+ * encontrar ella la primera vez) o 'apagado'.
  */
-async function jugarConSonido(encendido) {
+async function jugarConSonido(como) {
   const tel = await nav.newPage({
     viewport: { width: 412, height: 892 },
     deviceScaleFactor: 2,
@@ -95,15 +101,17 @@ async function jugarConSonido(encendido) {
   escuchar(tel)
 
   await tel.addInitScript((quiere) => {
-    localStorage.setItem('dosositos:luna:sonido', quiere ? 'si' : 'no')
+    // En 'defecto' no se escribe nada aposta: lo que se está probando
+    // es justamente qué pasa cuando ella nunca eligió.
+    if (quiere === 'apagado') localStorage.setItem('dosositos:luna:sonido', 'no')
     localStorage.setItem(
       'dosositos:luna',
       JSON.stringify({ capitulo: 1, escuelita: 'hecha', nombre: 'Manchita' }),
     )
 
-    // El contador. Va encima del AudioContext de verdad y no lo
-    // reemplaza: si algo del camino estuviera roto, esto se daría
-    // cuenta igual porque el error saldría del original.
+    // Los contadores. Van encima de lo de verdad y no lo reemplazan: si
+    // algo del camino estuviera roto, esto se daría cuenta igual porque
+    // el error saldría del original.
     window.__sonidos = { contextos: 0, osciladores: 0 }
     const Original = window.AudioContext
     window.AudioContext = class extends Original {
@@ -116,7 +124,30 @@ async function jugarConSonido(encendido) {
         return super.createOscillator()
       }
     }
-  }, encendido)
+
+    window.__musica = { intentos: 0, sonando: 0, error: '', fuentes: [] }
+    const tocarOriginal = HTMLMediaElement.prototype.play
+    HTMLMediaElement.prototype.play = function (...args) {
+      window.__musica.intentos += 1
+      // Se guarda el elemento para poder adelantarle el reloj desde el
+      // arnés: `new Audio()` no está en el DOM y no hay otra manera de
+      // llegar a él. Y cada blob distinto es una canción distinta, que
+      // es como se comprueba que el bucle cambió de una a otra.
+      window.__musica.ultimo = this
+      if (this.src && !window.__musica.fuentes.includes(this.src)) {
+        window.__musica.fuentes.push(this.src)
+      }
+      const promesa = tocarOriginal.apply(this, args)
+      promesa
+        .then(() => {
+          window.__musica.sonando += 1
+        })
+        .catch((e) => {
+          window.__musica.error = String(e)
+        })
+      return promesa
+    }
+  }, como)
 
   await tel.goto(RAIZ, { waitUntil: 'domcontentloaded' })
   const candado = tel.locator('input').first()
@@ -143,7 +174,31 @@ async function jugarConSonido(encendido) {
     await tel.waitForTimeout(500)
   }
 
-  const contado = await tel.evaluate(() => window.__sonidos)
+  // La primera canción se baja y se descifra entera antes de sonar, y
+  // esa primera vez arrastra las 250.000 vueltas de PBKDF2 del lote.
+  // Los ocho saltos suelen dar de sobra, pero no siempre.
+  await tel.waitForTimeout(2500)
+
+  // Y el bucle: esperar tres minutos y medio a que se acabe una canción
+  // no es una prueba, es una siesta. Se le adelanta el reloj hasta el
+  // final y se mira si entra otra, que es lo mismo que va a pasar en su
+  // teléfono cuando llegue ahí sola.
+  await tel.evaluate(() => {
+    const a = window.__musica.ultimo
+    if (a && Number.isFinite(a.duration)) a.currentTime = Math.max(0, a.duration - 0.4)
+  })
+  await tel.waitForTimeout(4000)
+
+  // `ultimo` es un elemento del DOM y no cruza: se deja acá adentro.
+  const contado = await tel.evaluate(() => ({
+    ...window.__sonidos,
+    musica: {
+      intentos: window.__musica.intentos,
+      sonando: window.__musica.sonando,
+      error: window.__musica.error,
+      distintas: window.__musica.fuentes.length,
+    },
+  }))
   await tel.close()
   return { dice, ...contado }
 }
@@ -152,25 +207,47 @@ console.log('')
 if (!clave) {
   console.log('· sin CLAVE_DOSOSITOS en .env no se puede entrar al juego: solo se miró el banco')
 } else {
-  const prendido = await jugarConSonido(true)
-  const apagado = await jugarConSonido(false)
+  const defecto = await jugarConSonido('defecto')
+  const apagado = await jugarConSonido('apagado')
 
-  console.log(`  encendido: ${prendido.osciladores} osciladores · el botón dice «${prendido.dice}»`)
-  console.log(`  apagado:   ${apagado.osciladores} osciladores · el botón dice «${apagado.dice}»`)
+  const linea = (que, r) =>
+    `  ${que.padEnd(9)} ${String(r.osciladores).padStart(2)} osciladores · ` +
+    `${r.musica.distintas} canción(es) distintas · el botón dice «${r.dice}»`
 
-  if (prendido.osciladores === 0) {
+  console.log(linea('de fábrica', defecto))
+  console.log(linea('apagado', apagado))
+
+  if (!defecto.dice.includes('encendido')) {
     quejas += 1
-    console.log('⚠ con el sonido encendido el juego no tocó nada: los saltos no llegan a sonar')
+    console.log('⚠ de fábrica tiene que venir encendido, y el botón dice que no')
+  }
+  if (defecto.osciladores === 0) {
+    quejas += 1
+    console.log('⚠ de fábrica el juego no tocó nada: los saltos no llegan a sonar')
+  }
+  if (defecto.musica.sonando === 0) {
+    quejas += 1
+    console.log(
+      `⚠ la música no arrancó (${defecto.musica.intentos} intento(s))` +
+        (defecto.musica.error ? `: ${defecto.musica.error}` : ''),
+    )
+  } else if (defecto.musica.distintas < 2) {
+    quejas += 1
+    console.log('⚠ al acabarse la canción no entró la siguiente: el bucle se para en la primera')
   }
   if (apagado.contextos > 0) {
     quejas += 1
-    console.log('⚠ apagado y aun así creó un AudioContext: eso ya no es apagado de fábrica')
+    console.log('⚠ apagado y aun así creó un AudioContext: apagado tiene que ser apagado')
   }
-  if (!prendido.dice.includes('encendido') || !apagado.dice.includes('apagado')) {
+  if (apagado.musica.intentos > 0) {
+    quejas += 1
+    console.log('⚠ apagado y aun así intentó poner música')
+  }
+  if (!apagado.dice.includes('apagado')) {
     quejas += 1
     console.log('⚠ el interruptor no está diciendo cómo está')
   }
-  if (quejas === 0) console.log('✓ suena jugando, y callado mientras esté apagado')
+  if (quejas === 0) console.log('✓ suena de fábrica —pops y música—, y apagado no suena nada')
 }
 
 await nav.close()

@@ -119,11 +119,22 @@ let pesoAntes = 0
 let pesoDespues = 0
 const indice = {}
 
+// El índice del lote no es solo de fotos: las canciones de fondo del
+// juego viven ahí también, y las pone `npm run musica:preparar`. Este
+// script recorre fotos-originales/ y reescribe el índice entero, así
+// que sin esta línea cada pasada borraría la música del lote y el
+// juego se quedaría mudo sin que nadie tocara nada suyo.
+const esMio = (ficha) => ficha.tipo === 'foto' || ficha.tipo === 'video'
+
 // Lo de la vuelta pasada. Reconvertir una foto que no cambió cuesta
 // segundos y, peor, puede dar bytes distintos: el cifrado la daría por
 // nueva y el repositorio se llenaría de cambios que no cambian nada.
 const indicePrevio = existsSync(INDICE) ? JSON.parse(readFileSync(INDICE, 'utf8')) : {}
 let reusadas = 0
+
+for (const [nombre, ficha] of Object.entries(indicePrevio)) {
+  if (!esMio(ficha)) indice[nombre] = ficha
+}
 
 const estaAlDia = (nombre, original) => {
   const ficha = indicePrevio[nombre]

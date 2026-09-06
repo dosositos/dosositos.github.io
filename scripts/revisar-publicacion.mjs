@@ -12,7 +12,7 @@
  * ║  que ella abra un momento. Mejor que se caiga aquí.              ║
  * ╚══════════════════════════════════════════════════════════════════╝
  */
-import { readFileSync, existsSync, readdirSync } from 'node:fs'
+import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs'
 import path from 'node:path'
 import { huellaDelJuego } from './huella-juego.mjs'
 
@@ -133,6 +133,58 @@ if (fotosPedidas.size > 0) {
   }
 
   console.log(`  ✓ ${fotosPedidas.size} fotos cifradas y ninguna en claro`)
+}
+
+// ── La música de fondo del juego ──────────────────────────────────
+// Sin canciones el juego se juega igual y no se cae: se queda mudo, y
+// nadie se entera hasta que ella entre. Eso es exactamente el fallo
+// silencioso que este script existe para evitar.
+//
+// Solo se puede comprobar donde están los originales. En GitHub Actions
+// no existe private/, y ahí lo que se publica ya viene cifrado del PC.
+if (existsSync(INDICE_LOCAL)) {
+  const indice = JSON.parse(readFileSync(INDICE_LOCAL, 'utf8'))
+  const canciones = Object.entries(indice).filter(([, f]) => f.tipo === 'musica')
+
+  if (canciones.length === 0) {
+    fallar(
+      'El juego de la luna se va a quedar mudo',
+      `    No hay ninguna canción en el lote de medios.
+
+    Dejá los mp3 en  musica-original/  y corré:  npm run musica:preparar`,
+    )
+  }
+
+  // El nombre publicado es un hash de la frase con la ruta, así que
+  // desde acá no se puede señalar el archivo cifrado de cada canción
+  // sin conocer la frase. Se comprueban las dos puntas que sí se ven:
+  // que el mp3 chiquito exista, y que el índice publicado no sea más
+  // viejo que el de acá — si lo fuera, la web pediría canciones que su
+  // índice todavía no nombra.
+  const sinPreparar = canciones.filter(
+    ([, f]) => !existsSync(path.join(RAIZ, 'private', 'media', f.grande)),
+  )
+  if (sinPreparar.length > 0) {
+    fallar(
+      `Hay ${sinPreparar.length} canción(es) en el índice pero no en el disco`,
+      `${sinPreparar.map(([n]) => `    · «${n}»`).join('\n')}
+
+    Corré:  npm run musica:preparar`,
+    )
+  }
+
+  const publicado = path.join(MEDIOS, 'indice.bin')
+  if (existsSync(publicado) && statSync(publicado).mtimeMs < statSync(INDICE_LOCAL).mtimeMs) {
+    fallar(
+      'El índice publicado quedó viejo',
+      `    private/media/indice.json cambió después de cifrarse, así que
+    public/cifrado/media/indice.bin no nombra lo último que se agregó.
+
+    Corré:  npm run fotos:cifrar`,
+    )
+  }
+
+  console.log(`  ✓ ${canciones.length} canciones de fondo cifradas`)
 }
 
 // ── El juego ──────────────────────────────────────────────────────

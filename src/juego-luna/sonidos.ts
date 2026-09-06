@@ -3,14 +3,15 @@ import type { EventoLuna } from '@/types'
 /**
  * LOS SONIDOS DEL JUEGO
  *
- * Cortos, discretos y **apagados de fábrica**. No se descarga ningún
+ * Cortos, discretos y **encendidos de fábrica**. No se descarga ningún
  * archivo: cada uno se arma con la Web Audio API en el momento, que
  * para un pop y un toc sale más barato que bajar un mp3 y además deja
  * afinarlos cambiando un número.
  *
- * Arrancan apagados a propósito. Puede abrir el juego en el bus o con
- * gente al lado, y un pop inesperado a todo volumen no es una sorpresa
- * bonita: es un susto. Que los encienda ella si quiere.
+ * Vienen encendidos porque el juego se siente distinto con ellos y un
+ * interruptor apagado no se toca nunca. Están bajos a propósito, para
+ * que encontrárselos sin esperarlo no sea un susto, y el mismo botón
+ * los apaga —y apaga la música de fondo— en un toque.
  *
  * **Las recetas son datos.** Están acá abajo, en `RECETAS`, y quien las
  * toca es `tocar`, que sirve igual con un contexto de verdad y con uno
@@ -243,13 +244,20 @@ let maestro: GainNode | null = null
 /** Si ya se intentó y el navegador dijo que no, no se insiste más. */
 let imposible = false
 
+/**
+ * Encendido si nunca lo tocó.
+ *
+ * Se compara contra `'no'` y no contra `'si'` aposta: el que nunca
+ * eligió nada no tiene nada guardado, y ese caso tiene que caer del
+ * lado de encendido. Solo un «no» escrito por ella apaga.
+ */
 function leerElInterruptor(): boolean {
   try {
-    return localStorage.getItem(LLAVE) === 'si'
+    return localStorage.getItem(LLAVE) !== 'no'
   } catch {
     // Sin localStorage el juego anda igual, solo que el interruptor se
-    // olvida al cerrar. Apagado, que es como arranca siempre.
-    return false
+    // olvida al cerrar y vuelve a arrancar encendido.
+    return true
   }
 }
 
@@ -306,10 +314,10 @@ export function cambiarSonido(quiere: boolean): void {
 /**
  * Lo que llaman el juego y la escuelita en cada cosa que pasa.
  *
- * Si está apagado no toca ni crea nada, que es la mitad del punto de
- * que arranque apagado: sin encenderlo, la Web Audio API no se usa
- * nunca. Y si el evento no tiene receta tampoco pasa nada — no todos
- * los eventos del motor suenan.
+ * Con el interruptor apagado no toca ni crea nada: la Web Audio API no
+ * se usa ni una vez, ni siquiera para el contexto. Y si el evento no
+ * tiene receta tampoco pasa nada — no todos los eventos del motor
+ * suenan.
  */
 export function sonar(evento: EventoLuna): void {
   if (!encendido) return

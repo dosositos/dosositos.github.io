@@ -59,6 +59,16 @@ algo ahí. Los nombres publicados son opacos, el índice va cifrado, y en
 `src/content/` las fotos se referencian por su nombre lógico sin extensión
 (`{ src: 'momento9-1', alt: '…' }`). En el navegador las abre `<FotoCifrada>`.
 
+**La música de fondo del juego va cifrada también, y en el mismo lote que
+las fotos.** `musica-original/` (crudo, ignorado) → `npm run musica:preparar`
+→ 64 kbps en mono dentro de `private/media/musica/` → cifrado →
+`public/cifrado/media/`. Comparte la sal con las fotos aposta: así el teléfono
+deriva la llave una sola vez para todo. Como el repositorio es público, subir
+cuatro canciones enteras en claro no es una opción; y como una canción cifrada
+se baja y se descifra entera antes de sonar, la siguiente se va bajando
+mientras suena la de ahora. **El nombre del archivo es lo único que las
+identifica**: `preparar-musica.mjs` les borra los metadatos al convertirlas.
+
 **La única excepción: los tres retratos de los peluches.** Viven en claro en
 `src/assets/peluches/{id}.webp` y viajan en el bundle. Son ellos —no ustedes
 dos—, de un panda nadie deduce nada, y el guiño necesita que se asomen al
@@ -139,6 +149,7 @@ npm run dia:preparar     # el «un día como hoy» de las 366 fechas (uno por me
 npm run dia:preparar -- --ver 11-24   # qué eligió para ese día
 npm run fotos:optimizar  # fotos-originales/ → private/media/ en AVIF, y las cifra
 npm run fotos:cifrar     # solo el cifrado (private/media/ → public/cifrado/media/)
+npm run musica:preparar  # musica-original/ → 64 kbps mono → private/media/, y las cifra
 npm run peluches:preparar # los retratos bordados → src/assets/peluches/ (en claro)
 npm run peluches:hoy     # ¿dónde está escondido cada uno hoy? (-- --semana, -- 2026-08-24)
 npm run luna:probar      # ¿se puede pasar el nivel del juego de la luna?

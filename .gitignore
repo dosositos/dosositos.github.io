@@ -10,6 +10,10 @@
 # Fotos originales sin optimizar (pesadas). Solo se sube /public/media
 /fotos-originales/
 
+# Las canciones de fondo tal como llegaron, a 192 kbps. Lo que se sube
+# es la versión chiquita y cifrada, en public/cifrado/media/.
+/musica-original/
+
 # Claves y variables de entorno
 # En .env vive CLAVE_DOSOSITOS, la frase que abre la puerta. Que esta
 # línea nunca se toque: si .env llega a GitHub, el cifrado no sirve de nada.

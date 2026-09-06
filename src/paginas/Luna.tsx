@@ -19,6 +19,7 @@ import { crearPintor } from '@/juego-luna/dibujo'
 import { conectarEntrada } from '@/juego-luna/entrada'
 import { crearMotor, type Motor } from '@/juego-luna/motor'
 import { capituloNumero, construirNivel, ULTIMO_CAPITULO } from '@/juego-luna/mundos'
+import { arrancarMusica, atenderElCambioDePestana, pararMusica } from '@/juego-luna/musica'
 import { conNombre } from '@/juego-luna/nombrar'
 import {
   anotarCapitulo,
@@ -135,6 +136,34 @@ export function Luna() {
    * mirar es ella.
    */
   const [jugando, setJugando] = useState(false)
+
+  /* ── La música de fondo ─────────────────────────────────────────
+     Vive acá arriba y no adentro de cada pantalla porque tiene que
+     seguir sonando de la historia a la escuelita y de un capítulo al
+     siguiente, y todas esas son pantallas distintas del mismo
+     componente. Al salir de /luna se para, y el `return` del efecto es
+     el único sitio del que se puede saber que se salió.
+
+     Arranca con el primer toque de ella, sea cual sea. No es una
+     preferencia: el navegador no deja que una página empiece a sonar
+     sola, y en el juego el primer toque llega enseguida porque para ir
+     a cualquier parte hay que tocar algo. Si ese primer intento no
+     prospera —el navegador todavía no lo daba por bueno—, el toque
+     siguiente lo vuelve a intentar. */
+  useEffect(() => {
+    const alTocar = () => void arrancarMusica()
+    window.addEventListener('pointerdown', alTocar)
+    window.addEventListener('keydown', alTocar)
+
+    const olvidarLaPestana = atenderElCambioDePestana()
+
+    return () => {
+      window.removeEventListener('pointerdown', alTocar)
+      window.removeEventListener('keydown', alTocar)
+      olvidarLaPestana()
+      pararMusica()
+    }
+  }, [])
 
   /** El nombre que ella le puso, o vacío mientras no le puso ninguno. */
   const nombre = guardado.nombre
