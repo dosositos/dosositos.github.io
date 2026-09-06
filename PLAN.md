@@ -449,25 +449,28 @@ arrancamos por donde diga, sin que tengás que acordarte de nada.
 **El plan está terminado.** Las diez fases del juego están hechas: la escuelita,
 el cuento de antes, los tres capítulos, la llegada, la carta, los récords, el
 volver a subir, la luna de la portada, el ropero, los sonidos, la música, el
-colado y los peluches esperando en la luna. **Lo único que queda no se puede hacer sin ella delante**, o mejor dicho
-sin su teléfono.
+colado y los peluches esperando en la luna. **Lo que queda es oírlo y verlo en un
+teléfono**, que es lo único que ningún arnés contesta.
 
 **Y está subido.** Se esperó hasta tenerlo entero, que era la condición, y el 5
 de septiembre se empujó. De aquí en adelante, lo que se toque lo va a ver ella
 en cuanto se suba: conviene mirarlo dos veces.
 
-### Lo único que falta: su Android
+### Lo primero, y esto sí lo podés hacer vos solo
 
-Los sonidos quedaron el 5 de septiembre y `npm run luna:sonidos` los mide y los
-prueba jugando. **Lo que falta de esta fase no se puede hacer acá**, y se junta
-todo para una sola pasada en el teléfono de ella, que es el aparato que manda:
+**Volvé a oír la música en tu iPhone.** Hasta el 6 de septiembre el volumen no
+se aplicaba allá —`audio.volume` no existe en iOS— así que sonaba el archivo
+crudo y tus dos ajustes no hicieron nada. Ahora sale por un `GainNode` y el
+número manda de verdad, pero **ese número nunca se probó**: 0,08 puede quedarte
+corto ahora. Es una línea, `VOLUMEN` en `src/juego-luna/musica.ts`.
 
-- **Si los sonidos y la música se oyen y no molestan**, que es lo único que un
-  banco no puede contestar. Los dos están bajos aposta, y los dos se suben con
-  un número: `VOLUMEN_MAESTRO` en `src/juego-luna/sonidos.ts` para los pops (el
-  más fuerte pica en 0.23 de lo que aguanta el altavoz) y `VOLUMEN` en
-  `src/juego-luna/musica.ts` para las canciones, que van en 0.08 y que hasta el
-  6 de septiembre no hacían nada en el iPhone.
+### Y lo demás, que necesita su Android
+
+Se junta todo para una sola pasada en el teléfono de ella, que es el que manda:
+
+- **Si los pops se oyen y no molestan.** Están bajos aposta: el más fuerte pica
+  en 0.23 de lo que aguanta el altavoz. Se suben con `VOLUMEN_MAESTRO`, en
+  `src/juego-luna/sonidos.ts`.
 - **Si la música tarda mucho en arrancar** en su conexión. Se baja y se descifra
   la canción entera antes de sonar: acá es un segundo o dos, en datos móviles
   puede ser más. Si molesta, se bajan a 48 kbps en `preparar-musica.mjs`.
