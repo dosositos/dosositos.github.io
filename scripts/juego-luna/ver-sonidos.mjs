@@ -125,7 +125,19 @@ async function jugarConSonido(como) {
       }
     }
 
-    window.__musica = { intentos: 0, sonando: 0, error: '', fuentes: [] }
+    window.__musica = { intentos: 0, sonando: 0, error: '', fuentes: [], porGanancia: 0 }
+
+    // Lo que de verdad importa medir acá: que la música salga por un
+    // GainNode y no por `audio.volume`. En iOS esa propiedad es de solo
+    // lectura y ponerla no hace nada, sin avisar y sin error, así que
+    // las canciones sonaban al volumen del archivo mientras el código
+    // decía 0,08. Un contador de esto es lo único que se entera si
+    // alguien vuelve a enchufarlas por el camino de antes.
+    const cableOriginal = Original.prototype.createMediaElementSource
+    Original.prototype.createMediaElementSource = function (...args) {
+      window.__musica.porGanancia += 1
+      return cableOriginal.apply(this, args)
+    }
     const tocarOriginal = HTMLMediaElement.prototype.play
     HTMLMediaElement.prototype.play = function (...args) {
       window.__musica.intentos += 1
@@ -197,6 +209,10 @@ async function jugarConSonido(como) {
       sonando: window.__musica.sonando,
       error: window.__musica.error,
       distintas: window.__musica.fuentes.length,
+      porGanancia: window.__musica.porGanancia,
+      // Si la música saliera por acá, este número no sería 1. Que se
+      // quede en 1 es la prueba de que el volumen lo pone el GainNode.
+      volumenDelElemento: window.__musica.ultimo ? window.__musica.ultimo.volume : null,
     },
   }))
   await tel.close()
@@ -212,7 +228,9 @@ if (!clave) {
 
   const linea = (que, r) =>
     `  ${que.padEnd(9)} ${String(r.osciladores).padStart(2)} osciladores · ` +
-    `${r.musica.distintas} canción(es) distintas · el botón dice «${r.dice}»`
+    `${r.musica.distintas} canción(es) distintas · ` +
+    `${r.musica.porGanancia > 0 ? 'con GainNode' : 'sin GainNode'} · ` +
+    `el botón dice «${r.dice}»`
 
   console.log(linea('de fábrica', defecto))
   console.log(linea('apagado', apagado))
@@ -234,6 +252,16 @@ if (!clave) {
   } else if (defecto.musica.distintas < 2) {
     quejas += 1
     console.log('⚠ al acabarse la canción no entró la siguiente: el bucle se para en la primera')
+  }
+  if (defecto.musica.sonando > 0 && defecto.musica.porGanancia === 0) {
+    quejas += 1
+    console.log('⚠ la música no pasa por un GainNode: en el iPhone va a sonar al volumen del archivo')
+  }
+  if (defecto.musica.volumenDelElemento !== null && defecto.musica.volumenDelElemento !== 1) {
+    quejas += 1
+    console.log(
+      `⚠ el volumen se está poniendo con audio.volume (${defecto.musica.volumenDelElemento}), que en iOS no hace nada`,
+    )
   }
   if (apagado.contextos > 0) {
     quejas += 1

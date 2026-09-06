@@ -466,7 +466,8 @@ todo para una sola pasada en el teléfono de ella, que es el aparato que manda:
   banco no puede contestar. Los dos están bajos aposta, y los dos se suben con
   un número: `VOLUMEN_MAESTRO` en `src/juego-luna/sonidos.ts` para los pops (el
   más fuerte pica en 0.23 de lo que aguanta el altavoz) y `VOLUMEN` en
-  `src/juego-luna/musica.ts` para las canciones, que van en 0.08.
+  `src/juego-luna/musica.ts` para las canciones, que van en 0.08 y que hasta el
+  6 de septiembre no hacían nada en el iPhone.
 - **Si la música tarda mucho en arrancar** en su conexión. Se baja y se descifra
   la canción entera antes de sonar: acá es un segundo o dos, en datos móviles
   puede ser más. Si molesta, se bajan a 48 kbps en `preparar-musica.mjs`.
@@ -511,6 +512,36 @@ solo.
   tercero no baja: se quedan los dos arriba y sobre eso se abre la carta.
 - **Y abrí la portada mirando la esquina de la derecha**, que la luna ahora
   entra derivando y llega la última.
+
+### La música sonaba a todo volumen en el iPhone — 6 de septiembre
+
+**`audio.volume` no hace nada en iOS.** Safari la deja de solo lectura a
+propósito: allá el volumen lo manda el botón del teléfono. No avisa, no tira
+error, simplemente se ignora.
+
+La música se ponía así, y con eso en el iPhone sonaba al volumen del archivo
+—o sea a todo lo que diera— mientras el código decía 0,08. Los dos ajustes que
+hiciste, de 0,11 a 0,08, nunca hicieron nada: estabas oyendo el archivo crudo
+las dos veces.
+
+Ahora el `<audio>` se cuelga de un `GainNode` del **mismo contexto** que los
+pops, y el volumen se controla igual en los dos teléfonos. Se comparte el
+contexto y no se crea otro: dos aparatos de audio en la misma página compiten, y
+en el teléfono eso se paga.
+
+Se pensó en bajarle el volumen a los mp3 con ffmpeg, que también habría
+funcionado. Se descartó por tres razones: no arregla la causa —cualquier control
+de volumen futuro se estrella contra la misma pared—, deja la decisión metida en
+seis megas de archivos que hay que volver a convertir y a subir para retocarla, y
+cada conversión cuesta un poco de calidad. Con el `GainNode` es un número.
+
+`npm run luna:sonidos` ahora comprueba las dos cosas: que la música pase por un
+GainNode, y que el `volume` del elemento se quede en 1. Eso segundo es la prueba
+de que nadie la volvió a enchufar por el camino de antes, que es lo que se
+rompería en silencio.
+
+**Y ojo con el número.** El 0,08 de `VOLUMEN` en `src/juego-luna/musica.ts` es
+la primera vez que va a hacer algo. Si ahora queda demasiado bajo, es esa línea.
 
 ### El peluche en la luna, y la luna que entra — 5 de septiembre, sexta vuelta
 

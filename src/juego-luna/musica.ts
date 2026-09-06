@@ -1,5 +1,5 @@
 import { abrirMedio, claveRecordada, indiceDeMedios } from '@/lib/cripto'
-import { sonidoEncendido } from '@/juego-luna/sonidos'
+import { despertarElAudio, sonidoEncendido } from '@/juego-luna/sonidos'
 
 /**
  * LA MÚSICA DE FONDO DEL JUEGO
@@ -18,6 +18,14 @@ import { sonidoEncendido } from '@/juego-luna/sonidos'
  * El mismo interruptor que los sonidos. Un botón para todo: dos —uno
  * para la música y otro para los pops— sería pedirle que entienda una
  * diferencia que no le importa cuando lo que quiere es que se calle.
+ *
+ * **El volumen no se pone con `audio.volume`.** En iOS esa propiedad es
+ * de solo lectura: allá el volumen lo manda el botón del teléfono y
+ * ponerla desde el código no hace nada, sin avisar y sin error. Con eso,
+ * en el iPhone las canciones sonaban al volumen del archivo, o sea a
+ * todo lo que dieran, mientras acá el número decía 0,08. Así que el
+ * `<audio>` se cuelga de un `GainNode` del mismo contexto que los pops,
+ * y ahí el volumen se controla igual en los dos teléfonos.
  */
 
 /**
@@ -32,6 +40,16 @@ const VOLUMEN = 0.04
 const FUNDIDO = 1400
 
 let audio: HTMLAudioElement | null = null
+
+/**
+ * Por dónde sale el sonido de verdad, cuando hay Web Audio.
+ *
+ * `fuente` no se puede armar dos veces sobre el mismo `<audio>` —el
+ * navegador tira si se intenta—, así que se arma una sola vez al
+ * encender y se tira entera al apagar.
+ */
+let fuente: MediaElementAudioSourceNode | null = null
+let ganancia: GainNode | null = null
 
 /** El orden en que van sonando. Se vuelve a barajar al terminarse. */
 let vuelta: string[] = []
@@ -62,19 +80,38 @@ function barajar(nombres: string[]): string[] {
   return orden
 }
 
+/**
+ * Pone el volumen.
+ *
+ * Por el `GainNode` si lo hay, que es lo único que funciona en los dos
+ * teléfonos, y por `audio.volume` si no — que en un navegador viejo sin
+ * Web Audio es mejor que nada, y en iOS ese caso no existe.
+ */
+function ponerVolumen(v: number) {
+  const acotado = Math.max(0, Math.min(1, v))
+  if (ganancia) ganancia.gain.value = acotado
+  else if (audio) audio.volume = acotado
+}
+
+/** Cuánto está sonando ahora mismo. */
+function volumenDeAhora(): number {
+  if (ganancia) return ganancia.gain.value
+  return audio ? audio.volume : 0
+}
+
 /** Sube o baja el volumen de a poquito, para que no entre de golpe. */
 function fundir(hasta: number, alTerminar?: () => void) {
   window.clearInterval(relojDelFundido)
   if (!audio) return
 
-  const desde = audio.volume
+  const desde = volumenDeAhora()
   const empezo = performance.now()
 
   relojDelFundido = window.setInterval(() => {
     if (!audio) return window.clearInterval(relojDelFundido)
 
     const parte = Math.min(1, (performance.now() - empezo) / FUNDIDO)
-    audio.volume = Math.max(0, Math.min(1, desde + (hasta - desde) * parte))
+    ponerVolumen(desde + (hasta - desde) * parte)
 
     if (parte === 1) {
       window.clearInterval(relojDelFundido)
@@ -102,7 +139,7 @@ async function ponerLaQueToca(clave: string) {
   ultima = nombre
 
   audio.src = await abrirMedio(nombre, clave)
-  audio.volume = 0
+  ponerVolumen(0)
   await audio.play()
   fundir(VOLUMEN)
 
@@ -141,6 +178,23 @@ export async function arrancarMusica(): Promise<void> {
 
     audio = new Audio()
     audio.preload = 'auto'
+
+    // Colgado del mismo contexto que los pops. Si el navegador no
+    // tiene Web Audio, o si se niega, la música suena igual: se cae a
+    // `audio.volume`, que funciona en todos lados menos en iOS.
+    const ctx = despertarElAudio()
+    if (ctx) {
+      try {
+        fuente = ctx.createMediaElementSource(audio)
+        ganancia = ctx.createGain()
+        ganancia.gain.value = 0
+        fuente.connect(ganancia).connect(ctx.destination)
+      } catch {
+        fuente = null
+        ganancia = null
+      }
+    }
+
     audio.addEventListener('ended', () => {
       cual += 1
       void ponerLaQueToca(clave).catch(() => {})
@@ -168,6 +222,20 @@ export function pararMusica(): void {
   sonando = false
   vuelta = []
   cual = 0
+
+  // El cableado se suelta entero. Un `MediaElementAudioSourceNode` se
+  // arma una sola vez por elemento, así que la próxima vez que se
+  // encienda hay que empezar por un `<audio>` nuevo y por un cable
+  // nuevo, y dejar el viejo colgando sería dejarlo sonando.
+  try {
+    fuente?.disconnect()
+    ganancia?.disconnect()
+  } catch {
+    /* ya estaba suelto: da igual */
+  }
+  fuente = null
+  ganancia = null
+
   if (quien) {
     quien.pause()
     quien.src = ''

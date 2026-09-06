@@ -264,6 +264,19 @@ function leerElInterruptor(): boolean {
 let encendido = leerElInterruptor()
 
 /**
+ * El mismo contexto de audio, para quien lo necesite.
+ *
+ * Lo usa la música de fondo, que **no puede confiar en `audio.volume`**:
+ * en iOS esa propiedad es de solo lectura —allá el volumen lo manda el
+ * botón del teléfono— y ponerla no hace absolutamente nada. Colgando el
+ * `<audio>` de un `GainNode` de acá, el volumen se controla igual en
+ * los dos teléfonos.
+ *
+ * Se comparte y no se crea otro: dos AudioContext en la misma página
+ * son dos aparatos de audio compitiendo, y en el teléfono eso se paga.
+ */
+
+/**
  * Despierta el aparato de sonido.
  *
  * El navegador no deja crear ni arrancar audio hasta que la persona
@@ -272,6 +285,10 @@ let encendido = leerElInterruptor()
  * iOS, además, el contexto se duerme solo al volver de otra pestaña, y
  * por eso se le pide despertar cada vez y no una sola.
  */
+export function despertarElAudio(): AudioContext | null {
+  return despertar()
+}
+
 function despertar(): AudioContext | null {
   if (imposible) return null
   try {
