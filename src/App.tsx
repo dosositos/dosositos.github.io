@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { Link, Route, Routes, useLocation } from 'react-router-dom'
 import { AsomoDeLaTortuga } from '@/componentes/AsomoDeLaTortuga'
 import { Candado } from '@/componentes/Candado'
@@ -11,10 +12,31 @@ import { Estadisticas } from '@/paginas/Estadisticas'
 import { Frasco } from '@/paginas/Frasco'
 import { Juego } from '@/paginas/Juego'
 import { LineaDelTiempo } from '@/paginas/LineaDelTiempo'
-import { Luna } from '@/paginas/Luna'
 import { Momento } from '@/paginas/Momento'
 import { Playlist } from '@/paginas/Playlist'
 import { Portada } from '@/paginas/Portada'
+
+/* El juego de la luna es, de lejos, lo más pesado que hay acá: el motor, el
+   pintor y los tres mundos. Y es lo último que ella va a abrir, porque la luna
+   no se toca hasta que tenga a los tres peluches — o sea, días. Pidiéndolo
+   aparte, la portada le baja liviana y el juego se baja recién cuando entra. */
+const Luna = lazy(async () => ({ default: (await import('@/paginas/Luna')).Luna }))
+
+/** Lo que se ve mientras el juego baja.
+ *
+ * Mismo fondo exacto que la pantalla del juego, para que al terminar de bajar
+ * no parpadee nada: la luna de verdad aparece donde estaba esta. Sin texto
+ * aposta — es un segundo, y un cartel que alcanza a leerse a medias molesta
+ * más de lo que explica. Pero algo tiene que latir: una pantalla negra y
+ * quieta ya nos pareció una vez un juego roto.
+ */
+function LunaCargando() {
+  return (
+    <div className="fixed inset-0 z-30 grid place-items-center overflow-hidden bg-[#0b1026]">
+      <div className="anima-latido h-16 w-16 rounded-full bg-margarita shadow-[0_0_46px_rgba(248,244,232,0.4)]" />
+    </div>
+  )
+}
 
 /** Marcador temporal mientras construimos cada sección. */
 function EnConstruccion({ titulo, nota }: { titulo: string; nota: string }) {
@@ -82,7 +104,14 @@ function Marco() {
             <Route path="/frasco" element={<Frasco />} />
             {/* Fuera del menú y sin enlace desde ningún lado hasta que
                 la luna de la portada se vuelva tocable. */}
-            <Route path="/luna" element={<Luna />} />
+            <Route
+              path="/luna"
+              element={
+                <Suspense fallback={<LunaCargando />}>
+                  <Luna />
+                </Suspense>
+              }
+            />
             <Route
               path="*"
               element={<EnConstruccion titulo="te perdiste, osita" nota="esta página no existe todavía" />}

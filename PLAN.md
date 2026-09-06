@@ -20,7 +20,7 @@
       (el "un día como hoy" ya está, adelantado el 17)
 - [ ] Día 7 (20-21 ago) · El sobre de apertura, easter eggs
       (los peluches escondidos ya están, adelantados el 17)
-- [ ] Día 8 (22 ago) · PWA, música, celebraciones del calendario, pulido
+- [ ] Día 8 (22 ago) · música, celebraciones del calendario, pulido
 - [ ] Día 9 (23 ago) · Pruebas en móvil de verdad, ensayo general
 - [ ] **Día 10 (24 ago) · Entregar** 🌻
 
@@ -281,7 +281,6 @@ días — el que falta es el 29 de febrero.
       Está fuera de la portada desde el 16 de agosto, esperando lugar
 
 ### Día 8 · Redondear
-- [ ] Yo: instalable en el teléfono (PWA) con ícono propio
 - [ ] Yo: música de fondo instrumental, silenciada por defecto
 - [ ] Yo: repaso de todas las animaciones y de los tiempos
 - [ ] Vos: leer todos los textos y corregir mi voz por la tuya
@@ -458,11 +457,13 @@ en cuanto se suba: conviene mirarlo dos veces.
 
 ### Lo primero, y esto sí lo podés hacer vos solo
 
-**Volvé a oír la música en tu iPhone.** Hasta el 6 de septiembre el volumen no
-se aplicaba allá —`audio.volume` no existe en iOS— así que sonaba el archivo
-crudo y tus dos ajustes no hicieron nada. Ahora sale por un `GainNode` y el
-número manda de verdad, pero **ese número nunca se probó**: 0,08 puede quedarte
-corto ahora. Es una línea, `VOLUMEN` en `src/juego-luna/musica.ts`.
+**Arreglá `npm run luna:ver`, o borralo.** Está roto desde que se metió el
+cuento de «por qué una tortuga»: entra a `/luna`, espera 1,2 segundos y busca
+la casilla del bautizo, pero a esa altura todavía corre el cuento y lo que hay
+en pantalla es el botón de «saltar». Se queda plantado treinta segundos y se
+cae. El 6 de septiembre se comprobó que ya fallaba antes de tocar nada, así que
+no es de lo de ahora. Duele porque es el único arnés que mira el canvas: es el
+que se daría cuenta si la pantalla del juego se quedara en negro.
 
 ### Y lo demás, que necesita su Android
 
@@ -515,6 +516,36 @@ solo.
   tercero no baja: se quedan los dos arriba y sobre eso se abre la carta.
 - **Y abrí la portada mirando la esquina de la derecha**, que la luna ahora
   entra derivando y llega la última.
+
+### La PWA se fue, y el juego se baja aparte — 6 de septiembre, segunda vuelta
+
+**El volumen de la música quedó como estaba.** Lo oíste en tu iPhone y está
+bien: `VOLUMEN` no se toca.
+
+**La PWA se borró del repositorio.** No llegó a existir nunca: no había manifest
+ni ícono ni service worker, solo `vite-plugin-pwa` instalado sin usar y cuatro
+renglones de plan prometiéndola. Se sacó la dependencia —y con ella se fueron
+más de seis mil líneas de `package-lock.json`— y se limpiaron las menciones de
+acá. Fue un error haberla puesto en los planes, y así queda.
+
+**Y el juego de la luna ya no viaja en el primer paquete.** `src/App.tsx` lo
+pedía como a cualquier otra página, así que al abrir la portada ella se bajaba
+el motor, el pintor y los tres mundos: una pantalla a la que no llega hasta
+tener a los tres peluches, o sea días. Ahora va por `lazy` y se baja recién al
+entrar. El primer paquete pasó de 207 a 183 kB comprimidos, y el juego se fue a
+su propio trozo de 27 kB.
+
+No bajó más porque buena parte del dibujo se usa fuera del juego: el asomo del
+pie de página, la vitrina del ropero y el cuento dibujan la misma tortuga, así
+que `tortuga.ts` y lo suyo se quedan donde estaban. Lo que se fue es lo que solo
+existe adentro: `motor.ts`, `dibujo.ts` y los tres mundos.
+
+**Mientras baja hay una luna latiendo**, sobre el mismo `#0b1026` exacto de la
+pantalla del juego, para que al llegar el trozo no parpadee nada. Sin texto: es
+un segundo, y un cartel que alcanza a leerse a medias molesta más de lo que
+explica. Pero quieta y negra no se deja, que esa pantalla ya nos engañó una vez.
+Se fotografió con el trozo retrasado cuatro segundos a mano, que es como se
+vería en datos móviles flojos.
 
 ### La música sonaba a todo volumen en el iPhone — 6 de septiembre
 
@@ -1444,8 +1475,7 @@ escribió antes que el capítulo y por eso el capítulo salió en una tarde.
 3. La **línea del tiempo horizontal para computadora**, lo único atrasado del
    orden original.
 4. Probar el **diccionario** en el teléfono de verdad.
-5. **PWA**: hoy no hay manifest ni ícono.
-6. Los **13 puntos y coma** de `src/content/momentos.ts` y los 5 de
+5. Los **13 puntos y coma** de `src/content/momentos.ts` y los 5 de
    `src/content/diccionario.ts`, que son de mi redacción y no citas.
 
 El plan completo del juego, con la mecánica, los tres mundos, los valores de la
@@ -1897,8 +1927,6 @@ sesión y otra.
 4. **Probar el diccionario en el teléfono de verdad**: si alguna ficha quedó
    cortada y si el gesto pesa bien (`ZONA_MUERTA` y `DUREZA` en
    `src/componentes/Libro.tsx`).
-5. **PWA**: hoy no hay manifest ni ícono, así que agregarla a la pantalla de
-   inicio no le pone carátula propia.
 
 ---
 
