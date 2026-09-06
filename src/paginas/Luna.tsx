@@ -200,6 +200,11 @@ export function Luna() {
     const pintor = crearPintor(canvas, nivel)
     pintor.movimientoReducido = menosMovimiento ?? false
     pintor.puesto = loPuesto(leerProgreso())
+    // Quién espera arriba, por la dirección de su retrato. Se lo dice
+    // la página y no el nivel: las clases de la escuelita usan este
+    // mismo pintor y allá arriba no hay nadie, y además el catálogo de
+    // retratos es de Vite y el pintor lo importan arneses de node.
+    pintor.peluche = RETRATOS[capitulo.id] ?? null
     pintorRef.current = pintor
 
     /** Los relojes de los carteles, para apagarlos todos al salir. */

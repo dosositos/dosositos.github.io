@@ -43,6 +43,7 @@
     "luna:asomo": "node scripts/juego-luna/ver-asomo.mjs",
     "luna:sonidos": "node scripts/juego-luna/ver-sonidos.mjs",
     "luna:colado": "node scripts/juego-luna/ver-colado.mjs",
+    "luna:peluche": "node scripts/juego-luna/ver-peluche.mjs",
     "luna:cuela": "node --import ./scripts/juego-luna/alias-luna.mjs scripts/juego-luna/probar-colado.mjs",
     "diccionario:preparar": "node scripts/preparar-diccionario.mjs && node scripts/cifrar-contenido.mjs"
   },

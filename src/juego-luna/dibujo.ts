@@ -1,4 +1,4 @@
-import { LLEGADA, LUNA, MUNDO, TORTUGA } from '@/content/luna'
+import { EL_PELUCHE, LLEGADA, LUNA, MUNDO, TORTUGA } from '@/content/luna'
 import {
   dibujarAlmohada,
   dibujarCortina,
@@ -13,6 +13,14 @@ import {
   soltarPlumas,
 } from '@/juego-luna/mundo-almohadas'
 import { dibujarColado } from '@/juego-luna/colado'
+import {
+  bajandoDeLaLuna,
+  dibujarPelucheSentado,
+  dondeSeAgarra,
+  dondeSeSienta,
+  elVaiven,
+  retratoDe,
+} from '@/juego-luna/peluche-en-la-luna'
 import { dibujarEstrellaDePapel, dibujarEstrellita } from '@/juego-luna/estrella'
 import { laLlegada } from '@/juego-luna/llegada'
 import {
@@ -125,6 +133,17 @@ export interface Pintor {
    * tirar el nivel sembrado y empezar de cero.
    */
   puesto: PuestoEnLaTortuga
+  /**
+   * La dirección del retrato de quien espera en la luna de este
+   * capítulo, o nada.
+   *
+   * Se pone desde fuera igual que `puesto`, y por dos razones: el nivel
+   * no sabe de peluches —las clases de la escuelita usan este mismo
+   * pintor y allá arriba no espera nadie— y el catálogo de retratos se
+   * arma con `import.meta.glob`, que node no sabe leer y que dejaría a
+   * los arneses de línea de comandos sin poder importar el pintor.
+   */
+  peluche: string | null
 }
 
 /**
@@ -392,6 +411,7 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
   const pintor: Pintor = {
     movimientoReducido: false,
     puesto: {},
+    peluche: null,
 
     altoDeLaVista: () => (escala > 0 ? altoCss / escala : MUNDO.alto),
 
@@ -485,6 +505,12 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
           altoVista,
           nivel.radioDeLaLuna,
           pintor.movimientoReducido,
+          // Y quien la está esperando allá arriba, que sale en la
+          // presentación y no solo al final: la luna se acerca a la
+          // pantalla, se ve quién está sentado encima, y se va. Eso es
+          // el capítulo entero contado sin una palabra.
+          pintor.peluche ? retratoDe(pintor.peluche) : null,
+          escena.reloj,
         )
         ctx.restore()
       }
@@ -518,8 +544,31 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
         // Acá no se va: se queda quieta creciendo mientras ella sube,
         // que es lo contrario de lo que hizo los tres capítulos.
         dibujarLuna(ctx, llegando.luna)
+
+        // Y el tercer peluche sigue sentado donde estuvo el capítulo
+        // entero. Este es el único capítulo en que no baja al
+        // caparazón, porque acá la luna no se escapa: sube ella. Se
+        // quedan los dos arriba, uno al lado del otro, y sobre ese
+        // cuadro se abre la carta. No hace falta programar nada más
+        // para que sea el final: alcanza con no moverlo.
+        const enLaLuna = pintor.peluche ? retratoDe(pintor.peluche) : null
+        if (enLaLuna) {
+          const sitio = dondeSeSienta(llegando.luna)
+          dibujarPelucheSentado(ctx, enLaLuna, {
+            x: sitio.x,
+            y: sitio.y + elVaiven(escena.reloj, pintor.movimientoReducido),
+            alto: EL_PELUCHE.alto,
+          })
+        }
       } else if (escena.cine !== 'entrada' && escena.cine !== 'espera') {
-        dibujarLunaEsperando(ctx, dondeEspera, escena, nivel.radioDeLaLuna)
+        dibujarLunaEsperando(
+          ctx,
+          dondeEspera,
+          escena,
+          nivel.radioDeLaLuna,
+          pintor.peluche ? retratoDe(pintor.peluche) : null,
+          pintor.movimientoReducido,
+        )
       }
 
       // Y las estrellitas de papel que se van quedando atrás. Van por
@@ -768,6 +817,8 @@ function dibujarLunaEntrando(
   altoVista: number,
   radio: number,
   movimientoReducido: boolean,
+  retrato: HTMLImageElement | null,
+  reloj: number,
 ) {
   /** Los primeros dos quintos se queda, y el resto se va subiendo. */
   const seQueda = Math.min(1, avance / 0.4)
@@ -785,7 +836,20 @@ function dibujarLunaEntrando(
   // Entra con un halo que se abre: es el «acá estoy» antes de irse.
   ctx.save()
   ctx.globalAlpha = Math.min(1, seQueda * 2) * (1 - seVa * 0.25)
-  dibujarLuna(ctx, { x: MUNDO.ancho / 2, y, r })
+  const luna = { x: MUNDO.ancho / 2, y, r }
+  dibujarLuna(ctx, luna)
+
+  if (retrato) {
+    const sitio = dondeSeSienta(luna)
+    dibujarPelucheSentado(ctx, retrato, {
+      x: sitio.x,
+      y: sitio.y + elVaiven(reloj, movimientoReducido),
+      // Crece con la luna, que en esta cinemática se acerca a la
+      // pantalla: si se quedara del tamaño del mundo, el peluche se
+      // encogería mientras la luna se agranda.
+      alto: EL_PELUCHE.alto * (r / radio),
+    })
+  }
   ctx.restore()
 }
 
@@ -798,23 +862,61 @@ function dibujarLunaEsperando(
   donde: { x: number; y: number },
   escena: EscenaLuna,
   radio: number,
+  retrato: HTMLImageElement | null,
+  movimientoReducido: boolean,
 ) {
   const yendose = escena.cine === 'salida' || escena.cine === 'fin'
-  const seVa = yendose ? escena.cineAvance : 0
+
+  // El cierre del capítulo va en dos tiempos, y esta es la costura:
+  // primero el peluche baja de la luna y se le sube al caparazón, con
+  // la luna quieta esperando a que termine, y recién entonces la luna
+  // se despide. En el otro orden se iría con el peluche todavía
+  // encima, que es lo contrario de lo que acaba de pasar.
+  const cierre = yendose ? escena.cineAvance : 0
+  const baja = Math.min(1, cierre / LUNA.bajaElPeluche)
+  const seVa = Math.max(0, (cierre - LUNA.bajaElPeluche) / (1 - LUNA.bajaElPeluche))
   const empuje = seVa * seVa * seVa
 
   // Quieta late apenas, para que se note que está viva y que es a
   // donde hay que llegar.
   const latido = 1 + Math.sin(escena.reloj * 1.3) * 0.02
 
-  ctx.save()
-  ctx.globalAlpha = 1 - seVa * 0.9
-  dibujarLuna(ctx, {
+  const luna = {
     x: donde.x,
     y: donde.y - empuje * 620,
     r: radio * latido * (1 - seVa * 0.35),
-  })
+  }
+
+  ctx.save()
+  ctx.globalAlpha = 1 - seVa * 0.9
+  dibujarLuna(ctx, luna)
   ctx.restore()
+
+  if (!retrato) return
+
+  const asiento = dondeSeSienta(luna)
+
+  // Todavía esperando: sentado arriba, bamboleándose.
+  if (!yendose) {
+    dibujarPelucheSentado(ctx, retrato, {
+      x: asiento.x,
+      y: asiento.y + elVaiven(escena.reloj, movimientoReducido),
+      alto: EL_PELUCHE.alto,
+    })
+    return
+  }
+
+  // Bajando, o ya montado. Cuando llega, se queda pegado al caparazón
+  // y se va con ella: la luna sube sola, que es de lo que se trata.
+  const lomo = dondeSeAgarra(escena)
+  const camino = bajandoDeLaLuna(asiento, lomo, baja)
+
+  dibujarPelucheSentado(ctx, retrato, {
+    x: camino.llegado >= 1 ? lomo.x : camino.x,
+    y: camino.llegado >= 1 ? lomo.y : camino.y,
+    alto: EL_PELUCHE.alto,
+    giro: movimientoReducido ? 0 : camino.giro,
+  })
 }
 
 /**

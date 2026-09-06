@@ -34,6 +34,7 @@
 
     <script type="module">
       import { crearPintor } from '/src/juego-luna/dibujo.ts'
+      import { RETRATOS } from '/src/lib/retratos.ts'
       import { laLlegada } from '/src/juego-luna/llegada.ts'
       import { construirNivel } from '/src/juego-luna/mundos.ts'
       import { CAPITULOS, LLEGADA, MUNDO } from '/src/content/luna.ts'
@@ -98,6 +99,18 @@
         [1, 'la luna entera, y todo lo demás cielo'],
       ]
 
+      // El retrato de quien espera arriba es un webp del bundle y el
+      // pintor lo pide la primera vez que le toca dibujarlo, así que en
+      // la primera pasada todavía no está. Acá se espera antes de
+      // pintar. Jugando esto no pasa: el pintor corre sesenta veces por
+      // segundo y para cuando ella llega hace rato que se bajó.
+      await new Promise((listo) => {
+        const img = new Image()
+        img.onload = listo
+        img.onerror = listo
+        img.src = RETRATOS[capitulo.id]
+      })
+
       const tira = document.getElementById('tira')
       for (const [a, nombre] of momentos) {
         const figura = document.createElement('figure')
@@ -108,6 +121,10 @@
         tira.append(figura)
 
         const pintor = crearPintor(lienzo, nivel)
+        // El tercer peluche sigue sentado en la luna todo el viaje: en
+        // este capítulo la luna no se escapa, así que no baja al
+        // caparazón. Ella sube y quedan los dos arriba.
+        pintor.peluche = RETRATOS[capitulo.id] ?? null
         pintor.medir(288, 624)
         pintor.pintar(cuadro(a))
       }

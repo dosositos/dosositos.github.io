@@ -629,8 +629,71 @@ export const LUNA = {
   /** Lo que dura la cinemática de entrada. Un toque se la salta. */
   msDeEntrada: 3000,
 
-  /** Lo que dura la de irse, al llegar arriba. */
-  msDeSalida: 2600,
+  /**
+   * Lo que dura la de irse, al llegar arriba.
+   *
+   * Eran 2600 cuando lo único que pasaba era que la luna subía. Ahora
+   * el capítulo se cierra en dos tiempos —primero el peluche baja de
+   * la luna y se le sube al caparazón, después la luna se va— y los
+   * dos caben acá adentro: `bajaElPeluche` dice dónde está la costura.
+   * A la luna le quedan sus 2600 de siempre.
+   */
+  msDeSalida: 4400,
+
+  /**
+   * Qué parte de la salida se lleva el peluche bajando.
+   *
+   * Primero baja él y la luna se queda quieta, y recién cuando está
+   * sentado en el caparazón la luna se despide. En el otro orden la
+   * luna se iría con el peluche todavía encima, que es lo contrario de
+   * lo que pasó: ella subió a buscarlo y se lo lleva.
+   */
+  bajaElPeluche: 0.41,
+}
+
+/**
+ * EL PELUCHE QUE ESPERA EN LA LUNA
+ *
+ * Boo, Ovi y Nico están sentados arriba desde el primer cuadro del
+ * capítulo, y al alcanzar la cima bajan y se le suben al caparazón.
+ * Es el retrato bordado de siempre, no un dibujo nuevo.
+ */
+export const EL_PELUCHE = {
+  /**
+   * Lo que mide de alto, en unidades del mundo. La tortuga son 50.
+   *
+   * Sentado en el caparazón se ve grande, y está bien: es un peluche
+   * del tamaño de un peluche subido a una tortuga del tamaño de una
+   * tortuga. Achicarlo para que «cupiera» lo convertía en un llavero.
+   */
+  alto: 32,
+
+  /**
+   * Cuánto se corre del centro de la luna, en radios.
+   *
+   * No va en la coronilla porque en el último capítulo la tortuga sube
+   * a pararse justo ahí: con el peluche en el centro le aterrizaría
+   * encima. Corrido, quedan los dos sentados uno al lado del otro.
+   */
+  corrido: 0.44,
+
+  /**
+   * Lo que se hunde en lo que sea que esté sentado.
+   *
+   * El retrato es un cuadrado con aire alrededor, así que apoyar su
+   * borde de abajo en la superficie lo deja flotando un pelo. Esto lo
+   * mete.
+   */
+  seHunde: 6,
+
+  /** El compás que espera antes de descolgarse, de 0 a 1 de la bajada. */
+  elCompas: 0.22,
+
+  /** Cuánto se ladea mientras baja, en radianes. */
+  seLadea: 0.34,
+
+  /** Lo que se bambolea esperando, en píxeles. */
+  vaiven: 1.6,
 }
 
 /**

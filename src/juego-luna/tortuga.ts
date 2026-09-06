@@ -320,12 +320,32 @@ export function poseEnLaLuna(base: Pose, quieta: number, sentada: number, reloj:
  * la cabeza está tumbada y en otro sitio.
  */
 export function cabezaDe(escena: EscenaLuna, pose = poseDe(escena)) {
+  return puntoDelTorso(escena, pose, 5.2, CUERPO.hombro - 10.4)
+}
+
+/**
+ * Y dónde se sienta el peluche en el caparazón.
+ *
+ * La misma cuenta que la cabeza. No es lo más alto del caparazón —que
+ * sale en (-7,4, -20) de la elipse del dibujo— sino un poco más adentro
+ * y más atrás: apoyado justo en la coronilla del caparazón, el peluche
+ * quedaba a la altura de su cabeza y se leía como sentado en la cabeza.
+ * Metido en la curva, la cabeza de ella le tapa el fondillo y se
+ * entiende que va montado detrás.
+ */
+export function caparazonDe(escena: EscenaLuna, pose = poseDe(escena)) {
+  return puntoDelTorso(escena, pose, -9.4, -16.6)
+}
+
+/**
+ * Un punto del torso, en coordenadas del mundo.
+ *
+ * Hay que rehacer la misma cuenta que hace el canvas al encadenar los
+ * `translate` y los `rotate` del dibujo, porque desde afuera no se
+ * puede preguntar.
+ */
+function puntoDelTorso(escena: EscenaLuna, pose: Pose, lx: number, ly: number) {
   const escala = TORTUGA.alto / ALTO_DIBUJADA
-
-  // La cabeza, dentro del grupo del torso.
-  const lx = 5.2
-  const ly = CUERPO.hombro - 10.4
-
   // El torso va rotado por la inclinación.
   const seno = Math.sin(-pose.inclinacion)
   const coseno = Math.cos(-pose.inclinacion)

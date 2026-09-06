@@ -166,6 +166,7 @@ npm run luna:minimos     # ¿en cuántos pasitos se puede subir cada capítulo?
                          # (de ahí salen los récords de él; -- 2 enseña la ruta)
 npm run luna:sonidos     # el banco de los nueve sonidos: los dibuja, los mide, y
                          # comprueba jugando que suenen (y que apagados no suene nada)
+npm run luna:peluche     # el cierre del capítulo: el peluche baja de la luna al caparazón
 npm run luna:colado      # el banco del pato: sus cuadros, su tamaño y la tortuga en su lomo
 npm run luna:cuela       # ¿se cuela donde debe? (mil sorteos por capítulo)
 npm run luna:asomo       # el banco del adelanto: la tortuga que se asoma al final de una página

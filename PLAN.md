@@ -448,13 +448,13 @@ arrancamos por donde diga, sin que tengás que acordarte de nada.
 
 **El plan está terminado.** Las diez fases del juego están hechas: la escuelita,
 el cuento de antes, los tres capítulos, la llegada, la carta, los récords, el
-volver a subir, la luna de la portada, el ropero, los sonidos, la música y el
-colado. **Lo único que queda no se puede hacer sin ella delante**, o mejor dicho
+volver a subir, la luna de la portada, el ropero, los sonidos, la música, el
+colado y los peluches esperando en la luna. **Lo único que queda no se puede hacer sin ella delante**, o mejor dicho
 sin su teléfono.
 
-**Nada de esto está subido, y es a propósito.** Lo decidiste el 5 de
-septiembre: en cuanto suba, ella puede llegar al juego, y querés que suba
-entero. Está todo commiteado en `nico-cobijas` y ahí se queda.
+**Y está subido.** Se esperó hasta tenerlo entero, que era la condición, y el 5
+de septiembre se empujó. De aquí en adelante, lo que se toque lo va a ver ella
+en cuanto se suba: conviene mirarlo dos veces.
 
 ### Lo único que falta: su Android
 
@@ -482,12 +482,12 @@ todo para una sola pasada en el teléfono de ella, que es el aparato que manda:
   las tres de los tramos raros en una sola si aburren.
 - Si la tortuga del cuento, ya a 15, camina como tortuga o sigue apurada.
 
-### Cuándo se sube: cuando esté al 100 %
+### Ya está subido
 
-Ya está decidido y no hay que volver sobre eso. En cuanto suba, la web está en
-su mano, y no lo va a ver el primer día porque la luna no se abre hasta que
-encuentre a los tres peluches, y cada uno se esconde en una página distinta.
-Pero va a pasar solo, y por eso no sube nada hasta que no falte nada.
+Se subió el 5 de septiembre, cuando el juego quedó entero. La web está en su
+mano. No lo va a ver el primer día: la luna no se abre hasta que encuentre a los
+tres peluches, y cada uno se esconde en una página distinta. Pero va a pasar
+solo.
 
 ### Antes de eso, si querés
 
@@ -506,6 +506,56 @@ Pero va a pasar solo, y por eso no sube nada hasta que no falte nada.
 - **Y esperá al pato.** Se cuela dos veces por capítulo, sin avisar, en la
   plataforma a la que ibas. No te va a matar: si saltás igual te parás en su
   lomo. Nadie te lo explica en ninguna parte y así tiene que quedarse.
+- **Mirá cómo cierra un capítulo.** El peluche que estuvo esperando arriba baja
+  de la luna y se te sube al caparazón, y recién ahí la luna se va. En el
+  tercero no baja: se quedan los dos arriba y sobre eso se abre la carta.
+- **Y abrí la portada mirando la esquina de la derecha**, que la luna ahora
+  entra derivando y llega la última.
+
+### El peluche en la luna, y la luna que entra — 5 de septiembre, sexta vuelta
+
+**Los peluches ya no salen solo en dos carteles de texto.** Boo, Ovi y Nico
+están sentados encima de la luna desde el primer cuadro del capítulo, y se ven
+ya en la cinemática de entrada: la luna se acerca a la pantalla, se ve quién
+está esperando, y se va para arriba con él encima. El capítulo entero contado
+sin una palabra.
+
+Al pisar la cima, el peluche **baja de la luna y se le sube al caparazón**, y
+recién entonces la luna se va. Ese orden lo elegiste vos y es el que importa: al
+revés, la luna se iría con el peluche todavía encima. La salida pasó de 2,6 a
+4,4 segundos para que quepan las dos cosas, y a la luna le quedan sus 2,6 de
+siempre.
+
+Se le sube **solo por ese momento**. No es ropita del ropero: la luna se va,
+sale el cartel del cierre y la próxima vez vuelve a estar arriba esperando.
+
+En el tercer capítulo no baja, porque ahí la luna no se escapa: sube ella. Se
+quedan los dos arriba, uno al lado del otro, y sobre ese cuadro se abre la
+carta. No hubo que programar nada para eso — alcanzó con no moverlo. Por eso el
+peluche no se sienta en la coronilla de la luna sino corrido: ahí es donde ella
+aterriza.
+
+Es el retrato bordado, no un dibujo nuevo. Dibujar un panda a mano al lado del
+panda que ella ya conoce no tenía sentido.
+
+**Y la luna de la portada ahora entra.** Todo lo demás de esa pantalla tiene
+animación de entrada —el regalo aparece, el título sube desenfocado, el contador
+se desliza— y la luna estaba puesta desde el primer cuadro, que al lado de lo
+otro se veía pegada. Ahora deriva desde fuera de cuadro, de más a la derecha y
+de más arriba, creciendo un poco. **Llega la última, en 0,9 y tardando segundo y
+medio**: es una puerta escondida y no puede ser lo primero que se mueve. Lo que
+tiene que pasar es que ella lea el encabezado y después note, de reojo, que algo
+se acomodó en la esquina.
+
+Se miran con `npm run luna:peluche` (los ocho momentos del cierre, en los dos
+capítulos donde pasa) y con `npm run luna:puerta`, que ahora saca también la
+tira de cómo entra la luna: en una sola foto una animación no se ve.
+
+**Una que costó y conviene no repetir.** El pintor pasó a pedirle el retrato a
+`lib/retratos.ts`, que arma su catálogo con `import.meta.glob`. Eso es de Vite y
+node no lo sabe leer, así que `npm run luna:probar` se cayó antes de empezar:
+importa el pintor. Ahora la dirección del retrato entra desde fuera, como la
+ropita. **Todo lo que importe el pintor tiene que poder correr en node.**
 
 ### El colado — 5 de septiembre, quinta vuelta. Con esto el plan cierra
 

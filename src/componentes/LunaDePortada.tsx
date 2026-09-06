@@ -153,7 +153,40 @@ export function LunaDePortada() {
        corta: está para que el papelito de abajo cuelgue del borde
        derecho de la pantalla y no del borde del disco, que se fue
        afuera. */
-    <div className="relative z-20" style={{ width: lado * (1 - ASOMO), height: lado }}>
+    <motion.div
+      className="relative z-20"
+      style={{ width: lado * (1 - ASOMO), height: lado }}
+      /* ── Cómo entra ────────────────────────────────────────────
+         Todo lo demás de la portada entra —el regalo aparece, el
+         título sube desenfocado, el contador se desliza— y la luna
+         estaba puesta desde el primer cuadro. Al lado de lo otro se
+         veía pegada, como si se hubiera olvidado de llegar.
+
+         Entra **derivando desde afuera**, no apareciendo: viene de más
+         a la derecha y de más arriba, o sea de fuera de la pantalla,
+         que es de donde vendría una luna que quedó fuera de cuadro. Y
+         entra creciendo un poquito, porque se acerca.
+
+         **La última, y con calma.** El título va con 0,15 de retraso y
+         el contador con 0,5; la luna llega en 0,9 y tarda segundo y
+         medio en posarse. Es a propósito: es una puerta escondida y no
+         puede ser lo primero que se mueve. Lo que tiene que pasar es
+         que ella lea el encabezado y **después** note, de reojo, que
+         algo se acomodó en la esquina.
+
+         Con `prefers-reduced-motion` no deriva ni crece: aparece y ya.
+         Un disco cruzando la pantalla es exactamente lo que esa
+         preferencia está pidiendo que no pase. */
+      initial={
+        sinMovimiento ? { opacity: 0 } : { opacity: 0, x: 58, y: -30, scale: 0.82 }
+      }
+      animate={sinMovimiento ? { opacity: 1 } : { opacity: 1, x: 0, y: 0, scale: 1 }}
+      transition={
+        sinMovimiento
+          ? { duration: 0.8, delay: 0.4 }
+          : { duration: 1.5, ease: [0.22, 1, 0.36, 1], delay: 0.9 }
+      }
+    >
       <button
         ref={botonRef}
         type="button"
@@ -295,6 +328,6 @@ export function LunaDePortada() {
           transition={{ duration: 0.3, delay: MS_DE_VIAJE / 1000 - 0.28 }}
         />
       ) : null}
-    </div>
+    </motion.div>
   )
 }

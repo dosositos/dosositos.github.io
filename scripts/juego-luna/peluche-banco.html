@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>El peluche baja de la luna</title>
+    <style>
+      body { margin: 0; background: #05070f; font-family: system-ui; color: #f8f4e8; }
+      h2 { font-size: 14px; font-weight: 600; margin: 18px 12px 4px; color: #f0c86a; }
+      .tira { display: flex; flex-wrap: wrap; gap: 10px; padding: 4px 10px 10px; max-width: 2440px; }
+      figure { margin: 0; }
+      figcaption { font-size: 12px; opacity: 0.6; padding: 6px 2px; }
+      canvas { display: block; border-radius: 6px; }
+    </style>
+  </head>
+  <body>
+    <!--
+      El banco del cierre de capítulo: el peluche baja de la luna y se
+      le sube al caparazón. No es parte de la web.
+
+      Hace falta por lo mismo que el de la llegada. Esto pasa al ganar
+      un capítulo, dura cuatro segundos y medio, no se puede parar ni
+      rebobinar, y para verlo otra vez hay que jugarse un capítulo
+      entero. Mirarlo jugando es mirarlo una vez cada diez minutos.
+
+      Lo que hay que juzgar acá son cuatro cosas seguidas:
+
+      1. Que sentado en la luna se lea como sentado y no como pegado.
+      2. Que la bajada parezca que se descuelga y no que lo tiran.
+      3. Que al llegar quede apoyado en el caparazón, no flotando
+         encima ni hundido dentro de ella.
+      4. Que la luna espere a que termine de bajar antes de irse. Si se
+         va antes, se lleva al peluche y no se entiende nada.
+
+      Se mira con el servidor de siempre andando:
+        npm run dev
+        http://localhost:5173/scripts/juego-luna/peluche-banco.html
+
+      O de una:  npm run luna:peluche
+    -->
+    <div id="todo"></div>
+
+    <script type="module">
+      import { CAPITULOS, LUNA, MUNDO, TORTUGA } from '/src/content/luna.ts'
+      import { crearPintor } from '/src/juego-luna/dibujo.ts'
+      import { RETRATOS } from '/src/lib/retratos.ts'
+      import { construirNivel } from '/src/juego-luna/mundos.ts'
+
+      /** Los dos capítulos donde esto pasa. En el último la luna no se va. */
+      const CUALES = CAPITULOS.slice(0, -1)
+
+      const MOMENTOS = [
+        [0, 'pisó la cima'],
+        [0.1, 'el compás: mira para abajo'],
+        [0.22, 'se descuelga'],
+        [0.32, 'bajando'],
+        [LUNA.bajaElPeluche, 'sentado en el caparazón'],
+        [0.55, 'y ahí sí, la luna se va'],
+        [0.75, 'yéndose'],
+        [1, 'ya no está'],
+      ]
+
+      /** La escena que le hace falta al pintor, para un avance dado. */
+      function cuadro(nivel, a) {
+        // Parada en la cima, un poco corrida del centro, que es como se
+        // llega de verdad: la cima es ancha.
+        const x = nivel.cima.x + nivel.cima.ancho * 0.55
+        const y = nivel.cima.y
+
+        return {
+          x,
+          y,
+          mirando: 1,
+          carga: 0,
+          cargando: false,
+          enSuelo: true,
+          caminado: 0.2,
+          vy: 0,
+          reloj: 3 + a * (LUNA.msDeSalida / 1000),
+          desdeSalto: 9999,
+          desdeAterrizaje: 9999,
+          cayendo: false,
+          agobio: 0,
+          cansancio: 0,
+          // Alto para que entren la tortuga y la luna, que está 165 por
+          // encima de la cima.
+          camara: y - MUNDO.alto * 0.66,
+          hitoAlcanzado: nivel.cima.indice,
+          vidaDeLaPista: nivel.plataformas.map(() => 1),
+          avisoDeLaPista: 0.4,
+          inclinacion: nivel.plataformas.map(() => 0),
+          hundido: nivel.plataformas.map(() => 0),
+          rebote: null,
+          loQueCae: [],
+          colado: null,
+          efecto: null,
+          cine: 'salida',
+          cineAvance: a,
+          pasitos: 31,
+          caidas: 2,
+          plataformas: nivel.plataformas,
+        }
+      }
+
+      const todo = document.getElementById('todo')
+
+      for (const capitulo of CUALES) {
+        const nivel = construirNivel(capitulo)
+
+        const titulo = document.createElement('h2')
+        titulo.textContent = `${capitulo.numero} · ${capitulo.nombre} (${capitulo.id})`
+        const tira = document.createElement('div')
+        tira.className = 'tira'
+        todo.append(titulo, tira)
+
+        for (const [a, nombre] of MOMENTOS) {
+          const figura = document.createElement('figure')
+          const lienzo = document.createElement('canvas')
+          const pie = document.createElement('figcaption')
+          pie.textContent = `${a.toFixed(2)} · ${nombre}`
+          figura.append(lienzo, pie)
+          tira.append(figura)
+
+          const pintor = crearPintor(lienzo, nivel)
+          pintor.peluche = RETRATOS[capitulo.id] ?? null
+          pintor.medir(258, 560)
+          pintor.pintar(cuadro(nivel, a))
+        }
+      }
+
+      // Los retratos son tres webp del bundle y el pintor los pide la
+      // primera vez que le toca dibujarlos, así que en la primera
+      // pasada todavía no están. Se espera a que lleguen y se repinta
+      // todo: jugando esto no pasa, porque para cuando ella alcanza la
+      // cima hace rato que se bajaron.
+      await Promise.all(
+        CAPITULOS.map(
+          (c) =>
+            new Promise((listo) => {
+              const img = new Image()
+              img.onload = listo
+              img.onerror = listo
+              img.src = RETRATOS[c.id]
+            }),
+        ),
+      )
+
+      const lienzos = [...document.querySelectorAll('canvas')]
+      let i = 0
+      for (const capitulo of CUALES) {
+        const nivel = construirNivel(capitulo)
+        for (const [a] of MOMENTOS) {
+          const pintor = crearPintor(lienzos[i], nivel)
+          pintor.peluche = RETRATOS[capitulo.id] ?? null
+          pintor.medir(258, 560)
+          pintor.pintar(cuadro(nivel, a))
+          i += 1
+        }
+      }
+
+      const listo = document.createElement('script')
+      listo.type = 'application/json'
+      listo.id = 'listo'
+      listo.textContent = JSON.stringify({ cuadros: lienzos.length })
+      document.body.append(listo)
+    </script>
+  </body>
+</html>

@@ -33,6 +33,7 @@ intentar**. El juego de las frases se contesta; este se aprende.
 | La luna en el capítulo | Cinemática al abrir, se va para arriba, espera en la cima y se va al llegar |
 | Camino | Cada mundo con su material |
 | El colado | Se cuela y estorba |
+| El peluche | Espera sentado en la luna, y al llegar se sube al caparazón |
 | Sonido | Vibración en Android, más sonidos cortos con interruptor |
 
 ---
@@ -213,6 +214,31 @@ material nuevo: es cielo abierto y la luna. Se juega con todo lo aprendido y ah�
 se ve si lo aprendió.
 
 Arriba está la carta.
+
+---
+
+## El peluche que espera en la luna
+
+Boo, Ovi y Nico están **sentados encima de la luna desde el primer cuadro del
+capítulo**, y ella sube hasta ahí a buscarlos. Salen ya en la cinemática de
+entrada, cuando la luna se acerca a la pantalla: se ve quién está esperando, y
+después la luna se va para arriba con él encima. Eso es el capítulo entero
+contado sin una palabra.
+
+Al alcanzar la cima, el peluche **baja de la luna y se le sube al caparazón**, y
+recién entonces la luna se va. Ese orden importa: al revés, la luna se iría con
+el peluche todavía encima, que es lo contrario de lo que acaba de pasar. Se le
+sube solo por ese momento — no es ropita del ropero y no queda puesto.
+
+En el tercer capítulo no baja. Ahí la luna no se escapa: sube ella. Se quedan
+los dos arriba, uno al lado del otro, y sobre ese cuadro se abre la carta.
+
+**No se dibuja: es el retrato bordado**, el mismo que ella conoce de los
+carteles y de las esquinas de la web. Dibujar un panda a mano al lado del panda
+de verdad no tenía sentido.
+
+Se mira con **`npm run luna:peluche`**, que saca los ocho momentos del cierre en
+los dos capítulos donde pasa, y con `npm run luna:llegada` para el tercero.
 
 ---
 

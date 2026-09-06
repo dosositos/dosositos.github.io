@@ -65,11 +65,62 @@ async function abrirPortada(sembrar) {
   await candado.fill(clave)
   await candado.press('Enter')
   await pag.waitForSelector('main')
-  // El encabezado entra con su animación y la luna flota: sin esperar,
-  // la foto la agarra a medio aparecer.
-  await pag.waitForTimeout(1400)
+  // El encabezado entra con su animación y la luna deriva desde fuera
+  // de cuadro: sin esperar, la foto la agarra a medio llegar. La luna
+  // arranca en 0,9 y tarda 1,5, así que 2,6 es con margen.
+  await pag.waitForTimeout(2600)
   return pag
 }
+
+/**
+ * La tira de cómo entra la luna, cuadro por cuadro.
+ *
+ * Todo lo demás de la portada tiene animación de entrada y la luna
+ * estaba puesta desde el primer cuadro, que al lado de lo otro se veía
+ * pegada. Ahora deriva desde fuera de cuadro, y esto es lo único que
+ * puede decir si deriva bien o si pega un tirón: en una sola foto una
+ * animación no se ve.
+ *
+ * Se recorta la esquina de arriba a la derecha, que es donde vive.
+ */
+async function laEntrada() {
+  const pag = await nav.newPage({
+    viewport: { width: 412, height: 892 },
+    deviceScaleFactor: 2,
+    isMobile: true,
+    hasTouch: true,
+  })
+  pag.on('pageerror', (e) => fallos.push(String(e)))
+  await pag.addInitScript(() => {
+    localStorage.setItem('dosositos:peluches:los-tres', '250')
+  })
+
+  await pag.goto(RAIZ, { waitUntil: 'domcontentloaded' })
+  const candado = pag.locator('input').first()
+  await candado.waitFor()
+  await candado.fill(clave)
+  await candado.press('Enter')
+  await pag.waitForSelector('main')
+
+  // Donde vive la luna: pegada al borde derecho, debajo del regalo.
+  // Se recorta ancho a la izquierda porque entra desde más afuera y
+  // hay que verla llegar, no verla ya puesta.
+  const esquina = { x: 250, y: 400, width: 162, height: 220 }
+  const cuando = [0, 700, 1100, 1500, 1900, 2600]
+  let ultimo = 0
+  for (const ms of cuando) {
+    await pag.waitForTimeout(ms - ultimo)
+    ultimo = ms
+    await pag.screenshot({ path: `private/notas/puerta-0-entra-${ms}.png`, clip: esquina })
+  }
+
+  await pag.close()
+  console.log(`✓ la entrada de la luna, en ${cuando.length} cuadros`)
+}
+
+/* ── 0 · Cómo entra ──────────────────────────────────────────────── */
+
+await laEntrada()
 
 /* ── 1 y 2 · Cerrada, y el aviso de tocarla ──────────────────────── */
 
