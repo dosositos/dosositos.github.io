@@ -441,21 +441,22 @@ y chats, y el sobre de apertura. Eso es el regalo.
 
 ---
 
-## La próxima sesión — su teléfono, y el colado
+## La próxima sesión — su teléfono, y ya
 
 **Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
 arrancamos por donde diga, sin que tengás que acordarte de nada.
 
-**El juego está entero**: la escuelita, el cuento de antes, los tres capítulos,
-la llegada, la carta, los récords, el volver a subir, la luna de la portada, el
-ropero y los sonidos. **Lo que queda del plan no se puede hacer sin ella
-delante**, salvo el colado, que es adorno.
+**El plan está terminado.** Las diez fases del juego están hechas: la escuelita,
+el cuento de antes, los tres capítulos, la llegada, la carta, los récords, el
+volver a subir, la luna de la portada, el ropero, los sonidos, la música y el
+colado. **Lo único que queda no se puede hacer sin ella delante**, o mejor dicho
+sin su teléfono.
 
 **Nada de esto está subido, y es a propósito.** Lo decidiste el 5 de
 septiembre: en cuanto suba, ella puede llegar al juego, y querés que suba
 entero. Está todo commiteado en `nico-cobijas` y ahí se queda.
 
-### 1 · Lo que falta de la fase 8: su Android
+### Lo único que falta: su Android
 
 Los sonidos quedaron el 5 de septiembre y `npm run luna:sonidos` los mide y los
 prueba jugando. **Lo que falta de esta fase no se puede hacer acá**, y se junta
@@ -465,10 +466,14 @@ todo para una sola pasada en el teléfono de ella, que es el aparato que manda:
   banco no puede contestar. Los dos están bajos aposta, y los dos se suben con
   un número: `VOLUMEN_MAESTRO` en `src/juego-luna/sonidos.ts` para los pops (el
   más fuerte pica en 0.23 de lo que aguanta el altavoz) y `VOLUMEN` en
-  `src/juego-luna/musica.ts` para las canciones, que van en 0.18.
+  `src/juego-luna/musica.ts` para las canciones, que van en 0.08.
 - **Si la música tarda mucho en arrancar** en su conexión. Se baja y se descifra
   la canción entera antes de sonar: acá es un segundo o dos, en datos móviles
   puede ser más. Si molesta, se bajan a 48 kbps en `preparar-musica.mjs`.
+- **Si el pato se ve bien contra los tres mundos.** El banco lo dibuja contra el
+  fondo pelado, y lo que hay que juzgar es su peluca verde contra el bambú de
+  Boo, el cartón de Ovi y las almohadas de Nico. Ahí sí que tiene que gritar que
+  ese bicho no es de ahí.
 - Ajustar los números de `luna.ts` jugándolo de verdad.
 - **Si la luna apagada de la portada, al 55 %, todavía se ve de día.** Es el
   número más delicado de esa esquina: más apagada deja de dar ganas de tocarla,
@@ -476,11 +481,6 @@ todo para una sola pasada en el teléfono de ella, que es el aparato que manda:
 - **Si las siete clases de la escuelita se le hacen largas.** Se pueden juntar
   las tres de los tramos raros en una sola si aburren.
 - Si la tortuga del cuento, ya a 15, camina como tortuga o sigue apurada.
-
-### 2 · El colado (fase 9). Es adorno y se puede saltar
-
-El pato con peluca que se cuela en el juego y estorba. Va al final aposta: si el
-tiempo o los créditos aprietan, se salta entero sin tocar nada más.
 
 ### Cuándo se sube: cuando esté al 100 %
 
@@ -503,6 +503,44 @@ Pero va a pasar solo, y por eso no sube nada hasta que no falte nada.
 - **Jugá con el teléfono destapado**, que ahora el sonido viene encendido: los
   pops y las cuatro canciones de fondo. El botón para callarlo está en el cartel
   del capítulo, debajo de «vestirla».
+- **Y esperá al pato.** Se cuela dos veces por capítulo, sin avisar, en la
+  plataforma a la que ibas. No te va a matar: si saltás igual te parás en su
+  lomo. Nadie te lo explica en ninguna parte y así tiene que quedarse.
+
+### El colado — 5 de septiembre, quinta vuelta. Con esto el plan cierra
+
+El pato de la hermanita, el mismo que anda escondido por la web, ahora se cuela
+en el juego. Dibujado en `src/juego-luna/colado.ts`, vectorial como la tortuga:
+ni una imagen que bajar, cifrar y esperar. Mide 26×34 contra los 30×50 de ella,
+que es lo que lo deja en colado y no en jefe.
+
+**Se para en la plataforma a la que ella iba**, dos veces por capítulo, sin
+avisar. Ocupa el sitio cuatro segundos y se va caminando. Si ella salta igual,
+**se le para en el lomo**, catorce píxeles por encima de la plataforma: no le
+cuesta un pasito ni una caída, y lo que le cuesta es que el salto siguiente sale
+de más arriba de lo que calculaba. Eso fue lo que elegiste de las tres opciones,
+y es lo que cumple al pie de la letra el «no mata ni empuja» del plan.
+
+Toda la física son tres líneas en `alturaEn`, dentro del motor: mientras el pato
+está ahí, el suelo de ese trozo sube. Por ese único sitio pasan el aterrizaje,
+el caminar y el quedarse pegada al suelo, así que las tres salen solas — y
+cuando el pato se va, el frame siguiente devuelve la plataforma y ella baja.
+
+**Nunca en los últimos cuatro tramos.** Ahí ella está contando lo que le falta
+para igualar el récord de él, y un pato tapándole la cima no da risa. Tampoco en
+los primeros cuatro, ni encima de una estrella, un impulso o una caja de
+peluches, que esas ya hacen algo propio al aterrizar.
+
+**Y no se explica en ninguna parte, a propósito.** Es lo único del juego que no
+tiene cartel ni clase en la escuelita. Explicado sería una mecánica más. Sin
+explicar es una sorpresa.
+
+Hizo falta un arnés por pregunta, porque ninguna la contesta el código leído.
+`npm run luna:colado` lo dibuja: sus cuadros, su tamaño al lado de la tortuga, y
+ella en su lomo con la línea marcada. `npm run luna:cuela` sortea mil veces por
+capítulo, que las reglas son un sorteo y jugando se ve una tirada sola. Y
+`npm run luna:probar` dice, de cada partida del robot, **dónde se asomó y si
+ella se le paró encima**, que es lo único que podía estar mal en silencio.
 
 ### La música de fondo, y el sonido encendido de fábrica — 5 de septiembre, cuarta vuelta
 

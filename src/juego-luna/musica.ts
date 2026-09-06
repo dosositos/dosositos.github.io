@@ -26,7 +26,7 @@ import { sonidoEncendido } from '@/juego-luna/sonidos'
  * Es el fondo, no la canción. Tiene que quedar por debajo del pop del
  * salto sin desaparecer del todo.
  */
-const VOLUMEN = 0.18
+const VOLUMEN = 0.04
 
 /** Lo que tarda en entrar y en irse, en milisegundos. */
 const FUNDIDO = 1400

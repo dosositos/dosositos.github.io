@@ -397,7 +397,7 @@ empieza hasta que lo demás esté cerrado.
 | 6 | El último trecho y la carta ✓ | El juego completo | Sí |
 | 7 | El prólogo ✓ | El juego con su escuelita delante | Sí |
 | 8 | Teléfono y números — el sonido ✓; falta probarlo en su teléfono | El juego, pero que se sienta bien | Sí |
-| 9 | El colado — **sin hacer** | Igual, con chiste | Sí |
+| 9 | El colado ✓ | Igual, con chiste | Sí |
 | 10 | **La entrada por la luna** ✓ | El juego, para ella | Fin |
 
 Al cerrar cada fase: `npm run typecheck`, `npm run revisar`, commit propio, y
@@ -619,10 +619,42 @@ apagado no puede crear ni el contexto. Eso último es la promesa entera de
 «apagado de fábrica», y sin la segunda mitad el banco daría los nueve por
 buenos aunque nadie los llamara nunca.
 
-### 9 · El colado
+### 9 · El colado — hecho el 5 de septiembre
 
-El pato con peluca. Es adorno y va acá aposta: si el tiempo o los créditos
-aprietan, se salta entero sin tocar nada más.
+El pato con peluca, dibujado en `src/juego-luna/colado.ts`. Vectorial como la
+tortuga: ni una imagen que bajar, cifrar y esperar. Mide 26×34 contra los 30×50
+de ella, que es lo que lo deja en colado y no en jefe.
+
+**Qué pasa si ella salta igual.** El pato es sólido: se le para en el lomo, 14
+px por encima de la plataforma. No la mata ni la empuja —no le cuesta ni un
+pasito ni una caída—, y lo que sí le cuesta es que el salto siguiente sale de
+más arriba de lo que calculaba. Cuando el pato se va, baja.
+
+Todo eso son tres líneas en `alturaEn`, dentro del motor: mientras el pato está
+ahí, el suelo de ese trozo sube. Por ese único sitio pasan el aterrizaje, el
+caminar y el quedarse pegada al suelo, así que las tres cosas salen solas.
+
+**Dónde se cuela.** Lo sortea `dondeSeCuela`, en `colado.ts`, al empezar el
+capítulo: dos por capítulo, nunca en los primeros cuatro tramos y **nunca en los
+últimos cuatro** —ahí ella está contando los pasitos que le faltan para igualar
+el récord de él y un pato tapándole la cima no da risa—, y nunca encima de una
+estrella, un impulso o una caja de peluches, que esas ya hacen algo propio al
+aterrizar.
+
+Aparece al aterrizar ella en la plataforma de abajo, o sea **en la que iba a
+usar**, y la ve llegar desde donde está parada. Apareciendo mientras vuela sería
+una trampa, y apareciendo debajo no lo vería nunca.
+
+**Nada de esto se explica en ninguna parte, a propósito.** No hay cartel, no hay
+clase en la escuelita y no sale en el manual del cartel de Boo. Es lo único del
+juego que no se explica: si se explicara dejaría de ser una sorpresa y pasaría a
+ser una mecánica.
+
+Se mira con **`npm run luna:colado`** (sus cuadros, su tamaño al lado de la
+tortuga, y ella parada en su lomo con la línea del lomo marcada) y se comprueba
+con **`npm run luna:cuela`**, que sortea mil veces por capítulo — las reglas son
+un sorteo, y jugando una partida se ve una tirada. Y `npm run luna:probar` dice,
+de cada partida del robot, dónde se asomó y si se le paró encima.
 
 ### 10 · La entrada por la luna y cosméticos extras
 

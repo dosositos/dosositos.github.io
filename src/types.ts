@@ -770,6 +770,34 @@ export interface AlgoCayendo {
   puf: number
 }
 
+/**
+ * El colado: el pato de la hermanita, parado en una plataforma.
+ *
+ * No es hijo de nadie y no viene a ayudar. Se para donde ella iba, se
+ * queda unos segundos ocupando el sitio, y se va. **No la mata ni la
+ * empuja**: si salta igual, se le para en el lomo, que es más alto que
+ * la plataforma y le descuadra el salto siguiente.
+ */
+export interface Colado {
+  /** En qué plataforma está parado. */
+  indice: number
+  /** El centro de su cuerpo, en coordenadas del mundo. */
+  x: number
+  /** La `y` del suelo donde tiene las patas. */
+  y: number
+  /** 1 mira a la derecha, -1 a la izquierda. */
+  mirando: 1 | -1
+  /**
+   * Qué está haciendo. Al llegar baja del cielo y al irse se va
+   * caminando; en medio se queda quieto mirando.
+   */
+  fase: 'llegando' | 'parado' | 'yendose'
+  /** Por dónde va la fase de ahora, de 0 a 1. */
+  avance: number
+  /** Segundos desde que apareció, para el bamboleo y el parpadeo. */
+  reloj: number
+}
+
 export interface EscenaLuna {
   x: number
   y: number
@@ -832,6 +860,8 @@ export interface EscenaLuna {
   rebote: { indice: number; ms: number } | null
   /** Lo que hay cayendo ahora mismo, con lo que se está deshaciendo. */
   loQueCae: AlgoCayendo[]
+  /** El colado, mientras esté. Nulo el resto del tiempo, que es casi todo. */
+  colado: Colado | null
   /**
    * El efecto puesto, si hay uno, y cuántos saltos le quedan. Con
    * `apagon` el pintor no dibuja la barra: es todo lo que hace.

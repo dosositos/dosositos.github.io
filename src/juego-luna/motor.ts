@@ -4,6 +4,7 @@ import {
   CAJAS,
   CANSANCIO,
   CINTA,
+  EL_COLADO,
   IMPULSO,
   LLEGADA,
   LO_QUE_CAE,
@@ -14,9 +15,22 @@ import {
   SALTO,
   TORTUGA,
 } from '@/content/luna'
+import {
+  ALTO_DEL_LOMO,
+  dondeSeCuela,
+  MEDIO_ANCHO as MEDIO_ANCHO_DEL_COLADO,
+} from '@/juego-luna/colado'
 import { laLlegada } from '@/juego-luna/llegada'
 import { msDeCargaEn, superficieDe } from '@/juego-luna/mundos'
-import type { AlgoCayendo, EscenaLuna, EventoLuna, Nivel, Plataforma, QueCae } from '@/types'
+import type {
+  AlgoCayendo,
+  Colado,
+  EscenaLuna,
+  EventoLuna,
+  Nivel,
+  Plataforma,
+  QueCae,
+} from '@/types'
 
 /**
  * El motor del juego de la luna: el bucle, la física y las colisiones.
@@ -232,6 +246,78 @@ export function crearMotor({
   /** Ya avisó de que llegó, para no avisar una vez por cuadro. */
   let yaLlego = false
 
+  /* ── El colado ──────────────────────────────────────────────────
+     El pato de la hermanita, que se cuela un par de veces por
+     capítulo. Vive acá y no en su propio módulo porque lo único que
+     hace es ocupar una plataforma, y eso es física. */
+
+  /** El pato, mientras esté. Casi todo el capítulo es nulo. */
+  let colado: Colado | null = null
+
+  /**
+   * En qué plataformas se va a colar. La regla vive en `colado.ts`, que
+   * es donde el arnés la puede sortear mil veces sin jugar una partida.
+   */
+  const seCuelaEn = dondeSeCuela(plataformas)
+
+  /**
+   * Que se cuele en la plataforma de arriba, si le toca a esa.
+   *
+   * Se llama al aterrizar, así que el pato aparece **en la que ella iba
+   * a usar**: la ve llegar desde donde está parada, con tiempo de
+   * decidir si lo espera o busca otra. Apareciendo mientras vuela sería
+   * una trampa; apareciendo debajo no lo vería nunca.
+   */
+  function queSeCuele(desde: number) {
+    if (colado) return
+    const donde = desde + 1
+    if (!seCuelaEn.has(donde)) return
+    seCuelaEn.delete(donde)
+
+    const p = plataformas[donde]
+    if (!p) return
+
+    colado = {
+      indice: donde,
+      x: p.x + p.ancho / 2,
+      y: superficieDe(p, p.x + p.ancho / 2, inclinacion[donde], hundido[donde]),
+      // Mirando hacia ella, que es lo que hace que parezca que la está
+      // mirando a propósito. De espaldas sería un adorno.
+      mirando: t.x > p.x + p.ancho / 2 ? 1 : -1,
+      fase: 'llegando',
+      avance: 0,
+      reloj: 0,
+    }
+  }
+
+  /** Bajar, quedarse, irse. Y al final, desaparecer. */
+  function moverAlColado() {
+    if (!colado) return
+
+    colado.reloj += PASO
+
+    // Se queda pegado al suelo que tenga debajo: en el capítulo de Ovi
+    // la caja se inclina y en el de Nico la almohada se hunde, y un
+    // pato flotando sobre su propia plataforma se ve mal enseguida.
+    const p = plataformas[colado.indice]
+    if (p) colado.y = superficieDe(p, colado.x, inclinacion[p.indice], hundido[p.indice])
+
+    const dura =
+      colado.fase === 'llegando'
+        ? EL_COLADO.msLlegando
+        : colado.fase === 'parado'
+          ? EL_COLADO.msParado
+          : EL_COLADO.msYendose
+
+    colado.avance += (PASO * 1000) / dura
+    if (colado.avance < 1) return
+
+    colado.avance = 0
+    if (colado.fase === 'llegando') colado.fase = 'parado'
+    else if (colado.fase === 'parado') colado.fase = 'yendose'
+    else colado = null
+  }
+
   /** Por dónde va la llegada, de 0 a 1. */
   const avanceDeLaLlegada = () => Math.min(1, cineMs / LLEGADA.ms)
 
@@ -241,9 +327,20 @@ export function crearMotor({
   /**
    * A qué altura está el suelo de un tramo en un punto. En el capítulo
    * de Ovi la caja está inclinada y eso ya no es su `y` a secas.
+   *
+   * Y si el colado está parado ahí, encima de su lomo: el pato es
+   * sólido, así que sobre el trozo que él ocupa el suelo sube. Eso es
+   * todo lo que hace falta para que ella se le pare encima al saltar,
+   * para que camine por arriba, y para que baje sola cuando el pato se
+   * vaya — el frame siguiente esta función devuelve la plataforma otra
+   * vez y ella se apoya donde siempre.
    */
-  const alturaEn = (p: Plataforma, x: number) =>
-    superficieDe(p, x, inclinacion[p.indice], hundido[p.indice])
+  const alturaEn = (p: Plataforma, x: number) => {
+    const suelo = superficieDe(p, x, inclinacion[p.indice], hundido[p.indice])
+    if (!colado || colado.indice !== p.indice || colado.fase === 'yendose') return suelo
+    if (Math.abs(x - colado.x) > MEDIO_ANCHO_DEL_COLADO) return suelo
+    return suelo - ALTO_DEL_LOMO
+  }
 
   /** En qué plataforma está apoyada ahora mismo, o -1 si va por el aire. */
   const dondeEstaApoyada = () => (t.enSuelo && cayendo <= 0 ? ultimoPiso : -1)
@@ -712,6 +809,9 @@ export function crearMotor({
     // cayendo mientras ella se cae: el mundo no se para porque ella se
     // pare. Lo que no pasa es que le pegue, de eso se encarga adentro.
     moverLoQueCae()
+    // Y el colado, que baja, se queda y se va aunque ella no haga
+    // nada: el pato tiene sus propios asuntos.
+    moverAlColado()
 
     if (cayendo > 0) {
       // Mientras se cae no manda nadie: sigue bajando y no choca con
@@ -960,6 +1060,9 @@ export function crearMotor({
             rebotesSeguidos = 0
             avisar('aterrizaje')
 
+            // Y desde acá se ve si le toca colarse en la de arriba.
+            queSeCuele(p.indice)
+
             // Pisar un hito guarda el avance. Solo cuenta hacia
             // arriba: volver a bajar a uno viejo no lo desanda.
             if (p.hito && p.indice > hitoAlcanzado) {
@@ -1124,6 +1227,8 @@ export function crearMotor({
       // El mismo arreglo, sin copiar, igual que la vida de la pista: el
       // pintor solo lee.
       loQueCae,
+      // El mismo objeto, sin copiar. El pintor solo lee.
+      colado,
       efecto: efecto ? { cual: efecto.cual, saltos: efecto.saltos } : null,
       cine,
       cineAvance:

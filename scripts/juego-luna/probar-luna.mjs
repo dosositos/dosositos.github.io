@@ -57,6 +57,9 @@ const { construirNivel, msDeCargaEn } = await import('@/juego-luna/mundos.ts')
 const { opacidadDeLaPista } = await import('@/juego-luna/dibujo.ts')
 const { laLlegada } = await import('@/juego-luna/llegada.ts')
 const { superficieDe } = await import('@/juego-luna/mundos.ts')
+const { ALTO_DEL_LOMO, MEDIO_ANCHO: MEDIO_ANCHO_DEL_COLADO } = await import(
+  '@/juego-luna/colado.ts'
+)
 const { anotarCapitulo, anotarLlegada, conCualEntra, leerProgreso, ponerle } = await import(
   '@/juego-luna/progreso.ts'
 )
@@ -625,10 +628,41 @@ function jugarNivel() {
    */
   const paradoEn = new Map()
 
+  /**
+   * En qué plataformas se coló el pato durante esta partida.
+   *
+   * Las reglas de dónde puede colarse las prueba `npm run luna:cuela`,
+   * sorteándolas mil veces. Lo que se mira acá es lo otro: que en una
+   * partida de verdad, jugada de punta a punta, el pato llegue a
+   * aparecer. Un sorteo perfecto que nunca se dispara no se ve.
+   */
+  const seColoEn = new Set()
+
+  /** Frames que pasó parada en su lomo, y frames que pasó dentro de él. */
+  let seLeParoEncima = 0
+  let loAtraveso = 0
+
   while (frames < 60 * 60 * 6 && objetivo < nivel.plataformas.length) {
     const e = frame()
     frames += 1
     if (!e) continue
+    if (e.colado) seColoEn.add(e.colado.indice)
+
+    // Y lo que de verdad podría estar mal sin que se note: que al
+    // aterrizar donde está el pato se le pare EN EL LOMO y no lo
+    // atraviese. El pato es sólido y esa es su única promesa.
+    //
+    // Se mira cuando toca, no se provoca: el sorteo decide dónde se
+    // cuela y el robot decide cuándo salta. Si en esta partida no
+    // coincidieron, se dice y ya.
+    if (e.colado && e.colado.fase !== 'yendose' && e.enSuelo && !e.cayendo) {
+      const p = nivel.plataformas[e.colado.indice]
+      const encimaDelPato = Math.abs(e.x - e.colado.x) <= MEDIO_ANCHO_DEL_COLADO
+      const suelo = superficieDe(p, e.x, e.inclinacion[p.indice] ?? 0, e.hundido[p.indice] ?? 0)
+
+      if (encimaDelPato && Math.abs(e.y - (suelo - ALTO_DEL_LOMO)) < 3) seLeParoEncima += 1
+      else if (encimaDelPato && Math.abs(e.y - suelo) < 3) loAtraveso += 1
+    }
 
     if (e.enSuelo && !cargando && !e.cayendo) {
       // En qué plataforma está parada. Se mira con holgura porque la
@@ -674,6 +708,9 @@ function jugarNivel() {
     ...cuenta,
     segundos: frames / 60,
     atasco: atasco ? { indice: atasco[0], frames: atasco[1] } : null,
+    seColoEn: [...seColoEn],
+    seLeParoEncima,
+    loAtraveso,
   }
 }
 
@@ -685,6 +722,18 @@ if (partida.llego) {
   console.log(`     se cayó ${partida.caidas} ${partida.caidas === 1 ? 'vez' : 'veces'} y pisó ${partida.hitos} hitos`)
   if (partida.caidas > 0) {
     console.log('     (cada caída lo devolvió a su hito y siguió desde ahí)')
+  }
+  if (partida.seColoEn.length > 0) {
+    console.log(`   ✓ el colado se asomó en ${partida.seColoEn.join(' y ')}`)
+  } else {
+    console.log('   · esta vez el colado no llegó a asomarse (se sortea, y el robot va rápido)')
+  }
+  if (partida.loAtraveso > 0) {
+    console.log(`   ⚠ se le metió dentro del pato ${partida.loAtraveso} frames: no está haciendo de suelo`)
+  } else if (partida.seLeParoEncima > 0) {
+    console.log(`   ✓ se le paró en el lomo (${partida.seLeParoEncima} frames), que es lo prometido`)
+  } else {
+    console.log('   · esta vez no le tocó pararse encima del pato')
   }
 } else {
   console.log(`   ⚠ no llegó: se quedó en ${partida.pasitos} pasitos con ${partida.caidas} caídas`)

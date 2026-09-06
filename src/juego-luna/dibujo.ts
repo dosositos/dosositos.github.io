@@ -12,6 +12,7 @@ import {
   sembrarPliegues,
   soltarPlumas,
 } from '@/juego-luna/mundo-almohadas'
+import { dibujarColado } from '@/juego-luna/colado'
 import { dibujarEstrellaDePapel, dibujarEstrellita } from '@/juego-luna/estrella'
 import { laLlegada } from '@/juego-luna/llegada'
 import {
@@ -654,6 +655,10 @@ export function crearPintor(canvas: HTMLCanvasElement, nivel: Nivel): Pintor {
         if (carrito) dibujarCarrito(ctx, carrito.x, p.y, carrito.color)
         ctx.restore()
       }
+
+      // El colado va antes que la tortuga: si ella está parada en su
+      // lomo tiene que verse encima de él, que es lo que está pasando.
+      if (escena.colado) dibujarColado(ctx, escena.colado, pintor.movimientoReducido)
 
       // Se dibuja siempre que entre en pantalla, cayéndose incluida:
       // la caída se ve entera hasta que sale por abajo. Desaparecer en

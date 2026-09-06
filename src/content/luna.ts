@@ -530,6 +530,63 @@ export const LO_QUE_CAE = {
 }
 
 /**
+ * EL COLADO
+ *
+ * El pato de la hermanita, el mismo que anda escondido por la web. Se
+ * mete en el juego un par de veces por capítulo, se para justo en la
+ * plataforma de arriba —la que ella iba a usar— y ocupa el sitio unos
+ * segundos.
+ *
+ * **No mata ni empuja.** Es sólido y ya: si ella salta igual, se le
+ * para en el lomo. No le cuesta ni un pasito ni una caída; lo que le
+ * cuesta es que el salto siguiente sale de más arriba de lo que
+ * calculaba, y que cuando el pato se va, baja de golpe.
+ *
+ * Lo que hace que sea un chiste y no una traba es que se pueda esperar.
+ * Quedarse quieta cinco segundos no cuesta nada en este juego: no hay
+ * reloj, no hay vidas, y los pasitos solo suben al saltar.
+ */
+export const EL_COLADO = {
+  /** Lo que mide. La tortuga son 30 de ancho y 50 de alto. */
+  ancho: 26,
+  alto: 34,
+
+  /**
+   * Cuántas veces se cuela por capítulo.
+   *
+   * Dos. Con una no se llega a entender que es un personaje y parece un
+   * fallo del juego; con cinco deja de ser una sorpresa y pasa a ser
+   * una mecánica, y las mecánicas de este juego están todas explicadas.
+   * Esta no se explica en ninguna parte a propósito.
+   */
+  cuantos: 2,
+
+  /** Cuánto se queda parado, en milisegundos. */
+  msParado: 4200,
+
+  /** Lo que tarda en bajar y en irse caminando. */
+  msLlegando: 520,
+  msYendose: 760,
+
+  /** Desde qué altura baja al llegar, en píxeles del mundo. */
+  desdeArriba: 210,
+
+  /** Cuánto camina antes de desvanecerse al irse. */
+  seVa: 90,
+
+  /**
+   * Cuántas plataformas del principio y del final quedan fuera.
+   *
+   * Del principio, porque los primeros saltos son para agarrarle el
+   * pulso al capítulo. Del final, porque **en el último trecho ya no es
+   * chiste**: ahí ella está contando los pasitos que le faltan para
+   * igualar el récord de él, y un pato tapándole la cima no da risa.
+   */
+  primeras: 4,
+  ultimas: 4,
+}
+
+/**
  * Los tramos de impulso: al caer ahí sale disparada sola, sin dedo.
  *
  * La tortuga se centra en el tramo antes de salir, así que el salto

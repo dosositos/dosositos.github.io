@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>El colado</title>
+    <style>
+      body { margin: 0; background: #0b1026; font-family: system-ui; }
+      canvas { display: block; }
+    </style>
+  </head>
+  <body>
+    <!--
+      Banco del colado: el pato de la hermanita, el que se cuela en el
+      juego. No es parte de la web.
+
+      Lo que hay que juzgar acá son tres cosas, y ninguna se puede
+      juzgar leyendo el código:
+
+      1. Que se lea como un pato con peluca y no como un borrón
+         amarillo, al tamaño al que va a salir de verdad.
+      2. Que al lado de la tortuga tenga el tamaño justo: si es más
+         grande que ella deja de ser un colado y pasa a ser un jefe.
+      3. Que cuando ella se le para en el lomo, los pies queden
+         apoyados y no flotando ni enterrados. Esa altura es
+         ALTO_DEL_LOMO y es la que usa el motor.
+
+      Se mira con el servidor de siempre andando:
+        npm run dev
+        http://localhost:5173/scripts/juego-luna/colado-banco.html
+
+      O de una:  npm run luna:colado
+    -->
+    <canvas id="lienzo"></canvas>
+    <script type="module">
+      import { EL_COLADO } from '/src/content/luna.ts'
+      import { ALTO_DEL_LOMO, MEDIO_ANCHO, dibujarColado } from '/src/juego-luna/colado.ts'
+      import { escenaDeVitrina } from '/src/juego-luna/ropero.ts'
+      import { dibujarTortuga } from '/src/juego-luna/tortuga.ts'
+
+      const ESCALA = 3.2
+      const CELDA = { ancho: 70, alto: 80 }
+      const COLUMNAS = 4
+
+      const CUADROS = [
+        ['parado', { fase: 'parado', avance: 0.4, mirando: 1 }],
+        ['mirando al otro lado', { fase: 'parado', avance: 0.4, mirando: -1 }],
+        ['llegando (a mitad)', { fase: 'llegando', avance: 0.55, mirando: 1 }],
+        ['yéndose (a mitad)', { fase: 'yendose', avance: 0.45, mirando: 1 }],
+      ]
+
+      const lienzo = document.getElementById('lienzo')
+      const ctx = lienzo.getContext('2d')
+
+      const densidad = 2
+      const ancho = COLUMNAS * CELDA.ancho * ESCALA
+      const altoFila = CELDA.alto * ESCALA
+      // debajo de los cuatro cuadros: la comparación con la tortuga
+      const ALTO_COMPARA = 240
+      const alto = altoFila + ALTO_COMPARA
+
+      lienzo.width = ancho * densidad
+      lienzo.height = alto * densidad
+      lienzo.style.width = ancho + 'px'
+      lienzo.style.height = alto + 'px'
+      ctx.scale(densidad, densidad)
+
+      ctx.fillStyle = '#0b1026'
+      ctx.fillRect(0, 0, ancho, alto)
+
+      const rotulo = (texto, x, y) => {
+        ctx.save()
+        ctx.fillStyle = 'rgba(244, 239, 230, 0.55)'
+        ctx.font = '11px system-ui'
+        ctx.textAlign = 'center'
+        ctx.fillText(texto, x, y)
+        ctx.restore()
+      }
+
+      /** Una plataforma de mentira, solo para que el pato pise algo. */
+      const piso = (x, y, ancho) => {
+        ctx.save()
+        ctx.fillStyle = 'rgba(244, 239, 230, 0.14)'
+        ctx.fillRect(x - ancho / 2, y, ancho, 5)
+        ctx.restore()
+      }
+
+      // ── Los cuatro cuadros ──────────────────────────────────────
+      CUADROS.forEach(([nombre, cual], i) => {
+        const cx = (i + 0.5) * CELDA.ancho * ESCALA
+        const suelo = altoFila - 34
+
+        rotulo(nombre, cx, altoFila - 12)
+
+        ctx.save()
+        ctx.translate(cx, suelo)
+        ctx.scale(ESCALA, ESCALA)
+        piso(0, 0, CELDA.ancho * 0.8)
+
+        // Llegando y yéndose se desplazan de verdad —uno baja 210 px
+        // del mundo y el otro camina 90—, y a esta escala eso los saca
+        // de la celda. Acá se les deshace el desplazamiento y se los
+        // deja en su sitio: lo que hay que juzgar en esos dos cuadros
+        // es la pose y lo transparente que está, no adónde va.
+        if (cual.fase === 'llegando') {
+          ctx.translate(0, (1 - cual.avance) * EL_COLADO.desdeArriba)
+        } else if (cual.fase === 'yendose') {
+          ctx.translate(-cual.mirando * cual.avance * EL_COLADO.seVa, 0)
+        }
+
+        dibujarColado(ctx, { indice: 0, x: 0, y: 0, reloj: 1.3, ...cual }, false)
+        ctx.restore()
+      })
+
+      // ── Y la comparación, al tamaño del juego ───────────────────
+      const yCompara = altoFila + ALTO_COMPARA - 46
+      ctx.save()
+      ctx.strokeStyle = 'rgba(244, 239, 230, 0.12)'
+      ctx.beginPath()
+      ctx.moveTo(0, altoFila + 8)
+      ctx.lineTo(ancho, altoFila + 8)
+      ctx.stroke()
+      ctx.restore()
+
+      const ESCALA_REAL = 2.4
+
+      // el pato y la tortuga, uno al lado del otro
+      ctx.save()
+      ctx.translate(ancho * 0.28, yCompara)
+      ctx.scale(ESCALA_REAL, ESCALA_REAL)
+      piso(0, 0, 110)
+      dibujarColado(ctx, { indice: 0, x: -22, y: 0, mirando: 1, fase: 'parado', avance: 0.4, reloj: 1.3 }, false)
+      ctx.save()
+      ctx.translate(24, 0)
+      dibujarTortuga(ctx, { ...escenaDeVitrina(1.3), x: 0, y: 0 })
+      ctx.restore()
+      ctx.restore()
+      rotulo(`el pato (${EL_COLADO.ancho}×${EL_COLADO.alto}) y la tortuga (30×50)`, ancho * 0.28, yCompara + 26)
+
+      // y ella parada en su lomo, que es lo que pasa si salta igual
+      ctx.save()
+      ctx.translate(ancho * 0.72, yCompara)
+      ctx.scale(ESCALA_REAL, ESCALA_REAL)
+      piso(0, 0, 110)
+      dibujarColado(ctx, { indice: 0, x: 0, y: 0, mirando: 1, fase: 'parado', avance: 0.4, reloj: 1.3 }, false)
+
+      // La línea del lomo, que es la altura exacta que devuelve el
+      // motor mientras el pato está ahí.
+      ctx.strokeStyle = 'rgba(240, 200, 106, 0.5)'
+      ctx.lineWidth = 0.6
+      ctx.beginPath()
+      ctx.moveTo(-MEDIO_ANCHO, -ALTO_DEL_LOMO)
+      ctx.lineTo(MEDIO_ANCHO, -ALTO_DEL_LOMO)
+      ctx.stroke()
+
+      ctx.save()
+      ctx.translate(0, -ALTO_DEL_LOMO)
+      dibujarTortuga(ctx, { ...escenaDeVitrina(1.3), x: 0, y: 0 })
+      ctx.restore()
+      ctx.restore()
+      rotulo(`parada en su lomo (sube ${ALTO_DEL_LOMO.toFixed(1)} px)`, ancho * 0.72, yCompara + 26)
+
+      // De acá lo lee ver-colado.mjs para saber que terminó de pintar.
+      const listo = document.createElement('script')
+      listo.type = 'application/json'
+      listo.id = 'listo'
+      listo.textContent = JSON.stringify({
+        ancho: EL_COLADO.ancho,
+        alto: EL_COLADO.alto,
+        lomo: Number(ALTO_DEL_LOMO.toFixed(2)),
+        cuantos: EL_COLADO.cuantos,
+        msParado: EL_COLADO.msParado,
+      })
+      document.body.append(listo)
+    </script>
+  </body>
+</html>

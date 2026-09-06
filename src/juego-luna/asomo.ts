@@ -134,6 +134,7 @@ function escenaBase(cambios: Partial<EscenaLuna>): EscenaLuna {
     carga: 0,
     cargando: false,
     loQueCae: [],
+    colado: null,
     efecto: null,
     enSuelo: true,
     caminado: 0,

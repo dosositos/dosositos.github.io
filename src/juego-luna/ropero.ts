@@ -165,6 +165,7 @@ export function escenaDeVitrina(reloj: number): EscenaLuna {
     hundido: [],
     rebote: null,
     loQueCae: [],
+    colado: null,
     efecto: null,
     cine: 'jugando',
     cineAvance: 1,
