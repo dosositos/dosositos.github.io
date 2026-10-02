@@ -1,5 +1,6 @@
-import { lazy, Suspense } from 'react'
-import { Link, Route, Routes, useLocation } from 'react-router-dom'
+import { AnimatePresence, MotionConfig, motion } from 'motion/react'
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
+import { Link, NavigationType, Route, Routes, useLocation, useNavigationType } from 'react-router-dom'
 import { AsomoDeLaTortuga } from '@/componentes/AsomoDeLaTortuga'
 import { Candado } from '@/componentes/Candado'
 import { CieloEstrellado } from '@/componentes/CieloEstrellado'
@@ -57,8 +58,69 @@ function EnConstruccion({ titulo, nota }: { titulo: string; nota: string }) {
   )
 }
 
+/** Cuánto hay que bajar antes de que la casita y el tema se aparten. */
+const UMBRAL_BOTONES = 80
+
+/**
+ * ¿Se esconden los botones de arriba?
+ *
+ * Al bajar se apartan (tapaban justo la línea que ella estaba leyendo) y
+ * al subir vuelven, que es lo que hace cualquier app en el teléfono. Cerca
+ * del inicio siempre se ven. Un cuadro como mucho por evento de scroll.
+ */
+function useBotonesEscondidos(activo: boolean, pathname: string) {
+  const [escondidos, setEscondidos] = useState(false)
+
+  useEffect(() => {
+    // Página nueva, botones a la vista.
+    setEscondidos(false)
+    if (!activo) return
+
+    let ultimo = window.scrollY
+    let cuadro = 0
+    const mirar = () => {
+      if (cuadro) return
+      cuadro = requestAnimationFrame(() => {
+        cuadro = 0
+        const y = window.scrollY
+        // Unos píxeles de holgura: el dedo tiembla, y sin esto parpadean.
+        if (y < UMBRAL_BOTONES) setEscondidos(false)
+        else if (y > ultimo + 6) setEscondidos(true)
+        else if (y < ultimo - 6) setEscondidos(false)
+        else return
+        ultimo = y
+      })
+    }
+    window.addEventListener('scroll', mirar, { passive: true })
+    return () => {
+      cancelAnimationFrame(cuadro)
+      window.removeEventListener('scroll', mirar)
+    }
+  }, [activo, pathname])
+
+  return activo && escondidos
+}
+
+/** La hoja que se acomoda al pasar de página: un fundido con un poco de
+ *  subida al entrar, y un fundido más corto al irse. Al salir solo se
+ *  apaga, sin moverse: un `transform` que se queda puesto rompe los
+ *  `fixed` de adentro (la galería, el regalo). */
+function Hoja({ children }: { children: ReactNode }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0, transition: { duration: 0.28, ease: [0.22, 1, 0.36, 1] } }}
+      exit={{ opacity: 0, transition: { duration: 0.15, ease: 'easeIn' } }}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
 function Marco() {
-  const { pathname } = useLocation()
+  const location = useLocation()
+  const { pathname } = location
+  const vuelve = useNavigationType() === NavigationType.Pop
   const enPortada = pathname === '/'
 
   /* El juego de la luna se toma la pantalla entera: nada de pétalos,
@@ -66,12 +128,51 @@ function Marco() {
      de la casa sí se queda, que es por donde se sale. */
   const enLuna = pathname === '/luna'
 
+  const escondidos = useBotonesEscondidos(!enLuna, pathname)
+
+  const rutas = (
+    <Routes location={location}>
+      <Route path="/" element={<Portada />} />
+      <Route path="/linea-del-tiempo" element={<LineaDelTiempo />} />
+      <Route path="/momento/:id" element={<Momento />} />
+      <Route path="/juego" element={<Juego />} />
+      <Route path="/diccionario" element={<Diccionario />} />
+      <Route path="/playlist" element={<Playlist />} />
+      <Route path="/estadisticas" element={<Estadisticas />} />
+      <Route path="/frasco" element={<Frasco />} />
+      {/* Fuera del menú y sin enlace desde ningún lado hasta que
+          la luna de la portada se vuelva tocable. */}
+      <Route
+        path="/luna"
+        element={
+          <Suspense fallback={<LunaCargando />}>
+            <Luna />
+          </Suspense>
+        }
+      />
+      <Route
+        path="*"
+        element={<EnConstruccion titulo="te perdiste, osita" nota="esta página no existe todavía" />}
+      />
+    </Routes>
+  )
+
   return (
     <>
-      <ScrollAlInicio />
       {!enLuna && <Petalos cantidad={14} />}
 
-      <div className="fixed right-4 top-4 z-50 flex items-center gap-2 sm:right-6 sm:top-6">
+      {/* En la luna los botones se quedan exactamente donde estaban: el
+          juego se arma alrededor de ellos y ahí no se esconden nunca. En
+          el resto, respetan el notch (`safe-area`) y se apartan al bajar. */}
+      <div
+        className={
+          enLuna
+            ? 'fixed right-4 top-4 z-50 flex items-center gap-2 sm:right-6 sm:top-6'
+            : `fixed right-[max(1rem,env(safe-area-inset-right))] top-[max(1rem,env(safe-area-inset-top))] z-50 flex items-center gap-2 transition-transform duration-300 ease-suave focus-within:translate-y-0 motion-reduce:transition-none sm:right-[max(1.5rem,env(safe-area-inset-right))] sm:top-[max(1.5rem,env(safe-area-inset-top))] ${
+                escondidos ? 'pointer-events-none -translate-y-[calc(100%+max(1.5rem,env(safe-area-inset-top)))]' : ''
+              }`
+        }
+      >
         {!enPortada && (
           <Link
             to="/"
@@ -88,38 +189,38 @@ function Marco() {
           se esconde abajo obliga a recorrer todo el scroll. El envoltorio
           tiene que abarcar también el pie — anclados solo al <main>, el
           alto del pie los dejaba flotando a media altura en vez de en la
-          esquina de abajo. */}
-      <div className="relative">
+          esquina de abajo.
+
+          `overflow-x-clip` corta lo que se asoma de lado: el peluche de la
+          esquina de abajo a la derecha se salía 12 px y en Android la
+          página entera bailaba. `clip` y no `hidden`, que no se vuelve
+          contenedor de scroll y un `sticky` de adentro seguiría pegándose
+          a la pantalla. En la luna no hace falta, y ahí no se toca nada. */}
+      <div className={enLuna ? 'relative' : 'relative overflow-x-clip'}>
         {!enLuna && <PeluchesEscondidos />}
 
         <main className="relative">
-          <Routes>
-            <Route path="/" element={<Portada />} />
-            <Route path="/linea-del-tiempo" element={<LineaDelTiempo />} />
-            <Route path="/momento/:id" element={<Momento />} />
-            <Route path="/juego" element={<Juego />} />
-            <Route path="/diccionario" element={<Diccionario />} />
-            <Route path="/playlist" element={<Playlist />} />
-            <Route path="/estadisticas" element={<Estadisticas />} />
-            <Route path="/frasco" element={<Frasco />} />
-            {/* Fuera del menú y sin enlace desde ningún lado hasta que
-                la luna de la portada se vuelva tocable. */}
-            <Route
-              path="/luna"
-              element={
-                <Suspense fallback={<LunaCargando />}>
-                  <Luna />
-                </Suspense>
-              }
-            />
-            <Route
-              path="*"
-              element={<EnConstruccion titulo="te perdiste, osita" nota="esta página no existe todavía" />}
-            />
-          </Routes>
+          {enLuna ? (
+            /* La luna no se anima al entrar ni al salir: tiene su propia
+               entrada, con la luna latiendo, y un fundido encima peleaba
+               con la de la portada. Y su movimiento sigue como estaba
+               (`never` es lo que había antes de este MotionConfig): el
+               juego ya decide solo qué hacer con menos movimiento. */
+            <MotionConfig reducedMotion="never">
+              <ScrollAlInicio key={pathname} clave={location.key} vuelve={vuelve} />
+              {rutas}
+            </MotionConfig>
+          ) : (
+            <AnimatePresence mode="wait">
+              <Hoja key={pathname}>
+                <ScrollAlInicio clave={location.key} vuelve={vuelve} />
+                {rutas}
+              </Hoja>
+            </AnimatePresence>
+          )}
         </main>
 
-        <footer className="pb-10 text-center text-xs text-texto-suave/50">
+        <footer className="px-[max(1rem,env(safe-area-inset-left))] pb-[max(2.5rem,calc(env(safe-area-inset-bottom)+1rem))] text-center text-xs text-texto-suave/50">
           hecho con las manos por {' '}osito{' '} para {' '}osita
         </footer>
 
@@ -136,12 +237,16 @@ function Marco() {
 
 export default function App() {
   return (
-    <ProveedorTema>
-      {/* El cielo va fuera del candado: la puerta también merece estrellas */}
-      <CieloEstrellado cantidad={70} />
-      <Candado>
-        <Marco />
-      </Candado>
-    </ProveedorTema>
+    // `reducedMotion="user"`: si el teléfono pide menos movimiento, los
+    // `motion.*` dejan de desplazarse y solo se funden. El CSS ya lo hacía.
+    <MotionConfig reducedMotion="user">
+      <ProveedorTema>
+        {/* El cielo va fuera del candado: la puerta también merece estrellas */}
+        <CieloEstrellado cantidad={70} />
+        <Candado>
+          <Marco />
+        </Candado>
+      </ProveedorTema>
+    </MotionConfig>
   )
 }
