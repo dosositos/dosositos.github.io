@@ -5,6 +5,32 @@ Escrito el 1 de octubre de 2026. La web está publicada y ella ya la usa:
 se cierra con `npm run typecheck`, `npm run revisar`, `npm run build` y
 fotos en un teléfono de 390 px antes de subirse.
 
+## Estado — 1 de octubre, de noche: hecho y subido
+
+Las cuatro fases están hechas y en `main`. Lo que cambió respecto a lo escrito:
+
+- La tira del juego tiene **12** estrellitas, no 10: la partida tiene 12
+  rondas y la tira sale del largo de la partida.
+- La librería no tiene subrayado ondulado. El título de la portada lleva uno
+  de dos pasadas, que es lo que más se le parece.
+- El corchete de la nota de osito va **adentro** del papel: al margen se
+  salía de la pantalla del teléfono.
+- La cinta horizontal **reemplaza** a la vertical desde 1024 px, no se monta
+  encima: con `lg:hidden` el teléfono descifraría las fotos dos veces.
+- Al volver de un momento, la cinta se restaura comparando `location.key`.
+  `useNavigationType` dentro de las rutas animadas siempre dice `POP`.
+- De paso: «1 fotos» y «1 mensajes» ya dicen «1 foto» y «1 mensaje».
+
+Verificado: `typecheck`, `revisar` y `build` pasan. A 390 px ninguna página se
+corre de lado. Los arneses `luna:ver` (capítulos 1, 2 y 3) y `luna:puerta`
+pasan sin errores. En el teléfono, la línea del tiempo queda idéntica píxel a
+píxel. El paquete principal pasó de 183 a 190 kB comprimidos.
+
+**Falta lo de siempre: verlo en su Android.** En especial, que la casita y
+el tema se escondan al bajar sin estorbar, el desdoble del papelito del
+frasco y el notch con el teléfono acostado. Chrome simulado no tiene
+`safe-area`.
+
 ## La regla de esta vuelta: el juego de la luna no se toca
 
 Ella ya lo jugó y está cerrado. Nada de lo de abajo cambia cómo se juega:
