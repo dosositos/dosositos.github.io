@@ -71,7 +71,7 @@ export const entradas: EntradaDiccionario[] = [
     palabra: 'abriba',
     tipo: 'adv.',
     definicion:
-      'Arriba, dicho mal a propósito. Estaba esperándola en el edificio B, le escribió «arriba» bien y enseguida lo mandó otra vez torcido; cuando ella no dijo nada, aclaró «no abrajo», que tampoco existe. Pasó una sola vez y quedó.',
+      'Arriba, dicho mal a propósito. Estaba esperándola en el edificio B, le escribió «arriba» bien y enseguida lo mandó otra vez torcido, y cuando ella no dijo nada, aclaró «no abrajo», que tampoco existe. Pasó una sola vez y quedó.',
     margen: 'ninguno de los dos preguntó nada',
     cifrada: true,
     datos: {
@@ -393,7 +393,7 @@ export const entradas: EntradaDiccionario[] = [
     fonetica: 'ga·shas',
     tipo: 'interj.',
     definicion:
-      'Gracias. La palabra más dicha de todo el libro: en dos años reemplazó a la de verdad. Y tiene una regla que ninguno de los dos acordó nunca — ella la escribe con sh y él con ch. Ella puso la sh 881 veces y la ch una sola; él puso la ch 381 veces y la sh cuatro. La misma palabra, cada uno con su letra.',
+      'Gracias. La palabra más dicha de todo el libro: en dos años reemplazó a la de verdad. Y tiene una regla que ninguno de los dos acordó nunca — ella la escribe con sh y él con ch. Ella puso la sh 881 veces y la ch una sola. Él puso la ch 381 veces y la sh cuatro. La misma palabra, cada uno con su letra.',
     margen: 'la campeona: 1.267 veces',
     cifrada: true,
     datos: {
@@ -463,7 +463,7 @@ export const entradas: EntradaDiccionario[] = [
     letraIndice: '✦',
     tipo: 'fórmulas de él',
     definicion:
-      'Su costumbre de no decir «mucho» nunca, y de medirlo cada vez con una unidad distinta. La primera fue el granito de arena, en octubre de 2024; las demás se fueron sumando sin sustituir a ninguna. No se reemplazan, se acumulan.',
+      'Su costumbre de no decir «mucho» nunca, y de medirlo cada vez con una unidad distinta. La primera fue el granito de arena, en octubre de 2024. Las demás se fueron sumando sin sustituir a ninguna. No se reemplazan, se acumulan.',
     acepciones: [
       'El catálogo, hasta hoy: de aquí a la luna a pasitos de tortuga · por cada granito de arena de cada playa del mundo · por cada semilla de mostaza y de orquídea · por cada gota de lluvia que haya caído y que caerá · por cada átomo de este universo y de todos los que puedan existir · infinitamente como los números.',
     ],
@@ -611,7 +611,7 @@ export const entradas: EntradaDiccionario[] = [
     palabra: 'osito, osita',
     tipo: 's. m. y f.',
     definicion:
-      'El apodo del que salió todo lo demás. Ella dormía abrazada a un oso blanco enorme; él le dijo que le tenía envidia, que quería ser él. Ella le contestó que entonces él también era su osito, y así quedó.',
+      'El apodo del que salió todo lo demás. Ella dormía abrazada a un oso blanco enorme, y él le dijo que le tenía envidia, que quería ser él. Ella le contestó que entonces él también era su osito, y así quedó.',
     margen: 'de aquí sale el nombre de todo esto',
     datos: {
       veces: 1190,
@@ -742,7 +742,7 @@ export const entradas: EntradaDiccionario[] = [
     palabra: 'yaya · yayaya',
     tipo: 'interj.',
     definicion:
-      'Ya entendí. La misma palabra repartida en dos: él la dice con dos sílabas y casi siempre detrás de un «ahh»; ella con tres o con cuatro. En dos años no se cruzaron nunca.',
+      'Ya entendí. La misma palabra repartida en dos: él la dice con dos sílabas y casi siempre detrás de un «ahh», y ella con tres o con cuatro. En dos años no se cruzaron nunca.',
     acepciones: ['yaya — de él: 178 de 200 veces. yayaya — de ella: 282 de 283.'],
     margen: 'cada uno con la suya',
     datos: {

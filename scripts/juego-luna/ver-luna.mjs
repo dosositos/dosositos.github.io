@@ -45,7 +45,13 @@ if (cual > 1) {
   await pag.addInitScript((antes) => {
     localStorage.setItem(
       'dosositos:luna',
-      JSON.stringify({ capitulo: antes, pasitos: 29, caidas: 4, nombre: 'Manchita' }),
+      JSON.stringify({
+        capitulo: antes,
+        pasitos: 29,
+        caidas: 4,
+        nombre: 'Manchita',
+        escuelita: 'saltada',
+      }),
     )
   }, cual - 1)
 }
@@ -61,6 +67,13 @@ await candado.press('Enter')
 await pag.waitForSelector('main')
 
 await pag.goto(`${RAIZ}/#/luna`, { waitUntil: 'domcontentloaded' })
+
+// Entrando por el capítulo uno, antes del bautizo corre el cuento de
+// «por qué una tortuga». Se salta con su botón: el cuento tiene su
+// propio banco (`luna:antes`) y aquí lo que se mira es el juego.
+if (cual === 1) {
+  await pag.getByRole('button', { name: 'saltar', exact: true }).click()
+}
 await pag.waitForTimeout(1200)
 
 // El bautizo, que es la primera pantalla de todas y una sola vez en la
@@ -69,6 +82,10 @@ if (cual === 1) {
   await pag.screenshot({ path: 'private/notas/luna-0-bautizo.png' })
   await pag.locator('input[type="text"]').fill('Manchita')
   await pag.getByRole('button', { name: 'así se llama' }).click()
+  await pag.waitForTimeout(400)
+
+  // Y después del nombre, la escuelita, que también tiene su banco.
+  await pag.getByRole('button', { name: 'ya sé jugar, saltala' }).click()
   await pag.waitForTimeout(400)
 }
 

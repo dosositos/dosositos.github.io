@@ -445,6 +445,10 @@ y chats, y el sobre de apertura. Eso es el regalo.
 **Preguntame «¿qué toca para hoy?» y con eso alcanza.** Leo esta sección y
 arrancamos por donde diga, sin que tengás que acordarte de nada.
 
+**Desde el 1 de octubre manda `plan-octubre.md`**: pulir las páginas en el
+teléfono, la línea del tiempo horizontal y los trazos a mano con Rough
+Notation. El juego de la luna no se toca: ella ya lo jugó.
+
 **El plan está terminado.** Las diez fases del juego están hechas: la escuelita,
 el cuento de antes, los tres capítulos, la llegada, la carta, los récords, el
 volver a subir, la luna de la portada, el ropero, los sonidos, la música, el

@@ -38,7 +38,7 @@ export const momentos: Momento[] = [
     resumen:
       'Un evento de lentes de sol. Ella los llevaba blancos, yo negros. No nos dijimos ni una palabra.',
     relato:
-      'Yo fui con mi primo y un amigo; ella, con sus amigas de secundaria, por un cumpleaños. Nos vimos por primera vez en la entrada. Ninguno de los dos es de salir a esos lugares — ella ni siquiera pensaba ir —, así que lo normal habría sido que esa noche no existiera. Pasó todo lo contrario: mi amigo se acercó a su amiga, y de ahí salió que yo le había parecido atractivo. Volví a casa aburridísimo y con una sonrisa que no me cabía, dispuesto a seguirla en Instagram para escribirle al día siguiente. Ya la seguía. Y ella a mí. Desde hacía rato, sin que ninguno lo recordara.',
+      'Yo fui con mi primo y un amigo, y ella con sus amigas de secundaria, por un cumpleaños. Nos vimos por primera vez en la entrada. Ninguno de los dos es de salir a esos lugares — ella ni siquiera pensaba ir —, así que lo normal habría sido que esa noche no existiera. Pasó todo lo contrario: mi amigo se acercó a su amiga, y de ahí salió que yo le había parecido atractivo. Volví a casa aburridísimo y con una sonrisa que no me cabía, dispuesto a seguirla en Instagram para escribirle al día siguiente. Ya la seguía. Y ella a mí. Desde hacía rato, sin que ninguno lo recordara.',
     flor: 'girasol',
     destacado: true,
     icono: '🕶️',
@@ -57,7 +57,7 @@ export const momentos: Momento[] = [
     resumen:
       'Al día siguiente de Area 74. Y lo primero que le confesé fue que me arrepentía de no haberle hablado.',
     relato:
-      'Un día. Eso fue lo que aguanté. Le escribí a las siete de la tarde y no paramos hasta quedarnos dormidos. Ella estaba estudiando para una prueba de Cálculo de las siete de la mañana y no se pudo concentrar nada; me lo dijo con tres caritas tristes. Descubrimos que estudiábamos en la misma universidad, que ella iba en segundo y yo en tercero, que llevábamos años siguiéndonos sin saberlo. Después de dos frases de cortesía ya le estaba diciendo que me arrepentía de algo, y ese algo era no haberle hablado en Area 74. Ella lo resolvió en un mensaje: que ya lo había compensado por escribirle hoy.',
+      'Un día. Eso fue lo que aguanté. Le escribí a las siete de la tarde y no paramos hasta quedarnos dormidos. Ella estaba estudiando para una prueba de Cálculo de las siete de la mañana y no se pudo concentrar nada. Me lo dijo con tres caritas tristes. Descubrimos que estudiábamos en la misma universidad, que ella iba en segundo y yo en tercero, que llevábamos años siguiéndonos sin saberlo. Después de dos frases de cortesía ya le estaba diciendo que me arrepentía de algo, y ese algo era no haberle hablado en Area 74. Ella lo resolvió en un mensaje: que ya lo había compensado por escribirle hoy.',
     flor: 'tulipan-violeta',
     icono: '💬',
     chat: { mensajes: 21, fuente: 'instagram' },
@@ -104,7 +104,7 @@ export const momentos: Momento[] = [
     resumen:
       'La primera de todas las veces. La fui a traer a su casa y me terminé sentando de su lado de la mesa.',
     relato:
-      'Nuestro platillo estrella tuvo su primera vez un sábado. La pasé a traer a su casa — me tocó esperarla en la esquina del callejón, porque había una reunión y le daba pena — y nos sentamos frente a frente. Duré poco así: me cambié de lugar para quedar a su lado. Hablamos toda la cena, nos enseñamos nuestra canción favorita, comimos riquísimo y después nos quedamos un rato más en el parqueo, donde todo fluyó mejor que la primera vez. Todavía no nos dimos ningún beso. Ya de vuelta en nuestras casas, pasada la medianoche, nos mandamos las canciones por Spotify: la mía, "Carta a Dios" de Eladio Carrión; la de ella, "Heaven" de Bryan Adams. Ella ya había buscado la mía por su cuenta cinco minutos antes.',
+      'Nuestro platillo estrella tuvo su primera vez un sábado. La pasé a traer a su casa — me tocó esperarla en la esquina del callejón, porque había una reunión y le daba pena — y nos sentamos frente a frente. Duré poco así: me cambié de lugar para quedar a su lado. Hablamos toda la cena, nos enseñamos nuestra canción favorita, comimos riquísimo y después nos quedamos un rato más en el parqueo, donde todo fluyó mejor que la primera vez. Todavía no nos dimos ningún beso. Ya de vuelta en nuestras casas, pasada la medianoche, nos mandamos las canciones por Spotify: la mía, "Carta a Dios" de Eladio Carrión, y la de ella, "Heaven" de Bryan Adams. Ella ya había buscado la mía por su cuenta cinco minutos antes.',
     flor: 'rosa-amarilla',
     icono: '🍣',
     chat: { mensajes: 18, fuente: 'whatsapp' },
@@ -121,7 +121,7 @@ export const momentos: Momento[] = [
     resumen:
       'Le pregunté qué me daba si le ganaba. Dijo que qué quería. Dije un beso. Y gané.',
     relato:
-      'Un lunes: yo salía del gimnasio y ella de clase. La fui a traer a la universidad y nos metimos a Dreamspot, el arcade. Fue la cita más divertida y más espontánea de todas, porque los dos somos competitivos y ahí eso se nota. En uno de los juegos le pregunté qué me daba si le ganaba; me devolvió la pregunta de qué quería yo, y le dije que un beso. Dicho y hecho: gané, gracias a mis habilidades de videojugador profesional, y ahí fue nuestro primer piquito. Todavía me acuerdo de la sensación exacta. En el parqueo nos dimos más.',
+      'Un lunes: yo salía del gimnasio y ella de clase. La fui a traer a la universidad y nos metimos a Dreamspot, el arcade. Fue la cita más divertida y más espontánea de todas, porque los dos somos competitivos y ahí eso se nota. En uno de los juegos le pregunté qué me daba si le ganaba. Me devolvió la pregunta de qué quería yo, y le dije que un beso. Dicho y hecho: gané, gracias a mis habilidades de videojugador profesional, y ahí fue nuestro primer piquito. Todavía me acuerdo de la sensación exacta. En el parqueo nos dimos más.',
     flor: 'hibisco',
     destacado: true,
     icono: '💋',
@@ -140,7 +140,7 @@ export const momentos: Momento[] = [
     resumen:
       'Me quedé sin cómo llegar a la cena y me respondiste "Aaa xd". Esa misma noche nos tomamos la primera foto.',
     relato:
-      'Para entonces ya llevábamos varios jueves seguidos viendo películas en la camioneta, parqueados en la UAM, con hamburguesas del drive thru y lo que se nos antojara. Ese sábado era el cumpleaños de un amigo suyo: compramos un vape entre los dos para regalárselo, la cena primero y después la disco. A la cena no llegué. Yo dependía de mi amigo, que en ese momento salía con la amiga de ella, y a última hora no pudo ir; mi mamá se había llevado la camioneta porque yo ya no la necesitaba. Le avisé y me respondió con dos letras que me tuvieron sobrepensando toda la tarde. Después nos vimos, y la pasé tan bien que se me olvidó por completo que había existido el problema. De esa noche salió nuestra primera foto juntos.',
+      'Para entonces ya llevábamos varios jueves seguidos viendo películas en la camioneta, parqueados en la UAM, con hamburguesas del drive thru y lo que se nos antojara. Ese sábado era el cumpleaños de un amigo suyo: compramos un vape entre los dos para regalárselo, la cena primero y después la disco. A la cena no llegué. Yo dependía de mi amigo, que en ese momento salía con la amiga de ella, y a última hora no pudo ir, y mi mamá se había llevado la camioneta porque yo ya no la necesitaba. Le avisé y me respondió con dos letras que me tuvieron sobrepensando toda la tarde. Después nos vimos, y la pasé tan bien que se me olvidó por completo que había existido el problema. De esa noche salió nuestra primera foto juntos.',
     flor: 'gerbera',
     destacado: true,
     icono: '📸',
@@ -168,7 +168,7 @@ export const momentos: Momento[] = [
     resumen:
       'Lugar elegido por vos, con reseñas de TikTok y calificación de 10/10. Y una camioneta con la puerta trabada.',
     relato:
-      'El lugar lo escogiste vos: te acordabas de haber ido hacía años y traías las reseñas revisadas. Yo llegué con un problema encima — mi mamá había chocado la camioneta la noche anterior y la puerta del copiloto se trababa —, así que te avisé que ibas a tener que subirte por atrás y pasarte adelante. Al final no hizo falta: entraste por tu puerta como siempre, solo que me tocaba abrírtela yo, con maña y con cuidado, cada vez. La pizza llevaba chorizos y chimichurri por encima y estaba deliciosa; el lugar tenía juegos de mesa y nos quedamos jugando UNO. Visto de afuera no parece gran cosa: comer pizza y jugar cartas. Y sin embargo es de las salidas que mejor recuerdo.',
+      'El lugar lo escogiste vos: te acordabas de haber ido hacía años y traías las reseñas revisadas. Yo llegué con un problema encima — mi mamá había chocado la camioneta la noche anterior y la puerta del copiloto se trababa —, así que te avisé que ibas a tener que subirte por atrás y pasarte adelante. Al final no hizo falta: entraste por tu puerta como siempre, solo que me tocaba abrírtela yo, con maña y con cuidado, cada vez. La pizza llevaba chorizos y chimichurri por encima y estaba deliciosa. El lugar tenía juegos de mesa y nos quedamos jugando UNO. Visto de afuera no parece gran cosa: comer pizza y jugar cartas. Y sin embargo es de las salidas que mejor recuerdo.',
     flor: 'cipres',
     icono: '🍕',
     fotos: [
@@ -193,7 +193,7 @@ export const momentos: Momento[] = [
     resumen:
       'Lo planeaste durante semanas. Fui al baño, volví, y la mesa tenía cosas que antes no estaban.',
     relato:
-      'Yo no celebro mucho mis cumpleaños, así que no esperaba nada. Vos llevabas semanas armándolo. Querías darme ese mismo día un hoodie de los Bucks, pero tu tarjeta no hacía compras internacionales; pasaste días intentándolo hasta que le pediste el favor a un amigo, y cuando por fin salió el pedido había un huracán en Miami y se atrasó una semana. Aun así, ese día pediste un pastelito de Eladio y unos minicupcakes, y en el restaurante te ofrecieron esconderlo todo hasta que termináramos de comer. Fui al baño; cuando volví, la mesa estaba llena y yo tardé varios segundos en entender qué había pasado. Así sos: detallista de una manera que a mí todavía me desarma. Desde ese cumpleaños los quiero todos con vos.',
+      'Yo no celebro mucho mis cumpleaños, así que no esperaba nada. Vos llevabas semanas armándolo. Querías darme ese mismo día un hoodie de los Bucks, pero tu tarjeta no hacía compras internacionales. Pasaste días intentándolo hasta que le pediste el favor a un amigo, y cuando por fin salió el pedido había un huracán en Miami y se atrasó una semana. Aun así, ese día pediste un pastelito de Eladio y unos minicupcakes, y en el restaurante te ofrecieron esconderlo todo hasta que termináramos de comer. Fui al baño, y cuando volví, la mesa estaba llena y yo tardé varios segundos en entender qué había pasado. Así sos: detallista de una manera que a mí todavía me desarma. Desde ese cumpleaños los quiero todos con vos.',
     flor: 'girasol',
     destacado: true,
     icono: '🎂',
@@ -242,7 +242,7 @@ export const momentos: Momento[] = [
     resumen:
       'Unas hamburguesitas en una mesa de afuera, sin gente cerca. Y una cámara encendida que no te expliqué del todo.',
     relato:
-      'Hamburguesas ya habíamos comido varias veces, pero siempre en el carro; esa fue la primera vez que nos sentamos en el local, en una mesa de afuera, sin nadie alrededor. Ese día empecé a grabarte. Te dije que era para tener el recuerdo, y era cierto, pero no era todo: en secreto estaba juntando material para armarte una compilación y dártela en tu cumpleaños. Terminaron siendo muchísimos videos. En cada uno hay un pedazo de mí mirándote.',
+      'Hamburguesas ya habíamos comido varias veces, pero siempre en el carro. Esa fue la primera vez que nos sentamos en el local, en una mesa de afuera, sin nadie alrededor. Ese día empecé a grabarte. Te dije que era para tener el recuerdo, y era cierto, pero no era todo: en secreto estaba juntando material para armarte una compilación y dártela en tu cumpleaños. Terminaron siendo muchísimos videos. En cada uno hay un pedazo de mí mirándote.',
     flor: 'margarita',
     icono: '🎥',
     fotos: [
@@ -266,7 +266,7 @@ export const momentos: Momento[] = [
     resumen:
       'Papas fritas mojadas en el sundae de caramelo. Ninguno de los dos hubiera hecho eso solo.',
     relato:
-      'Ese domingo salimos sin plan. Yo te escribí que íbamos a armar algo bonito, te pregunté qué hacíamos y me dijiste "no sé" toda la tarde — todavía te lo reclamo. Nos fuimos dando vueltas, no encontramos lugar en ningún lado, y para rematar nos vinieron a fichar en el parqueo de Metro justo cuando estábamos tranquilos. De todo ese domingo desordenado salió el experimento: papas fritas mojadas en el sundae de caramelo. Ya ni me acuerdo de quién fue la idea. Nos quedamos viéndonos la cara esperando el veredicto y resultó que no estaba feo — raro, pero no feo. Solo yo no me hubiera atrevido; con vos sí. Ese mismo día salieron la foto del filtro de payasos y la del beso en tu mejilla, y esa noche me escribiste que lo único bueno del fin de semana había sido vernos.',
+      'Ese domingo salimos sin plan. Yo te escribí que íbamos a armar algo bonito, te pregunté qué hacíamos y me dijiste "no sé" toda la tarde — todavía te lo reclamo. Nos fuimos dando vueltas, no encontramos lugar en ningún lado, y para rematar nos vinieron a fichar en el parqueo de Metro justo cuando estábamos tranquilos. De todo ese domingo desordenado salió el experimento: papas fritas mojadas en el sundae de caramelo. Ya ni me acuerdo de quién fue la idea. Nos quedamos viéndonos la cara esperando el veredicto y resultó que no estaba feo — raro, pero no feo. Solo yo no me hubiera atrevido. Con vos sí. Ese mismo día salieron la foto del filtro de payasos y la del beso en tu mejilla, y esa noche me escribiste que lo único bueno del fin de semana había sido vernos.',
     flor: 'gerbera',
     icono: '🍟',
     fotos: [
@@ -298,7 +298,7 @@ export const momentos: Momento[] = [
     resumen:
       'Un gorila rosado que salió de una caja olvidada, y un vestido que ninguno de los dos sabía para qué día era.',
     relato:
-      'Esa mañana abrieron en mi casa una caja de peluches viejos, de esos que ya nadie recordaba, y ahí adentro estaba un gorila con complexión de gimnasio y color rosa pastel — el color de todo lo tuyo. Lo limpié y me lo llevé ese mismo día. Así llegó Ovi, nuestro segundo hijo, con nombre de un cubano que en esa época yo escuchaba a diario. La otra actividad de la tarde era comprarte ropa. El día anterior habías ido con tus amigas, habías visto unos vestidos pegados y te habías quedado con las ganas porque no llevabas la billetera; me dijiste después que por algo había sido, que me tocaba acompañarte a mí. Salías del vestidor y yo me quedaba sin saber qué decir, una y otra vez. Al final te llevaste el rojo vino — tu verdadero color favorito, ese que yo te reclamaba que no tenías en nada — y te probaste otro gris que meses después te iba a caer de regalo en Navidad. Esa noche ninguno de los dos sabía que el rojo vino lo ibas a estrenar el domingo siguiente.',
+      'Esa mañana abrieron en mi casa una caja de peluches viejos, de esos que ya nadie recordaba, y ahí adentro estaba un gorila con complexión de gimnasio y color rosa pastel — el color de todo lo tuyo. Lo limpié y me lo llevé ese mismo día. Así llegó Ovi, nuestro segundo hijo, con nombre de un cubano que en esa época yo escuchaba a diario. La otra actividad de la tarde era comprarte ropa. El día anterior habías ido con tus amigas, habías visto unos vestidos pegados y te habías quedado con las ganas porque no llevabas la billetera. Después me dijiste que por algo había sido, que me tocaba acompañarte a mí. Salías del vestidor y yo me quedaba sin saber qué decir, una y otra vez. Al final te llevaste el rojo vino — tu verdadero color favorito, ese que yo te reclamaba que no tenías en nada — y te probaste otro gris que meses después te iba a caer de regalo en Navidad. Esa noche ninguno de los dos sabía que el rojo vino lo ibas a estrenar el domingo siguiente.',
     flor: 'rosa-pastel',
     destacado: true,
     icono: '🦍',
