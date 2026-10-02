@@ -11,8 +11,10 @@ import type { Foto } from '@/types'
  * en la puerta, ella no ve ningún candado: la foto aparece y ya.
  *
  * Mientras descifra se pinta el hueco del tamaño exacto y con el color
- * promedio de la foto — así la página no da saltos y el momento se
- * arma solo, como si la foto se estuviera revelando.
+ * promedio de la foto, con un brillo de papel que le pasa por encima
+ * (el mismo aviso de «ya viene» que el esqueleto del chat) — así la
+ * página no da saltos y el momento se arma solo, como si la foto se
+ * estuviera revelando. Cuando llega, la foto se funde encima.
  */
 export function FotoCifrada({
   foto,
@@ -92,13 +94,23 @@ export function FotoCifrada({
     )
   }
 
+  if (!url) {
+    return (
+      <div
+        className={`${className} anima-brillo-papel`}
+        style={{ aspectRatio: proporcion, backgroundColor: ficha?.color ?? 'var(--t-borde)' }}
+        aria-hidden
+      />
+    )
+  }
+
   return (
     <img
-      src={url ?? undefined}
+      src={url}
       alt={foto.alt}
       loading="lazy"
       decoding="async"
-      className={`${className} transition-opacity duration-700 ${url ? 'opacity-100' : 'opacity-0'}`}
+      className={`${className} anima-revelar`}
       style={{
         aspectRatio: proporcion,
         backgroundColor: ficha?.color ?? 'var(--t-borde)',

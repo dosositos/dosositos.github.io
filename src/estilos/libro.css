@@ -393,20 +393,30 @@
     flex-direction: column;
     justify-content: space-evenly;
     align-items: stretch;
+    /* Entre pestaña y pestaña, una rayita de canto: así cada una se
+       sigue leyendo como uña aunque crezcan hasta tocarse. */
+    gap: 3px;
     /* montadas sobre el papel, dentro de su margen */
     margin-left: -15px;
   }
 
+  /* Cada pestaña se estira hasta llenar su parte del canto (con unas
+     veinte letras, unos 26 px de alto en el teléfono) y sale 25 px del
+     papel: de 30 px de ancho y letra de 9 px se tocaban a medias. */
   .pestana {
-    min-width: 30px;
-    padding-block: 0.28rem;
+    flex: 1 1 0;
+    max-height: 2.6rem;
+    min-width: 40px;
+    display: grid;
+    place-items: center;
+    padding-block: 0;
     padding-inline: 0.1rem 0.34rem;
     text-align: center;
     border-radius: 0 4px 4px 0;
     border: 1px solid rgb(120 90 55 / 0.35);
     border-left: none;
     font-family: var(--font-display);
-    font-size: 0.58rem;
+    font-size: 0.75rem;
     letter-spacing: 0.08em;
     background-image: linear-gradient(to right, var(--color-papel), var(--color-papel-hondo));
     color: var(--color-tinta-suave);

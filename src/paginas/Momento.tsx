@@ -5,6 +5,7 @@ import { Galeria } from '@/componentes/Galeria'
 import { momentos } from '@/content/momentos'
 import { FLORES } from '@/lib/flores'
 import { fechaLarga } from '@/lib/tiempo'
+import { useTrazo } from '@/lib/trazo'
 
 /** Los momentos en el mismo orden que la línea del tiempo, para poder pasar al de al lado. */
 const enOrden = [...momentos].sort((a, b) => (a.fecha < b.fecha ? -1 : 1))
@@ -18,6 +19,20 @@ export function Momento() {
   const { id } = useParams()
   const indice = enOrden.findIndex((m) => m.id === id)
   const momento = indice === -1 ? undefined : enOrden[indice]
+  // La nota de osito lleva un corchete al margen, como cuando uno anota a
+  // mano en el borde de la hoja. Va pegado al texto, dentro del papel: por
+  // fuera, en el teléfono, el margen de la página no le alcanzaba y se
+  // salía de la pantalla. Espera a que el papelito termine de caer y
+  // girar: medido a medio giro, el corchete quedaba corrido.
+  const corchete = useTrazo<HTMLParagraphElement>({
+    tipo: 'bracket',
+    corchetes: 'left',
+    relleno: [4, 2],
+    grosor: 2,
+    vueltas: 2,
+    retraso: 1000,
+    activo: momento?.nota?.autor === 'osito',
+  })
 
   if (!momento) {
     return (
@@ -26,7 +41,7 @@ export function Momento() {
           <p className="fuente-mano text-2xl text-texto-suave">
             Este momento todavía no existe, osita.
           </p>
-          <Link to="/" className="mt-6 inline-block text-sm text-acento underline">
+          <Link to="/" className="mt-6 inline-flex min-h-11 items-center px-3 text-sm text-acento underline">
             volver
           </Link>
         </div>
@@ -59,7 +74,7 @@ export function Momento() {
           </div>
         )}
 
-        <p className="text-[0.68rem] uppercase tracking-[0.26em] text-texto-suave/60">
+        <p className="text-xs uppercase tracking-[0.24em] text-texto-suave/60">
           {momento.fechaTexto ?? fechaLarga(fecha)}
           {momento.lugar && ` · ${momento.lugar}`}
         </p>
@@ -111,8 +126,10 @@ export function Momento() {
           transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
           className="papel mx-auto max-w-sm rounded-lg px-6 py-5 text-center"
         >
-          <p className="fuente-mano text-xl leading-snug text-texto">{momento.nota.texto}</p>
-          <p className="mt-3 text-[0.62rem] uppercase tracking-[0.2em] text-texto-suave/50">
+          <p ref={corchete} className="fuente-mano text-xl leading-snug text-texto">
+            {momento.nota.texto}
+          </p>
+          <p className="mt-3 text-xs uppercase tracking-[0.2em] text-texto-suave/50">
             — {momento.nota.autor}
           </p>
         </motion.aside>
@@ -125,7 +142,7 @@ export function Momento() {
             to={`/momento/${anterior.id}`}
             className="papel min-w-0 flex-1 rounded-xl px-4 py-3 transition-colors hover:border-acento"
           >
-            <span className="block text-[0.62rem] uppercase tracking-[0.2em] text-texto-suave/50">
+            <span className="block text-xs uppercase tracking-[0.2em] text-texto-suave/50">
               ← antes
             </span>
             <span className="mt-1 block truncate text-texto-suave">{anterior.titulo}</span>
@@ -139,7 +156,7 @@ export function Momento() {
             to={`/momento/${siguiente.id}`}
             className="papel min-w-0 flex-1 rounded-xl px-4 py-3 text-right transition-colors hover:border-acento"
           >
-            <span className="block text-[0.62rem] uppercase tracking-[0.2em] text-texto-suave/50">
+            <span className="block text-xs uppercase tracking-[0.2em] text-texto-suave/50">
               después →
             </span>
             <span className="mt-1 block truncate text-texto-suave">{siguiente.titulo}</span>
@@ -152,7 +169,7 @@ export function Momento() {
       <div className="mt-8 text-center">
         <Link
           to="/linea-del-tiempo"
-          className="rounded-full border border-borde px-5 py-2 text-sm text-texto-suave transition-colors hover:border-acento hover:text-acento"
+          className="inline-flex min-h-11 items-center rounded-full border border-borde px-5 py-2 text-sm text-texto-suave transition-colors hover:border-acento hover:text-acento"
         >
           ← toda nuestra historia
         </Link>

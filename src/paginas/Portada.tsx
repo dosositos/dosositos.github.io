@@ -11,6 +11,7 @@ import { FECHAS, OSITA, OSITO } from '@/content/config'
 import { REGALO } from '@/content/regalo'
 import { celebracionDeHoy } from '@/lib/celebraciones'
 import { diasQueFaltan, proximoAniversario, proximoMesiversario } from '@/lib/tiempo'
+import { useTrazo } from '@/lib/trazo'
 
 const SECCIONES = [
   { a: '/linea-del-tiempo', icono: '📖', titulo: 'nuestra historia', texto: 'la línea del tiempo, momento por momento' },
@@ -28,6 +29,15 @@ export function Portada() {
   const proximoMes = proximoMesiversario(24)
   const faltanAniversario = diasQueFaltan(proximoNovios)
   const faltanMes = diasQueFaltan(proximoMes)
+  // El título se subraya a mano cuando ya terminó de aparecer (el desenfoque
+  // y la subida duran casi un segundo y medio).
+  const subrayado = useTrazo<HTMLSpanElement>({
+    tipo: 'underline',
+    vueltas: 2,
+    relleno: [0, 2, 2, 2],
+    duracion: 1000,
+    retraso: 1500,
+  })
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col items-center gap-16 px-5 pb-24 pt-16 sm:gap-20 sm:pt-24">
@@ -65,8 +75,14 @@ export function Portada() {
           saliéndose, que es lo que necesitan el resplandor de la luna
           y el papelito que le cuelga debajo. Con `hidden` los dos
           quedaban cortados a filo y aparecía una raya recta en el
-          cielo. */}
-      <div className="-my-9 -mr-5 flex justify-end self-stretch overflow-x-clip">
+          cielo.
+
+          **`mr-[calc(50%-50vw)]` desde `sm`.** En la computadora la
+          portada se queda en el `max-w-5xl` del centro, y la franja con
+          ella: la luna se cortaba con una raya vertical en el borde de
+          esa columna, en medio del cielo. Ese margen la estira hasta el
+          filo de la pantalla, que es donde se corta en el teléfono. */}
+      <div className="-my-9 -mr-5 flex justify-end self-stretch overflow-x-clip sm:mr-[calc(50%-50vw)]">
         <LunaDePortada />
       </div>
 
@@ -99,7 +115,7 @@ export function Portada() {
           transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
           className="mt-4 font-display text-5xl leading-[1.05] sm:text-7xl"
         >
-          <span className="texto-degradado">dos ositos</span>
+          <span ref={subrayado} className="texto-degradado">dos ositos</span>
         </motion.h1>
 
         <motion.p
@@ -164,6 +180,9 @@ export function Portada() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-40px 0px' }}
             transition={{ duration: 0.6, delay: i * 0.08 }}
+            // En el teléfono no hay hover: la tarjeta se hunde un poquito
+            // bajo el dedo para que se sepa que se tocó.
+            whileTap={{ scale: 0.98, transition: { duration: 0.12 } }}
           >
             <Link
               to={s.a}

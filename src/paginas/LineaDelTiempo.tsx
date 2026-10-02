@@ -1,4 +1,3 @@
-import { Fragment } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { Link } from 'react-router-dom'
 import { Galeria } from '@/componentes/Galeria'
@@ -50,9 +49,20 @@ function diaYMes(fecha: string) {
   return `${Number(dia)} de ${MESES_ES[Number(mes) - 1]}`
 }
 
+/**
+ * El giro de una tarjeta destacada: menos de un grado, hacia un lado o al
+ * otro según su id. Sale del id y no de Math.random para que cada visita
+ * la encuentre igual de torcida, como las polaroids de la galería.
+ */
+function giroDe(id: string) {
+  const suma = [...id].reduce((total, c) => total + c.charCodeAt(0), 0)
+  return suma % 2 === 0 ? 0.9 : -0.9
+}
+
 function Tarjeta({ momento, aLaIzquierda }: { momento: Momento; aLaIzquierda: boolean }) {
   const sinMovimiento = useReducedMotion()
   const flor = FLORES[momento.flor]
+  const giro = momento.destacado ? giroDe(momento.id) : 0
 
   return (
     <li className="relative list-none">
@@ -64,15 +74,25 @@ function Tarjeta({ momento, aLaIzquierda }: { momento: Momento; aLaIzquierda: bo
         {/* ── La tarjeta ─────────────────────────────────────── */}
         <div className={`min-w-0 flex-1 ${aLaIzquierda ? 'sm:pr-10 sm:text-right' : 'sm:pl-10'}`}>
           <motion.div
-            initial={sinMovimiento ? false : { opacity: 0, y: 28, x: aLaIzquierda ? -12 : 12 }}
-            whileInView={{ opacity: 1, y: 0, x: 0 }}
+            initial={sinMovimiento ? false : { opacity: 0, y: 28, x: aLaIzquierda ? -12 : 12, rotate: giro * 2.5 }}
+            whileInView={{ opacity: 1, y: 0, x: 0, rotate: giro }}
             viewport={{ once: true, margin: '-60px 0px' }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
             <Link
               to={`/momento/${momento.id}`}
-              className="papel group block rounded-2xl px-5 py-5 transition-all duration-500 hover:-translate-y-1 hover:border-acento"
+              className="papel group relative block rounded-2xl px-5 py-5 transition-all duration-500 hover:-translate-y-1 hover:border-acento"
             >
+              {/* Las destacadas van pegadas al álbum con cinta, como las
+                  polaroids de la galería. */}
+              {momento.destacado && (
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute -top-2.5 left-1/2 h-5 w-16 -translate-x-1/2 -rotate-2 rounded-[1px] bg-white/25 backdrop-blur-[1px]"
+                  style={{ boxShadow: '0 1px 3px rgb(0 0 0 / 0.25)' }}
+                />
+              )}
+
               {/* El acento de color de su flor */}
               <span
                 className={`block h-0.5 w-8 rounded-full ${aLaIzquierda ? 'sm:ms-auto' : ''}`}
@@ -80,7 +100,7 @@ function Tarjeta({ momento, aLaIzquierda }: { momento: Momento; aLaIzquierda: bo
                 aria-hidden
               />
 
-              <p className="mt-3 text-[0.66rem] uppercase tracking-[0.22em] text-texto-suave/60">
+              <p className="mt-3 text-xs uppercase tracking-[0.2em] text-texto-suave/60">
                 {momento.fechaTexto ?? diaYMes(momento.fecha)}
                 {momento.lugar && (
                   <>
@@ -104,7 +124,7 @@ function Tarjeta({ momento, aLaIzquierda }: { momento: Momento; aLaIzquierda: bo
 
               {/* Lo que trae adentro */}
               <p
-                className={`mt-3 flex flex-wrap items-center gap-2 text-[0.68rem] text-texto-suave/60 ${
+                className={`mt-3 flex flex-wrap items-center gap-2 text-xs text-texto-suave/60 ${
                   aLaIzquierda ? 'sm:justify-end' : ''
                 }`}
               >
@@ -127,7 +147,9 @@ function Tarjeta({ momento, aLaIzquierda }: { momento: Momento; aLaIzquierda: bo
                     {momento.privado && (
                       <span className="rounded-full border border-borde px-2 py-0.5">🔒 privado</span>
                     )}
-                    <span className="opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                    {/* Siempre a la vista: en el teléfono no hay hover, y
+                        escondido hasta pasarle el ratón no existía. */}
+                    <span className="fuente-mano ms-1 text-base leading-none text-acento/80 transition-colors group-hover:text-acento">
                       abrir →
                     </span>
                   </>
@@ -196,7 +218,7 @@ function Suelta({ instante, aLaIzquierda }: { instante: Instante; aLaIzquierda: 
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="py-1"
           >
-            <p className="text-[0.62rem] uppercase tracking-[0.22em] text-texto-suave/45">
+            <p className="text-xs uppercase tracking-[0.2em] text-texto-suave/50">
               {instante.fechaTexto ?? diaYMes(instante.fecha)}
               {instante.lugar && (
                 <>
@@ -244,10 +266,16 @@ function Suelta({ instante, aLaIzquierda }: { instante: Instante; aLaIzquierda: 
   )
 }
 
+/**
+ * El año, pegado al tallo: a la izquierda en el teléfono, centrado en
+ * pantalla ancha. Se queda arriba (`sticky`) mientras se recorre su año y
+ * el del año siguiente lo empuja al llegar: por eso cada año es un grupo
+ * aparte, con el separador adentro. Sueltos en la misma lista, se habrían
+ * pegado todos uno encima del otro.
+ */
 function SeparadorDeAnio({ anio }: { anio: string }) {
   return (
-    // Pegado al tallo: a la izquierda en el teléfono, centrado en pantalla ancha.
-    <li className="relative flex list-none justify-start py-2 sm:justify-center">
+    <div className="sticky top-[max(1rem,env(safe-area-inset-top))] z-10 flex justify-start py-2 sm:justify-center">
       <motion.p
         initial={{ opacity: 0, scale: 0.92 }}
         whileInView={{ opacity: 1, scale: 1 }}
@@ -257,9 +285,21 @@ function SeparadorDeAnio({ anio }: { anio: string }) {
       >
         {anio}
       </motion.p>
-    </li>
+    </div>
   )
 }
+
+/** Las entradas en grupos de un año, cada una con su posición en la línea. */
+const porAnio = enOrden.reduce<{ anio: string; entradas: { entrada: Entrada; i: number }[] }[]>(
+  (grupos, entrada, i) => {
+    const anio = anioDe(entrada)
+    const ultimo = grupos[grupos.length - 1]
+    if (ultimo?.anio === anio) ultimo.entradas.push({ entrada, i })
+    else grupos.push({ anio, entradas: [{ entrada, i }] })
+    return grupos
+  },
+  [],
+)
 
 export function LineaDelTiempo() {
   const primero = enOrden[0].dato
@@ -287,7 +327,7 @@ export function LineaDelTiempo() {
           desde {fechaLarga(new Date(`${primero.fecha}T12:00:00-06:00`))}
         </motion.p>
 
-        <p className="mt-3 text-[0.7rem] uppercase tracking-[0.2em] text-texto-suave/50">
+        <p className="mt-3 text-xs uppercase tracking-[0.2em] text-texto-suave/50">
           {escritos} momentos guardados · tocá cualquiera para abrirlo
         </p>
       </header>
@@ -304,22 +344,21 @@ export function LineaDelTiempo() {
         />
 
         <ol className="relative space-y-10">
-          {enOrden.map((entrada, i) => {
-            const anio = anioDe(entrada)
-            const anioAnterior = i > 0 ? anioDe(enOrden[i - 1]) : null
-            const aLaIzquierda = i % 2 === 1
-
-            return (
-              <Fragment key={entrada.dato.id}>
-                {anio !== anioAnterior && <SeparadorDeAnio anio={anio} />}
-                {entrada.tipo === 'momento' ? (
-                  <Tarjeta momento={entrada.dato} aLaIzquierda={aLaIzquierda} />
-                ) : (
-                  <Suelta instante={entrada.dato} aLaIzquierda={aLaIzquierda} />
-                )}
-              </Fragment>
-            )
-          })}
+          {porAnio.map(({ anio, entradas }) => (
+            <li key={anio} className="list-none">
+              <SeparadorDeAnio anio={anio} />
+              <ol className="mt-10 space-y-10">
+                {entradas.map(({ entrada, i }) => {
+                  const aLaIzquierda = i % 2 === 1
+                  return entrada.tipo === 'momento' ? (
+                    <Tarjeta key={entrada.dato.id} momento={entrada.dato} aLaIzquierda={aLaIzquierda} />
+                  ) : (
+                    <Suelta key={entrada.dato.id} instante={entrada.dato} aLaIzquierda={aLaIzquierda} />
+                  )
+                })}
+              </ol>
+            </li>
+          ))}
         </ol>
       </div>
 
@@ -334,7 +373,7 @@ export function LineaDelTiempo() {
         …y todo lo que falta 🌻
       </motion.p>
 
-      <p className="mt-3 text-center text-[0.7rem] uppercase tracking-[0.2em] text-texto-suave/40">
+      <p className="mt-3 text-center text-xs uppercase tracking-[0.2em] text-texto-suave/50">
         el último: {diaYMes(ultimo.fecha)} de {ultimo.fecha.slice(0, 4)}
       </p>
     </div>

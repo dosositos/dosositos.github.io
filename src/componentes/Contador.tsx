@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { conSeparador, desglosar, fechaLarga, frasearDesglose } from '@/lib/tiempo'
+import { useTrazo } from '@/lib/trazo'
 
 type Formato = 'calendario' | 'dias' | 'vivo'
 
@@ -23,6 +24,29 @@ interface Props {
   /** Color de acento de esta tarjeta (una de nuestras flores). */
   flor?: string
   retraso?: number
+}
+
+/**
+ * La cifra que manda en la tarjeta, encerrada en un círculo a mano.
+ *
+ * Espera a que la tarjeta termine de entrar (se endereza y sube casi un
+ * segundo) y a que el número deje de crecer: medido a medio camino, el
+ * círculo quedaba corrido.
+ */
+function CifraEncerrada({ children, flor, retraso }: { children: ReactNode; flor: string; retraso: number }) {
+  const circulo = useTrazo<HTMLSpanElement>({
+    tipo: 'circle',
+    color: flor,
+    opacidad: 0.75,
+    relleno: [2, 10],
+    duracion: 900,
+    retraso: 1100 + retraso * 1000,
+  })
+  return (
+    <span ref={circulo} className="inline-block">
+      {children}
+    </span>
+  )
 }
 
 export function Contador({ desde, titulo, subtitulo, flor = 'var(--t-acento)', retraso = 0 }: Props) {
@@ -81,13 +105,20 @@ export function Contador({ desde, titulo, subtitulo, flor = 'var(--t-acento)', r
                 { n: d.anios, u: d.anios === 1 ? 'año' : 'años' },
                 { n: d.meses, u: d.meses === 1 ? 'mes' : 'meses' },
                 { n: d.dias, u: d.dias === 1 ? 'día' : 'días' },
-              ].map((bloque) => (
+              ].map((bloque, i) => (
                 <div key={bloque.u} className="text-center">
                   <div
                     className="font-display text-5xl leading-none sm:text-6xl"
                     style={{ color: flor }}
                   >
-                    {bloque.n}
+                    {/* Los años son lo que más pesa: a esos va el círculo. */}
+                    {i === 0 ? (
+                      <CifraEncerrada flor={flor} retraso={retraso}>
+                        {bloque.n}
+                      </CifraEncerrada>
+                    ) : (
+                      bloque.n
+                    )}
                   </div>
                   <div className="mt-2 text-xs uppercase tracking-[0.18em] text-texto-suave">
                     {bloque.u}
@@ -107,7 +138,9 @@ export function Contador({ desde, titulo, subtitulo, flor = 'var(--t-acento)', r
               className="text-center"
             >
               <div className="font-display text-6xl leading-none sm:text-7xl" style={{ color: flor }}>
-                {conSeparador(d.diasTotales)}
+                <CifraEncerrada flor={flor} retraso={0}>
+                  {conSeparador(d.diasTotales)}
+                </CifraEncerrada>
               </div>
               <div className="mt-3 text-xs uppercase tracking-[0.18em] text-texto-suave">
                 días juntos
@@ -124,13 +157,19 @@ export function Contador({ desde, titulo, subtitulo, flor = 'var(--t-acento)', r
               transition={{ duration: 0.3 }}
               className="text-center"
             >
-              <div className="font-display text-4xl leading-none tabular-nums sm:text-5xl" style={{ color: flor }}>
+              {/* En una sola línea y con la letra a la medida del teléfono:
+                  partido en dos, el número cambiaba de ancho cada segundo y
+                  la tarjeta entera saltaba de alto con él. */}
+              <div
+                className="whitespace-nowrap font-display text-[1.75rem] leading-none tabular-nums min-[400px]:text-4xl sm:text-5xl"
+                style={{ color: flor }}
+              >
                 {conSeparador(d.diasTotales)}
-                <span className="text-2xl text-texto-suave">d</span>{' '}
+                <span className="text-xl text-texto-suave sm:text-2xl">d</span>{' '}
                 {String(d.horas).padStart(2, '0')}
-                <span className="text-2xl text-texto-suave">h</span>{' '}
+                <span className="text-xl text-texto-suave sm:text-2xl">h</span>{' '}
                 {String(d.minutos).padStart(2, '0')}
-                <span className="text-2xl text-texto-suave">m</span>{' '}
+                <span className="text-xl text-texto-suave sm:text-2xl">m</span>{' '}
                 <motion.span
                   key={d.segundos}
                   initial={{ opacity: 0.35 }}
@@ -139,7 +178,7 @@ export function Contador({ desde, titulo, subtitulo, flor = 'var(--t-acento)', r
                 >
                   {String(d.segundos).padStart(2, '0')}
                 </motion.span>
-                <span className="text-2xl text-texto-suave">s</span>
+                <span className="text-xl text-texto-suave sm:text-2xl">s</span>
               </div>
               <div className="mt-3 text-xs uppercase tracking-[0.18em] text-texto-suave">
                 y sigue corriendo
@@ -155,7 +194,7 @@ export function Contador({ desde, titulo, subtitulo, flor = 'var(--t-acento)', r
         </p>
         <button
           onClick={() => setFormato(SIGUIENTE[formato])}
-          className="rounded-full border border-borde px-3 py-1.5 text-[0.68rem] uppercase tracking-[0.14em] text-texto-suave transition-colors hover:border-acento hover:text-acento"
+          className="min-h-11 shrink-0 rounded-full border border-borde px-4 py-1.5 text-[0.68rem] uppercase tracking-[0.14em] text-texto-suave transition-colors hover:border-acento hover:text-acento"
           aria-label={`Cambiar formato: ahora en ${ETIQUETA[formato]}`}
         >
           {ETIQUETA[formato]}

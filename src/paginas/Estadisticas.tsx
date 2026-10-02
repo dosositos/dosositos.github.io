@@ -1,8 +1,10 @@
-import { motion } from 'motion/react'
+import { animate, motion, useInView, useReducedMotion } from 'motion/react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { RankingDelDrama } from '@/componentes/RankingDelDrama'
 import { OSITA, OSITO } from '@/content/config'
 import { CORTE, instagram, numeros, totales } from '@/content/estadisticas'
 import { conSeparador, fechaLarga } from '@/lib/tiempo'
+import { useTrazo } from '@/lib/trazo'
 
 /**
  * El wrapped: nuestro chat en números.
@@ -11,17 +13,84 @@ import { conSeparador, fechaLarga } from '@/lib/tiempo'
  * lo dice claramente arriba: no pretendemos estar al día.
  */
 
+/** Lo que tarda una cifra en contar desde cero hasta la de verdad. */
+const DURACION_CUENTA = 1.4
+
+/**
+ * Un número que cuenta hacia arriba la primera vez que entra en pantalla.
+ *
+ * La cifra final va escondida debajo y es la que da el ancho: así la
+ * tarjeta no baila mientras los dígitos cambian. Con movimiento reducido
+ * aparece la final de una, sin contar.
+ */
+function Cuenta({ valor, retraso = 0 }: { valor: number; retraso?: number }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  const visto = useInView(ref, { once: true, margin: '-40px 0px' })
+  const reducido = useReducedMotion()
+  const [actual, setActual] = useState(reducido ? valor : 0)
+
+  useEffect(() => {
+    if (!visto || reducido) {
+      if (reducido) setActual(valor)
+      return
+    }
+    const control = animate(0, valor, {
+      duration: DURACION_CUENTA,
+      delay: retraso,
+      ease: [0.22, 1, 0.36, 1],
+      onUpdate: (n) => setActual(Math.round(n)),
+    })
+    return () => control.stop()
+  }, [visto, reducido, valor, retraso])
+
+  return (
+    <span ref={ref} className="inline-grid tabular-nums">
+      <span aria-hidden className="invisible col-start-1 row-start-1">
+        {conSeparador(valor)}
+      </span>
+      <span className="col-start-1 row-start-1">{conSeparador(actual)}</span>
+    </span>
+  )
+}
+
+/**
+ * La cifra más grande de la página se resalta con marcador, cuando ya
+ * terminó de contar.
+ */
+function Resaltada({ children, retraso }: { children: ReactNode; retraso: number }) {
+  const resaltado = useTrazo<HTMLSpanElement>({
+    tipo: 'highlight',
+    // Violeta de tulipán: la cifra ya va en el color del acento, y un
+    // marcador del mismo tono quedaba como una mancha sucia detrás.
+    color: '--color-tulipan-violeta',
+    opacidad: 0.3,
+    vueltas: 1,
+    relleno: [0, 6],
+    duracion: 700,
+    retraso: (DURACION_CUENTA + retraso) * 1000 + 200,
+  })
+  return (
+    <span ref={resaltado} className="inline-block">
+      {children}
+    </span>
+  )
+}
+
 function Cifra({
   numero,
   etiqueta,
   detalle,
   retraso = 0,
+  resaltada = false,
 }: {
-  numero: string
+  /** Un número cuenta hacia arriba; un texto (la hora) se queda quieto. */
+  numero: number | string
   etiqueta: string
   detalle?: string
   retraso?: number
+  resaltada?: boolean
 }) {
+  const cifra = typeof numero === 'number' ? <Cuenta valor={numero} retraso={retraso} /> : numero
   return (
     <motion.div
       initial={{ opacity: 0, y: 18 }}
@@ -30,7 +99,9 @@ function Cifra({
       transition={{ duration: 0.7, delay: retraso, ease: [0.22, 1, 0.36, 1] }}
       className="papel rounded-2xl px-5 py-7 text-center"
     >
-      <div className="font-display text-4xl leading-none text-acento sm:text-5xl">{numero}</div>
+      <div className="font-display text-4xl leading-none text-acento sm:text-5xl">
+        {resaltada ? <Resaltada retraso={retraso}>{cifra}</Resaltada> : cifra}
+      </div>
       <div className="mt-3 text-xs uppercase tracking-[0.16em] text-texto-suave">{etiqueta}</div>
       {detalle && <div className="fuente-mano mt-2 text-base text-texto-suave/80">{detalle}</div>}
     </motion.div>
@@ -51,6 +122,10 @@ function Duelo({
 }) {
   const total = osito + osita
   const porcentajeOsito = (osito / total) * 100
+  // La cifra del que gana va encerrada en un círculo, cuando la barra ya
+  // terminó de llenarse.
+  const trazoOsito = useTrazo<HTMLElement>({ tipo: 'circle', relleno: [2, 5], retraso: 1300, activo: osito > osita })
+  const trazoOsita = useTrazo<HTMLElement>({ tipo: 'circle', relleno: [2, 5], retraso: 1300, activo: osita > osito })
 
   return (
     <motion.div
@@ -64,28 +139,34 @@ function Duelo({
         {titulo}
       </p>
 
-      <div className="flex h-8 overflow-hidden rounded-full bg-fondo-2">
+      {/* Los dos emojis van encima de la barra y no dentro de cada mitad:
+          con un reparto extremo, la mitad chica no alcanzaba a cubrir el
+          🐻 y se lo comía a la mitad. */}
+      <div className="relative flex h-8 overflow-hidden rounded-full bg-fondo-2">
         <motion.div
           initial={{ width: 0 }}
           whileInView={{ width: `${porcentajeOsito}%` }}
           viewport={{ once: true }}
           transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-          className="flex items-center justify-start bg-[var(--color-oso-claro)] pl-3 text-xs font-bold text-fondo"
-        >
+          className="bg-[var(--color-oso-claro)]"
+        />
+        <div className="flex-1 bg-[var(--color-rosa-pastel)]" />
+        <span aria-hidden className="absolute inset-y-0 left-3 flex items-center text-xs">
           🐻
-        </motion.div>
-        <div className="flex flex-1 items-center justify-end bg-[var(--color-rosa-pastel)] pr-3 text-xs">
+        </span>
+        <span aria-hidden className="absolute inset-y-0 right-3 flex items-center text-xs">
           🎀
-        </div>
+        </span>
       </div>
 
-      <div className="mt-3 flex justify-between text-sm">
+      {/* Si los apodos y las cifras no caben en una línea, se acomodan en dos. */}
+      <div className="mt-3 flex flex-wrap justify-between gap-x-4 gap-y-1 text-sm">
         <span className="text-texto-suave">
-          {OSITO.apodo} · <strong className="text-texto">{conSeparador(osito)}</strong>
+          {OSITO.apodo} · <strong ref={trazoOsito} className="inline-block text-texto">{conSeparador(osito)}</strong>
           {sufijo}
         </span>
-        <span className="text-texto-suave">
-          <strong className="text-texto">{conSeparador(osita)}</strong>
+        <span className="ms-auto text-texto-suave">
+          <strong ref={trazoOsita} className="inline-block text-texto">{conSeparador(osita)}</strong>
           {sufijo} · {OSITA.apodo}
         </span>
       </div>
@@ -101,7 +182,7 @@ export function Estadisticas() {
   return (
     <div className="mx-auto w-full max-w-3xl px-5 pb-24 pt-20">
       <header className="mb-4 text-center">
-        <p className="text-[0.68rem] uppercase tracking-[0.3em] text-texto-suave/60">
+        <p className="text-xs uppercase tracking-[0.3em] text-texto-suave/60">
           nuestro chat en números
         </p>
         <h1 className="mt-4 font-display text-4xl texto-degradado sm:text-5xl">
@@ -117,19 +198,20 @@ export function Estadisticas() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Cifra
-          numero={conSeparador(numeros.mensajes)}
+          numero={numeros.mensajes}
           etiqueta="mensajes escritos"
           detalle="sin contar fotos ni audios"
         />
         <Cifra
-          numero={conSeparador(numeros.multimedia)}
+          numero={numeros.multimedia}
           etiqueta="fotos, audios y stickers"
           detalle="el chat es un museo de stickers"
           retraso={0.06}
         />
         <Cifra
-          numero={conSeparador(numeros.palabras.osito + numeros.palabras.osita)}
+          numero={numeros.palabras.osito + numeros.palabras.osita}
           etiqueta="palabras en total"
+          resaltada
           detalle="más largo que muchos libros"
           retraso={0.12}
         />
@@ -167,7 +249,7 @@ export function Estadisticas() {
       {/* ── Instagram: donde empezó todo, y donde viven los reels ── */}
       <section className="mt-16">
         <header className="mb-8 text-center">
-          <p className="text-[0.68rem] uppercase tracking-[0.3em] text-texto-suave/60">
+          <p className="text-xs uppercase tracking-[0.3em] text-texto-suave/60">
             📷 y antes de todo eso
           </p>
           <h2 className="mt-3 font-display text-3xl texto-degradado">nuestro Instagram</h2>
@@ -179,24 +261,24 @@ export function Estadisticas() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Cifra
-            numero={conSeparador(instagram.mensajes)}
+            numero={instagram.mensajes}
             etiqueta="mensajes por Instagram"
             detalle={`${conSeparador(instagram.antesDeWhatsapp)} de ellos antes del primer WhatsApp`}
           />
           <Cifra
-            numero={conSeparador(instagram.reels)}
+            numero={instagram.reels}
             etiqueta="reels que nos mandamos"
             detalle="casi nunca hablamos ahí; solo nos etiquetamos cosas"
             retraso={0.06}
           />
           <Cifra
-            numero={conSeparador(instagram.corazones)}
+            numero={instagram.corazones}
             etiqueta="corazones de reacción"
             detalle="el ❤️ pegado a la esquina del mensaje"
             retraso={0.12}
           />
           <Cifra
-            numero={conSeparador(instagram.diaMasHablador.mensajes)}
+            numero={instagram.diaMasHablador.mensajes}
             etiqueta="mensajes en un solo día"
             detalle="el 28 de agosto de 2024, recién conociéndonos"
             retraso={0.18}
@@ -220,11 +302,11 @@ export function Estadisticas() {
         transition={{ duration: 0.8 }}
         className="papel resplandor-caja mt-12 rounded-2xl px-6 py-8 text-center"
       >
-        <p className="text-[0.68rem] uppercase tracking-[0.22em] text-texto-suave/60">
+        <p className="text-xs uppercase tracking-[0.22em] text-texto-suave/60">
           las dos apps sumadas
         </p>
         <p className="mt-4 font-display text-5xl leading-none text-acento sm:text-6xl">
-          {conSeparador(totales.mensajes)}
+          <Cuenta valor={totales.mensajes} />
         </p>
         <p className="mt-3 text-sm uppercase tracking-[0.16em] text-texto-suave">
           mensajes escritos

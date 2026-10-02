@@ -258,6 +258,31 @@
   animation: aparecer 0.6s var(--ease-suave) backwards;
 }
 
+/* Una foto que se está descifrando: el hueco con su color promedio y un
+   brillo de papel que le pasa por encima, de izquierda a derecha. El
+   color de fondo lo pone el componente; aquí va solo el brillo. */
+@keyframes brillo-papel {
+  from { background-position: 150% 0; }
+  to { background-position: -50% 0; }
+}
+
+@utility anima-brillo-papel {
+  background-image: linear-gradient(100deg, transparent 35%, rgb(255 255 255 / 0.16) 50%, transparent 65%);
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: brillo-papel 1.6s ease-in-out infinite;
+}
+
+/* La foto ya descifrada se funde sobre su hueco. Solo opacidad, como
+   antes: la foto no se mueve de donde estaba el hueco. */
+@keyframes revelar {
+  from { opacity: 0; }
+}
+
+@utility anima-revelar {
+  animation: revelar 0.7s var(--ease-suave) backwards;
+}
+
 /* Accesibilidad: si el sistema pide menos movimiento, se lo damos */
 @media (prefers-reduced-motion: reduce) {
   *,

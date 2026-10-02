@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState, type ReactNode } from 'react'
 import {
   CurvaDeUso,
   DondeNacio,
@@ -11,6 +11,7 @@ import { FotoCifrada } from '@/componentes/FotoCifrada'
 import { Libro, type ManejoLibro, type PaginaLibro } from '@/componentes/Libro'
 import { entradas, FOTO_TAPA, TEXTOS } from '@/content/diccionario'
 import { conSeparador, fechaLarga, fechaNI } from '@/lib/tiempo'
+import { useTrazo } from '@/lib/trazo'
 import type { DatosDePalabra, EntradaDiccionario } from '@/types'
 
 /**
@@ -70,7 +71,7 @@ function BarraDeReparto({ datos }: { datos: DatosDePalabra }) {
           style={{ background: 'linear-gradient(to right, #b8465c, #d0697e)' }}
         />
       </div>
-      <div className="mt-1 flex justify-between text-[0.62rem] text-[var(--color-tinta-suave)]">
+      <div className="mt-1 flex justify-between text-xs text-[var(--color-tinta-suave)]">
         <span>él {conSeparador(datos.reparto.osito)}</span>
         <span>ella {conSeparador(datos.reparto.osita)}</span>
       </div>
@@ -85,7 +86,7 @@ function Expediente({ datos, sinBorde = false }: { datos: DatosDePalabra; sinBor
 
   return (
     <div
-      className={`${sinBorde ? '' : 'mt-4 border-t border-[rgb(120_90_55/0.28)] pt-2.5'} text-[0.7rem] leading-snug text-[var(--color-tinta-suave)]`}
+      className={`${sinBorde ? '' : 'mt-4 border-t border-[rgb(120_90_55/0.28)] pt-2.5'} text-xs leading-snug text-[var(--color-tinta-suave)]`}
     >
       <p>
         <span className="text-[var(--color-tinta-roja)]">▸</span> La dijo primero{' '}
@@ -212,6 +213,28 @@ function tamanoDelLema(entrada: EntradaDiccionario): string {
   return 'text-[clamp(1.6rem,6.5vw,2.3rem)] leading-none lg:text-[2rem]'
 }
 
+/**
+ * La palabra de la entrada, pasada con marcador amarillo como en un
+ * diccionario de colegio.
+ *
+ * Solo en la hoja que está quieta: la librería mide en la pantalla, y
+ * una hoja a medio girar (o el reverso espejado que trasluce en el
+ * teléfono) le da medidas torcidas. Las hojas de abajo de la pila están
+ * planas, así que se trazan bien aunque todavía no se vean.
+ */
+function LemaResaltado({ children }: { children: ReactNode }) {
+  const marcador = useTrazo<HTMLSpanElement>({
+    tipo: 'highlight',
+    color: '--color-tulipan-amarillo',
+    opacidad: 0.4,
+    vueltas: 1,
+    relleno: [0, 3],
+    multilinea: true,
+    retraso: 450,
+  })
+  return <span ref={marcador}>{children}</span>
+}
+
 function Cabecera({ guia, folio }: { guia: string; folio: number }) {
   return (
     <div className="mb-4 flex items-baseline justify-between border-b border-[rgb(120_90_55/0.22)] pb-2">
@@ -271,7 +294,7 @@ function PaginaEntrada({
           {entrada.lemaCifrado && (
             <>
               <CurvaDeUso id={entrada.id} mide="largo" alto={54} titulo="cómo fue creciendo" />
-              <p className="mt-2 text-[0.68rem] leading-snug text-[var(--color-tinta-suave)]">
+              <p className="mt-2 text-xs leading-snug text-[var(--color-tinta-suave)]">
                 <span className="text-[var(--color-tinta-roja)]">▸</span> El más largo llegó a{' '}
                 <strong className="font-semibold text-[var(--color-tinta)]">
                   <LargoDelLema id={entrada.id} />
@@ -324,11 +347,13 @@ function PaginaEntrada({
         {/* Cuando el título es una frase de ellos, no vive en claro:
             llega descifrado. Y como es largo, se compone más chico. */}
         <h2 className={`lema ${tamanoDelLema(entrada)}`}>
-          {entrada.lemaCifrado ? (
-            <LemaCifrado id={entrada.id} mientras={entrada.palabra} />
-          ) : (
-            entrada.palabra
-          )}
+          <LemaResaltado>
+            {entrada.lemaCifrado ? (
+              <LemaCifrado id={entrada.id} mientras={entrada.palabra} />
+            ) : (
+              entrada.palabra
+            )}
+          </LemaResaltado>
         </h2>
 
         <p className="mt-1.5 text-[0.78rem]">

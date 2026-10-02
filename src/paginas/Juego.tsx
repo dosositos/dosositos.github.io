@@ -2,8 +2,10 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ContextoDelChat } from '@/componentes/ContextoDelChat'
+import { EstrellaDePapel } from '@/componentes/EstrellaDePapel'
 import { ACLARACION, FINALES, OPCIONES, PORTADA, REACCIONES, REGLAS, REMATE } from '@/content/juego'
 import { abrirSobreUnaVez, claveRecordada } from '@/lib/cripto'
+import { useTrazo } from '@/lib/trazo'
 import type { FraseJuego, RespuestaJuego, SobreJuego } from '@/types'
 
 /**
@@ -125,6 +127,34 @@ function Vidas({ quedan }: { quedan: number }) {
   )
 }
 
+/**
+ * Cuánto falta, en estrellitas de papel: una por frase. Las ya
+ * respondidas se llenan en cuanto se responde, la de ahora late un poquito y las que vienen
+ * son apenas el contorno del papel. Se lee de un vistazo, sin contar.
+ */
+function TiraDeEstrellas({ total, hechas, ronda }: { total: number; hechas: number; ronda: number }) {
+  return (
+    <span className="flex items-center gap-0.5" role="img" aria-label={`frase ${ronda + 1} de ${total}`}>
+      {Array.from({ length: total }, (_, i) => (
+        <motion.span
+          key={i}
+          animate={
+            i < hechas ? { scale: 1, opacity: 1 } : i === hechas ? { scale: 1.15, opacity: 0.9 } : { scale: 0.85, opacity: 0.35 }
+          }
+          transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+          className="block"
+        >
+          <EstrellaDePapel
+            tamanio={14}
+            giro={(i % 3) * 12 - 12}
+            color={i < hechas ? 'var(--t-acento)' : i === hechas ? 'var(--t-acento-2)' : 'var(--t-texto-suave)'}
+          />
+        </motion.span>
+      ))}
+    </span>
+  )
+}
+
 function Boton({
   cual,
   onClick,
@@ -173,6 +203,16 @@ export function Juego() {
   const [record, setRecord] = useState(0)
 
   const panelResultado = useRef<HTMLDivElement>(null)
+  // El puntaje final, encerrado en un círculo a mano cuando la tarjeta ya
+  // terminó de crecer (si se mide antes, el círculo queda corrido).
+  const circuloFinal = useTrazo<HTMLSpanElement>({
+    tipo: 'circle',
+    relleno: [4, 14],
+    grosor: 2,
+    duracion: 900,
+    retraso: 1100,
+    activo: fase === 'final',
+  })
 
   // ── Traer las frases, ya descifradas ────────────────────────────
   useEffect(() => {
@@ -388,7 +428,11 @@ export function Juego() {
           <span className="block text-6xl">{final.icono}</span>
           <h1 className="resplandor mt-6 font-display text-3xl text-acento">{final.titulo}</h1>
 
-          <p className="mt-6 text-5xl font-display texto-degradado">{puntos}</p>
+          <p className="mt-6 text-5xl font-display">
+            <span ref={circuloFinal} className="inline-block texto-degradado">
+              {puntos}
+            </span>
+          </p>
           <p className="mt-1 text-xs uppercase tracking-[0.24em] text-texto-suave/60">puntos</p>
 
           <p className="mt-6 text-base leading-relaxed text-texto-suave">{final.texto}</p>
@@ -454,13 +498,13 @@ export function Juego() {
     : REACCIONES.fallo[ronda % REACCIONES.fallo.length]
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-5 pb-28 pt-14">
+    // El marcador baja lo justo para no quedar debajo de la casita y el
+    // tema, que miden 44 px desde su margen de arriba (con el notch, más).
+    <div className="mx-auto w-full max-w-2xl px-5 pb-28 pt-[calc(max(1rem,env(safe-area-inset-top))+3.75rem)]">
       {/* Marcador */}
       <div className="flex items-center justify-between gap-3">
         <Vidas quedan={vidas} />
-        <span className="text-xs uppercase tracking-[0.2em] text-texto-suave/60">
-          {ronda + 1} / {partida.length}
-        </span>
+        <TiraDeEstrellas total={partida.length} hechas={jugadas.length} ronda={ronda} />
         <motion.span
           key={puntos}
           initial={{ scale: 1.3 }}

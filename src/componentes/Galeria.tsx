@@ -217,6 +217,35 @@ function Visor({
         )}
       </motion.div>
 
+      {/* En la computadora no se desliza con el dedo: ahí van flechas a
+          los lados. En el teléfono sobran, y le taparían la foto. */}
+      {fotos.length > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              mover(-1)
+            }}
+            className="absolute left-4 top-1/2 hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full border border-white/20 text-xl text-white/70 transition-colors hover:border-white/50 hover:text-white sm:grid"
+            aria-label="Foto anterior"
+          >
+            ←
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              mover(1)
+            }}
+            className="absolute right-4 top-1/2 hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full border border-white/20 text-xl text-white/70 transition-colors hover:border-white/50 hover:text-white sm:grid"
+            aria-label="Foto siguiente"
+          >
+            →
+          </button>
+        </>
+      )}
+
       <button
         type="button"
         onClick={cerrar}

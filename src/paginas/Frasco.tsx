@@ -301,12 +301,15 @@ function Papelito({ estrellita }: { estrellita: Estrellita }) {
   const color = colorDe(estrellita)
 
   return (
+    // El papelito se desdobla: baja girando desde el pliegue de arriba,
+    // como una hoja doblada que se abre hacia uno, y la sombra del doblez
+    // se va apagando mientras se aplana.
     <motion.div
-      initial={sinMovimiento ? { opacity: 0 } : { opacity: 0, scaleY: 0.2, y: -14 }}
-      animate={{ opacity: 1, scaleY: 1, y: 0 }}
+      initial={sinMovimiento ? { opacity: 0 } : { opacity: 0, rotateX: -100, y: -14 }}
+      animate={{ opacity: 1, rotateX: 0, y: 0 }}
       exit={sinMovimiento ? { opacity: 0 } : { opacity: 0, scaleY: 0.4, y: 10 }}
-      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-      style={{ transformOrigin: 'top center' }}
+      transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+      style={{ transformOrigin: 'top center', transformPerspective: 900 }}
       className="relative mx-auto w-full max-w-md"
     >
       {/* La estrellita de la que salió, como pegada arriba */}
@@ -321,7 +324,7 @@ function Papelito({ estrellita }: { estrellita: Estrellita }) {
       </motion.span>
 
       <div
-        className="rounded-sm bg-[#f7f2e6] px-6 pb-7 pt-9 shadow-[0_18px_50px_-20px_rgb(0_0_0/0.9)]"
+        className="relative rounded-sm bg-[#f7f2e6] px-6 pb-7 pt-9 shadow-[0_18px_50px_-20px_rgb(0_0_0/0.9)]"
         style={{
           // Los dobleces del papel: estuvo hecho estrellita hasta hace un rato
           backgroundImage:
@@ -332,6 +335,21 @@ function Papelito({ estrellita }: { estrellita: Estrellita }) {
           {estrellita.texto}
         </p>
         <p className="mt-5 text-right text-sm text-[#6b6055]">— {estrellita.de}</p>
+
+        {/* La sombra del doblez, que se apaga cuando el papel queda plano */}
+        {!sinMovimiento && (
+          <motion.span
+            aria-hidden
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 0 }}
+            transition={{ duration: 0.9, delay: 0.2, ease: 'easeOut' }}
+            className="pointer-events-none absolute inset-0 rounded-sm"
+            style={{
+              background:
+                'linear-gradient(to bottom, rgb(0 0 0 / 0.04), rgb(0 0 0 / 0.16) 50%, rgb(0 0 0 / 0.02) 50.5%, rgb(0 0 0 / 0.1))',
+            }}
+          />
+        )}
       </div>
     </motion.div>
   )
@@ -429,7 +447,7 @@ export function Frasco() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col items-center px-5 pb-24 pt-20">
       <header className="mb-8 text-center">
-        <p className="text-[0.68rem] uppercase tracking-[0.3em] text-texto-suave/60">
+        <p className="text-xs uppercase tracking-[0.3em] text-texto-suave/60">
           {TEXTOS.seccion}
         </p>
         <h1 className="mt-4 font-display text-4xl texto-degradado sm:text-5xl">{TEXTOS.titulo}</h1>
@@ -474,7 +492,7 @@ export function Frasco() {
                 <button
                   type="button"
                   onClick={sacar}
-                  className="rounded-full border border-acento/60 px-5 py-2 text-sm text-acento transition-colors hover:bg-acento/10"
+                  className="min-h-11 rounded-full border border-acento/60 px-5 py-2 text-sm text-acento transition-colors hover:bg-acento/10"
                 >
                   {TEXTOS.sacar}
                 </button>
@@ -482,7 +500,7 @@ export function Frasco() {
               <button
                 type="button"
                 onClick={() => setActual(null)}
-                className="rounded-full border border-borde px-5 py-2 text-sm text-texto-suave transition-colors hover:border-acento hover:text-acento"
+                className="min-h-11 rounded-full border border-borde px-5 py-2 text-sm text-texto-suave transition-colors hover:border-acento hover:text-acento"
               >
                 {TEXTOS.cerrar}
               </button>
